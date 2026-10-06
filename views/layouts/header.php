@@ -103,7 +103,7 @@ $activeMenu = $activeMenu ?? 'dashboard';
                     <a href="<?= BASE_URL ?>/notifications" class="btn btn-secondary btn-sm" style="position: relative;">
                         <i class="fa-solid fa-bell"></i>
                         <?php
-                        require_once __DIR__ . '/../models/Notification.php';
+                        require_once __DIR__ . '/../../models/Notification.php';
                         $notifModel = new Notification();
                         $unread = $notifModel->getUnreadCount($currentUser['user_id']);
                         if ($unread > 0):
@@ -114,7 +114,7 @@ $activeMenu = $activeMenu ?? 'dashboard';
                         <?php endif; ?>
                     </a>
                     <span class="badge badge-success">
-                        <i class="fa-solid fa-circle-check"></i> <?= htmlspecialchars($currentUser['organization'] ?: 'YNKI') ?>
+                        <i class="fa-solid fa-circle-check"></i> <?= htmlspecialchars($currentUser['organization'] ?? 'YNKI') ?>
                     </span>
                 </div>
             </header>
