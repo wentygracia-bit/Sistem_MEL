@@ -97,7 +97,12 @@ $flashSuccess = AuthHelper::getFlash('success');
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="password">Kata Sandi</label>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                    <div style="position: relative;">
+                        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" style="padding-right: 42px;" required>
+                        <button type="button" id="togglePasswordBtn" onclick="togglePasswordVisibility()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.95rem; display: flex; align-items: center; justify-content: center; padding: 4px;" title="Tampilkan / Sembunyikan Kata Sandi">
+                            <i id="passwordToggleIcon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px;">
@@ -127,6 +132,20 @@ $flashSuccess = AuthHelper::getFlash('success');
         function fillLogin(email, password) {
             document.getElementById('email').value = email;
             document.getElementById('password').value = password;
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('passwordToggleIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
         }
     </script>
 </body>
