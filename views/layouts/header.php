@@ -21,7 +21,9 @@ $activeMenu = $activeMenu ?? 'dashboard';
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="brand-badge">MEL</div>
+                <div class="brand-badge">
+                    <img src="<?= BASE_URL ?>/gambar%20logo/ynki-icon.webp" alt="Logo YNKI" style="width: 100%; height: 100%; object-fit: contain; border-radius: inherit;">
+                </div>
                 <div>
                     <div class="brand-title">Sistem MEL</div>
                     <div class="brand-sub">Yayasan YNKI</div>

@@ -37,18 +37,18 @@ $flashSuccess = AuthHelper::getFlash('success');
             margin-bottom: 28px;
         }
         .login-badge {
-            width: 56px;
-            height: 56px;
-            background: var(--primary);
-            color: #1e330c;
-            font-size: 1.5rem;
-            font-weight: 800;
+            width: 64px;
+            height: 64px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 14px;
             margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgba(181, 206, 136, 0.45);
+        }
+        .login-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
         }
         .quick-role-badge {
             cursor: pointer;
@@ -71,7 +71,9 @@ $flashSuccess = AuthHelper::getFlash('success');
     <div class="login-wrapper">
         <div class="login-card">
             <div class="login-header">
-                <div class="login-badge">MEL</div>
+                <div class="login-badge">
+                    <img src="<?= BASE_URL ?>/gambar%20logo/ynki-icon.webp" alt="Logo YNKI">
+                </div>
                 <h1 style="font-size: 1.4rem; font-weight: 700; color: #0f172a;">Sistem MEL</h1>
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Monitoring, Evaluasi, dan Pembelajaran Terpadu</p>
             </div>
