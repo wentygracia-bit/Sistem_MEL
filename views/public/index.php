@@ -14,7 +14,9 @@
     <!-- Public Header -->
     <header class="public-header">
         <div style="display: flex; align-items: center; gap: 14px;">
-            <div class="brand-badge" style="width: 44px; height: 44px;">MEL</div>
+            <div class="brand-badge" style="width: 44px; height: 44px;">
+                <img src="<?= BASE_URL ?>/gambar%20logo/ynki-icon.webp" alt="Logo YNKI" style="width: 100%; height: 100%; object-fit: contain; border-radius: inherit;">
+            </div>
             <div>
                 <div style="font-weight: 800; font-size: 1.15rem; color: #1e293b;">Sistem MEL YNKI</div>
                 <div style="font-size: 0.78rem; color: var(--text-muted);">Publikasi Monitoring & Evaluasi Terbuka</div>
