@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../helpers/AuthHelper.php';
+require_once __DIR__ . '/../../helpers/AuthHelper.php';
 $currentUser = AuthHelper::getUser();
 $pageTitle = $pageTitle ?? 'Sistem MEL';
 $activeMenu = $activeMenu ?? 'dashboard';
