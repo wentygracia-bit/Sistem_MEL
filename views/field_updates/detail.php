@@ -3,9 +3,15 @@ require_once __DIR__ . '/../layouts/header.php';
 ?>
 
 <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-    <a href="<?= BASE_URL ?>/field-updates" class="btn btn-secondary btn-sm">
-        <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar Laporan
-    </a>
+    <?php if ($currentUser['role_id'] == 4): ?>
+        <a href="<?= BASE_URL ?>/evaluations" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Kembali ke Ringkasan Capaian
+        </a>
+    <?php else: ?>
+        <a href="<?= BASE_URL ?>/field-updates" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar Laporan
+        </a>
+    <?php endif; ?>
     <div>
         <?php if ($update['status'] === 'Dievaluasi'): ?>
             <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Sudah Dievaluasi</span>
@@ -149,10 +155,36 @@ require_once __DIR__ . '/../layouts/header.php';
                             <?= nl2br(htmlspecialchars($ev['notes'] ?? '')) ?>
                         </div>
                         <?php if ($ev['correction_count'] > 0): ?>
-                            <div style="margin-top: 8px;">
-                                <a href="<?= BASE_URL ?>/corrections" class="badge badge-warning">
-                                    <i class="fa-solid fa-rotate-left"></i> Ada perbaikan terkait (Lihat Permintaan)
-                                </a>
+                            <div style="margin-top: 10px;">
+                                <?php if ($currentUser['role_id'] == 4): ?>
+                                    <?php
+                                    require_once __DIR__ . '/../../models/CorrectionRequest.php';
+                                    $corrModel = new CorrectionRequest();
+                                    $corrections = $corrModel->getByEvaluationId((int)$ev['evaluation_id']);
+                                    ?>
+                                    <div style="padding: 10px 12px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: var(--radius-sm);">
+                                        <div style="font-size: 0.8rem; font-weight: 700; color: #92400e; margin-bottom: 6px;">
+                                            <i class="fa-solid fa-rotate-left"></i> Riwayat Permintaan Perbaikan (<?= count($corrections) ?>)
+                                        </div>
+                                        <?php foreach ($corrections as $cr): ?>
+                                            <div style="font-size: 0.82rem; margin-top: 4px; padding-top: 4px; border-top: 1px dashed #fde68a;">
+                                                <div><strong>Catatan Perbaikan:</strong> <?= htmlspecialchars($cr['description']) ?></div>
+                                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                                                    Diminta oleh <strong><?= htmlspecialchars($cr['requested_by_name']) ?></strong> kepada <strong><?= htmlspecialchars($cr['assigned_to_name']) ?></strong> (<?= date('d M Y', strtotime($cr['request_date'])) ?>) &bull; Status: <span class="badge <?= $cr['status'] === 'Selesai' ? 'badge-success' : 'badge-warning' ?>" style="font-size: 0.7rem;"><?= htmlspecialchars($cr['status']) ?></span>
+                                                </div>
+                                                <?php if (!empty($cr['response'])): ?>
+                                                    <div style="margin-top: 3px; color: #1e3a8a; font-size: 0.8rem;">
+                                                        <strong>Tanggapan Staf Lapangan (<?= !empty($cr['response_date']) ? date('d M Y', strtotime($cr['response_date'])) : '' ?>):</strong> <?= htmlspecialchars($cr['response']) ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <a href="<?= BASE_URL ?>/corrections" class="badge badge-warning">
+                                        <i class="fa-solid fa-rotate-left"></i> Ada perbaikan terkait (Lihat Permintaan)
+                                    </a>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </div>

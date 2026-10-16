@@ -53,8 +53,8 @@ $activeMenu = $activeMenu ?? 'dashboard';
                 
                 <?php if (in_array($currentUser['role_id'], [2, 3, 4])): // MEL, PL, Direktur ?>
                 <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= $activeMenu === 'evaluations' ? 'active' : '' ?>">
-                    <i class="fa-solid fa-scale-balanced"></i>
-                    <span>Evaluasi Kinerja</span>
+                    <i class="fa-solid <?= $currentUser['role_id'] == 4 ? 'fa-chart-line' : 'fa-scale-balanced' ?>"></i>
+                    <span><?= $currentUser['role_id'] == 4 ? 'Ringkasan Capaian' : 'Evaluasi Kinerja' ?></span>
                 </a>
                 <?php endif; ?>
 
@@ -68,7 +68,7 @@ $activeMenu = $activeMenu ?? 'dashboard';
                 <?php if (in_array($currentUser['role_id'], [2, 4])): // MEL, Direktur ?>
                 <a href="<?= BASE_URL ?>/mel-results" class="nav-link <?= $activeMenu === 'mel-results' ? 'active' : '' ?>">
                     <i class="fa-solid fa-stamp"></i>
-                    <span>Pengesahan & Hasil</span>
+                    <span>Verifikasi MEL</span>
                 </a>
                 <?php endif; ?>
 

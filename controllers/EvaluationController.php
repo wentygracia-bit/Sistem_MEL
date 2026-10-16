@@ -12,7 +12,8 @@ class EvaluationController {
         $evalModel = new Evaluation();
         $evaluations = $evalModel->getAll(100);
 
-        $pageTitle = 'Evaluasi Capaian Lapangan';
+        $user = AuthHelper::getUser();
+        $pageTitle = ($user['role_id'] == 4) ? 'Ringkasan Capaian' : 'Evaluasi Capaian Lapangan';
         $activeMenu = 'evaluations';
         require_once __DIR__ . '/../views/evaluations/index.php';
     }

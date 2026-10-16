@@ -51,14 +51,19 @@ class Evaluation {
 
     public function getAll(int $limit = 50): array {
         $stmt = $this->db->prepare("
-            SELECT e.*, i.indicator_name, i.unit, u.name as evaluator_name,
-                   a.activity_name, p.project_name
+            SELECT e.*, i.indicator_name, i.target_value, i.unit, u.name as evaluator_name,
+                   a.activity_name, p.project_name,
+                   fu.realization_value, fu.progress_percentage, fu.status as report_status, fu.evidence_file,
+                   mr.mel_result_id, mr.status as mel_status,
+                   ap.decision as approval_decision
             FROM evaluations e
             JOIN indicators i ON e.indicator_id = i.indicator_id
             JOIN users u ON e.evaluator_id = u.user_id
             JOIN field_updates fu ON e.update_id = fu.update_id
             JOIN activities a ON fu.activity_id = a.activity_id
             JOIN projects p ON a.project_id = p.project_id
+            LEFT JOIN mel_results mr ON mr.evaluation_id = e.evaluation_id
+            LEFT JOIN approvals ap ON ap.mel_result_id = mr.mel_result_id
             ORDER BY e.evaluation_id DESC
             LIMIT ?
         ");

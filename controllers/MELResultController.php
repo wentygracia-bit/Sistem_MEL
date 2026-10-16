@@ -16,7 +16,7 @@ class MELResultController {
         $evalModel = new Evaluation();
         $evaluations = $evalModel->getAll();
 
-        $pageTitle = 'Hasil Akhir MEL & Pengesahan';
+        $pageTitle = 'Verifikasi Hasil MEL & Pengesahan';
         $activeMenu = 'mel-results';
         require_once __DIR__ . '/../views/mel_results/index.php';
     }
