@@ -26,7 +26,7 @@ $activeMenu = $activeMenu ?? 'dashboard';
                 </div>
                 <div>
                     <div class="brand-title">Sistem MEL</div>
-                    <div class="brand-sub">Yayasan YNKI</div>
+                    <div class="brand-sub">Yayasan Natural Kapital Indonesia</div>
                 </div>
             </div>
 
@@ -36,16 +36,20 @@ $activeMenu = $activeMenu ?? 'dashboard';
                     <i class="fa-solid fa-chart-pie"></i>
                     <span>Dashboard</span>
                 </a>
+                <?php if (!in_array($currentUser['role_id'], [3, 4])): // Bukan Project Leader & Direktur ?>
                 <a href="<?= BASE_URL ?>/projects" class="nav-link <?= $activeMenu === 'projects' ? 'active' : '' ?>">
                     <i class="fa-solid fa-folder-tree"></i>
                     <span>Proyek & Kegiatan</span>
                 </a>
+                <?php endif; ?>
 
                 <div class="nav-label">Operasional MEL</div>
+                <?php if ($currentUser['role_id'] != 4): // Bukan Direktur ?>
                 <a href="<?= BASE_URL ?>/field-updates" class="nav-link <?= $activeMenu === 'field-updates' ? 'active' : '' ?>">
                     <i class="fa-solid fa-clipboard-check"></i>
                     <span>Pelaporan Lapangan</span>
                 </a>
+                <?php endif; ?>
                 
                 <?php if (in_array($currentUser['role_id'], [2, 3, 4])): // MEL, PL, Direktur ?>
                 <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= $activeMenu === 'evaluations' ? 'active' : '' ?>">
@@ -54,10 +58,12 @@ $activeMenu = $activeMenu ?? 'dashboard';
                 </a>
                 <?php endif; ?>
 
+                <?php if ($currentUser['role_id'] != 4): // Bukan Direktur ?>
                 <a href="<?= BASE_URL ?>/corrections" class="nav-link <?= $activeMenu === 'corrections' ? 'active' : '' ?>">
                     <i class="fa-solid fa-rotate-left"></i>
                     <span>Permintaan Perbaikan</span>
                 </a>
+                <?php endif; ?>
 
                 <?php if (in_array($currentUser['role_id'], [2, 4])): // MEL, Direktur ?>
                 <a href="<?= BASE_URL ?>/mel-results" class="nav-link <?= $activeMenu === 'mel-results' ? 'active' : '' ?>">
