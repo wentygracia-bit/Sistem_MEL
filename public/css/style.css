@@ -60,19 +60,38 @@ a {
     position: fixed;
     height: 100vh;
     z-index: 100;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: width, transform;
 }
 
 .sidebar-header {
-    padding: 24px 20px;
+    padding: 18px 16px;
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     gap: 12px;
+    min-height: 70px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.brand-badge-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    outline: none;
 }
 
 .brand-badge {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
     background-color: var(--primary);
     color: #2e4a16;
     font-weight: 700;
@@ -82,48 +101,100 @@ a {
     justify-content: center;
     border-radius: var(--radius-md);
     box-shadow: 0 4px 10px rgba(181, 206, 136, 0.4);
+    transition: transform 0.2s ease;
+}
+
+.brand-badge-btn:hover .brand-badge {
+    transform: scale(1.05);
+}
+
+.brand-text {
+    flex: 1;
+    overflow: hidden;
+    transition: opacity 0.2s ease, max-width 0.25s ease;
+    white-space: nowrap;
 }
 
 .brand-title {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: #1e293b;
     line-height: 1.2;
 }
 
 .brand-sub {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
+}
+
+.sidebar-toggle-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background-color: #f8fafc;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.sidebar-toggle-btn:hover {
+    background-color: var(--primary-light);
+    color: #274312;
+    border-color: #b5ce88;
 }
 
 .sidebar-nav {
     flex: 1;
-    padding: 20px 14px;
+    padding: 16px 10px;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
 .nav-label {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.68rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: #94a3b8;
-    padding: 12px 12px 6px 12px;
+    padding: 10px 12px 6px 12px;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
 }
 
 .nav-link {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px;
+    padding: 10px 12px;
     border-radius: var(--radius-md);
     color: #475569;
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+}
+
+.nav-link i {
+    width: 20px;
+    min-width: 20px;
+    text-align: center;
+    font-size: 1.05rem;
+}
+
+.nav-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity 0.2s ease;
 }
 
 .nav-link:hover {
@@ -139,9 +210,10 @@ a {
 }
 
 .sidebar-footer {
-    padding: 16px;
+    padding: 14px 12px;
     border-top: 1px solid var(--border-color);
     background-color: #f8fafc;
+    transition: padding 0.3s ease;
 }
 
 .user-badge {
@@ -153,6 +225,7 @@ a {
 .user-avatar {
     width: 38px;
     height: 38px;
+    min-width: 38px;
     border-radius: 50%;
     background-color: var(--primary);
     color: #2e4a16;
@@ -165,6 +238,7 @@ a {
 
 .user-info {
     overflow: hidden;
+    transition: opacity 0.2s ease;
 }
 
 .user-name {
@@ -180,19 +254,128 @@ a {
     color: var(--text-muted);
 }
 
+.logout-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* ======================================================== */
+/* COLLAPSED SIDEBAR STATE (72px Icon-Only)                 */
+/* ======================================================== */
+.sidebar-collapsed .sidebar,
+.sidebar.collapsed {
+    width: 72px !important;
+}
+
+.sidebar-collapsed .main-content,
+.sidebar.collapsed ~ .main-content,
+.sidebar.collapsed + .main-content {
+    margin-left: 72px !important;
+}
+
+.sidebar-collapsed .sidebar .brand-text,
+.sidebar-collapsed .sidebar .nav-label,
+.sidebar-collapsed .sidebar .nav-text,
+.sidebar-collapsed .sidebar .user-info,
+.sidebar-collapsed .sidebar .logout-text,
+.sidebar.collapsed .brand-text,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .logout-text {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+.sidebar-collapsed .sidebar .sidebar-header,
+.sidebar.collapsed .sidebar-header {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 14px 0 10px 0 !important;
+    gap: 10px !important;
+    min-height: 96px !important;
+}
+
+.sidebar-collapsed .sidebar .sidebar-toggle-btn,
+.sidebar.collapsed .sidebar-toggle-btn {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: 32px !important;
+    height: 32px !important;
+    background-color: #f1f5f9;
+}
+
+/* Flipped chevron pointing right when collapsed */
+.sidebar-collapsed .sidebar .sidebar-toggle-btn i,
+.sidebar.collapsed .sidebar-toggle-btn i {
+    transform: rotate(180deg) !important;
+}
+
+.sidebar-collapsed .sidebar .sidebar-nav,
+.sidebar.collapsed .sidebar-nav {
+    padding: 16px 8px !important;
+    align-items: center !important;
+}
+
+.sidebar-collapsed .sidebar .nav-link,
+.sidebar.collapsed .nav-link {
+    justify-content: center !important;
+    padding: 12px 0 !important;
+    width: 48px !important;
+    gap: 0 !important;
+}
+
+.sidebar-collapsed .sidebar .nav-link i,
+.sidebar.collapsed .nav-link i {
+    font-size: 1.2rem !important;
+}
+
+.sidebar-collapsed .sidebar .sidebar-footer,
+.sidebar.collapsed .sidebar-footer {
+    padding: 14px 8px !important;
+}
+
+.sidebar-collapsed .sidebar .user-badge,
+.sidebar.collapsed .user-badge {
+    justify-content: center !important;
+}
+
+.sidebar-collapsed .sidebar .logout-btn,
+.sidebar.collapsed .logout-btn {
+    width: 48px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+}
+
+/* ======================================================== */
+/* MAIN CONTENT & NAVBAR ADJUSTMENTS                       */
+/* ======================================================== */
 .main-content {
     flex: 1;
     margin-left: 260px;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: margin-left;
 }
+
+
 
 .navbar {
     height: 70px;
     background-color: #ffffff;
     border-bottom: 1px solid var(--border-color);
     display: flex;
+
     align-items: center;
     justify-content: space-between;
     padding: 0 32px;
@@ -536,11 +719,123 @@ textarea.form-control {
     box-shadow: var(--shadow-lg);
 }
 
-@media (max-width: 900px) {
-    .sidebar {
-        display: none;
-    }
-    .main-content {
-        margin-left: 0;
+/* Navbar Toggle Button */
+.navbar-toggle-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background-color: #ffffff;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+/* Tooltip on collapsed nav-link hover (desktop) */
+@media (min-width: 769px) {
+    .sidebar-collapsed .sidebar .nav-link:hover::after {
+        content: attr(title);
+        position: absolute;
+        left: 64px;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: #1e293b;
+        color: #ffffff;
+        font-size: 0.78rem;
+        font-weight: 500;
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        white-space: nowrap;
+        pointer-events: none;
+        box-shadow: var(--shadow-md);
+        z-index: 150;
+        letter-spacing: 0.01em;
     }
 }
+
+/* Responsive adjustments for mobile and tablets */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0 16px;
+    }
+
+    .content-body {
+        padding: 18px 14px;
+    }
+
+    /* On mobile, when expanded, sidebar overlays cleanly */
+    .sidebar {
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+    }
+
+    /* By default on small screens, collapse to icon-only unless user expanded it */
+    body:not(.sidebar-expanded) .sidebar {
+        width: 68px;
+    }
+
+    body:not(.sidebar-expanded) .main-content {
+        margin-left: 68px;
+    }
+
+    body:not(.sidebar-expanded) .sidebar .brand-text,
+    body:not(.sidebar-expanded) .sidebar .nav-label,
+    body:not(.sidebar-expanded) .sidebar .nav-text,
+    body:not(.sidebar-expanded) .sidebar .user-info,
+    body:not(.sidebar-expanded) .sidebar .logout-text {
+        display: none !important;
+        opacity: 0;
+    }
+
+    body:not(.sidebar-expanded) .sidebar .sidebar-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 12px 0 8px 0;
+        gap: 8px;
+        min-height: 90px;
+    }
+
+    body:not(.sidebar-expanded) .sidebar .sidebar-toggle-btn {
+        display: flex !important;
+        width: 30px;
+        height: 30px;
+    }
+
+    body:not(.sidebar-expanded) .sidebar .sidebar-toggle-btn i {
+        transform: rotate(180deg);
+    }
+
+    body:not(.sidebar-expanded) .sidebar .sidebar-nav {
+        padding: 12px 6px;
+        align-items: center;
+    }
+
+    body:not(.sidebar-expanded) .sidebar .nav-link {
+        justify-content: center;
+        padding: 10px 0;
+        width: 44px;
+        gap: 0;
+    }
+
+    body:not(.sidebar-expanded) .sidebar .sidebar-footer {
+        padding: 10px 6px;
+    }
+
+    body:not(.sidebar-expanded) .sidebar .user-badge {
+        justify-content: center;
+    }
+
+    body:not(.sidebar-expanded) .sidebar .logout-btn {
+        width: 44px;
+        height: 34px;
+        padding: 0;
+        margin: 0 auto;
+    }
+}
+
+

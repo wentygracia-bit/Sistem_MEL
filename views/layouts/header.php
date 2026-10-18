@@ -19,90 +19,98 @@ $activeMenu = $activeMenu ?? 'dashboard';
 <body>
     <div class="app-container">
         <!-- Sidebar Navigation -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="brand-badge">
                     <img src="<?= BASE_URL ?>/gambar%20logo/ynki-icon.webp" alt="Logo YNKI" style="width: 100%; height: 100%; object-fit: contain; border-radius: inherit;">
                 </div>
-                <div>
+                <div class="brand-text">
                     <div class="brand-title">Sistem MEL</div>
                     <div class="brand-sub">Yayasan Natural Kapital Indonesia</div>
                 </div>
+                <!-- Tombol tunggal pengontrol sidebar (chevron) -->
+                <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Tutup Sidebar" aria-label="Buka / Tutup Sidebar">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
             </div>
 
             <nav class="sidebar-nav">
                 <div class="nav-label">Menu Utama</div>
-                <a href="<?= BASE_URL ?>/dashboard" class="nav-link <?= $activeMenu === 'dashboard' ? 'active' : '' ?>">
+                <a href="<?= BASE_URL ?>/dashboard" class="nav-link <?= $activeMenu === 'dashboard' ? 'active' : '' ?>" title="Dashboard">
                     <i class="fa-solid fa-chart-pie"></i>
-                    <span>Dashboard</span>
+                    <span class="nav-text">Dashboard</span>
                 </a>
                 <?php if (!in_array($currentUser['role_id'], [3, 4])): // Bukan Project Leader & Direktur ?>
-                <a href="<?= BASE_URL ?>/projects" class="nav-link <?= $activeMenu === 'projects' ? 'active' : '' ?>">
+                <a href="<?= BASE_URL ?>/projects" class="nav-link <?= $activeMenu === 'projects' ? 'active' : '' ?>" title="Proyek & Kegiatan">
                     <i class="fa-solid fa-folder-tree"></i>
-                    <span>Proyek & Kegiatan</span>
+                    <span class="nav-text">Proyek & Kegiatan</span>
                 </a>
                 <?php endif; ?>
 
                 <div class="nav-label">Operasional MEL</div>
                 <?php if ($currentUser['role_id'] != 4): // Bukan Direktur ?>
-                <a href="<?= BASE_URL ?>/field-updates" class="nav-link <?= $activeMenu === 'field-updates' ? 'active' : '' ?>">
+                <a href="<?= BASE_URL ?>/field-updates" class="nav-link <?= $activeMenu === 'field-updates' ? 'active' : '' ?>" title="Pelaporan Lapangan">
                     <i class="fa-solid fa-clipboard-check"></i>
-                    <span>Pelaporan Lapangan</span>
+                    <span class="nav-text">Pelaporan Lapangan</span>
                 </a>
                 <?php endif; ?>
                 
                 <?php if (in_array($currentUser['role_id'], [2, 3, 4])): // MEL, PL, Direktur ?>
-                <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= $activeMenu === 'evaluations' ? 'active' : '' ?>">
+                <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= $activeMenu === 'evaluations' ? 'active' : '' ?>" title="<?= $currentUser['role_id'] == 4 ? 'Ringkasan Capaian' : 'Evaluasi Kinerja' ?>">
                     <i class="fa-solid <?= $currentUser['role_id'] == 4 ? 'fa-chart-line' : 'fa-scale-balanced' ?>"></i>
-                    <span><?= $currentUser['role_id'] == 4 ? 'Ringkasan Capaian' : 'Evaluasi Kinerja' ?></span>
+                    <span class="nav-text"><?= $currentUser['role_id'] == 4 ? 'Ringkasan Capaian' : 'Evaluasi Kinerja' ?></span>
                 </a>
                 <?php endif; ?>
 
                 <?php if ($currentUser['role_id'] != 4): // Bukan Direktur ?>
-                <a href="<?= BASE_URL ?>/corrections" class="nav-link <?= $activeMenu === 'corrections' ? 'active' : '' ?>">
+                <a href="<?= BASE_URL ?>/corrections" class="nav-link <?= $activeMenu === 'corrections' ? 'active' : '' ?>" title="Permintaan Perbaikan">
                     <i class="fa-solid fa-rotate-left"></i>
-                    <span>Permintaan Perbaikan</span>
+                    <span class="nav-text">Permintaan Perbaikan</span>
                 </a>
                 <?php endif; ?>
 
                 <?php if (in_array($currentUser['role_id'], [2, 4])): // MEL, Direktur ?>
-                <a href="<?= BASE_URL ?>/mel-results" class="nav-link <?= $activeMenu === 'mel-results' ? 'active' : '' ?>">
+                <a href="<?= BASE_URL ?>/mel-results" class="nav-link <?= $activeMenu === 'mel-results' ? 'active' : '' ?>" title="Verifikasi MEL">
                     <i class="fa-solid fa-stamp"></i>
-                    <span>Verifikasi MEL</span>
+                    <span class="nav-text">Verifikasi MEL</span>
                 </a>
                 <?php endif; ?>
 
                 <div class="nav-label">Informasi & Utilitas</div>
-                <a href="<?= BASE_URL ?>/notifications" class="nav-link <?= $activeMenu === 'notifications' ? 'active' : '' ?>">
+                <a href="<?= BASE_URL ?>/notifications" class="nav-link <?= $activeMenu === 'notifications' ? 'active' : '' ?>" title="Notifikasi & Reminder">
                     <i class="fa-solid fa-bell"></i>
-                    <span>Notifikasi & Reminder</span>
+                    <span class="nav-text">Notifikasi & Reminder</span>
                 </a>
-                <a href="<?= BASE_URL ?>/public-dashboard" target="_blank" class="nav-link">
+                <a href="<?= BASE_URL ?>/public-dashboard" target="_blank" class="nav-link" title="Portal Publik">
                     <i class="fa-solid fa-globe"></i>
-                    <span>Portal Publik <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.75rem; margin-left: 4px;"></i></span>
+                    <span class="nav-text">Portal Publik <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.75rem; margin-left: 4px;"></i></span>
                 </a>
             </nav>
 
             <div class="sidebar-footer">
-                <div class="user-badge">
+                <div class="user-badge" title="<?= htmlspecialchars($currentUser['name'] ?? '') ?> (<?= htmlspecialchars($currentUser['role_name'] ?? '') ?>)">
                     <div class="user-avatar">
                         <?= strtoupper(substr($currentUser['name'] ?? 'U', 0, 1)) ?>
                     </div>
                     <div class="user-info">
-                        <div class="user-name"><?= htmlspecialchars($currentUser['name']) ?></div>
-                        <div class="user-role"><?= htmlspecialchars($currentUser['role_name']) ?></div>
+                        <div class="user-name"><?= htmlspecialchars($currentUser['name'] ?? '') ?></div>
+                        <div class="user-role"><?= htmlspecialchars($currentUser['role_name'] ?? '') ?></div>
                     </div>
                 </div>
-                <div style="margin-top: 12px; display: flex; gap: 8px;">
-                    <a href="<?= BASE_URL ?>/logout" class="btn btn-secondary btn-sm" style="width: 100%;">
-                        <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                <div class="logout-container" style="margin-top: 12px;">
+                    <a href="<?= BASE_URL ?>/logout" class="btn btn-secondary btn-sm logout-btn" title="Keluar">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="logout-text">Keluar</span>
                     </a>
                 </div>
             </div>
         </aside>
 
+        <!-- Backdrop overlay for mobile screen when sidebar is open -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
         <!-- Main Content Wrapper -->
-        <main class="main-content">
+        <main class="main-content" id="mainContent">
             <header class="navbar">
                 <div class="page-title"><?= htmlspecialchars($pageTitle) ?></div>
                 <div class="navbar-actions">
@@ -139,3 +147,4 @@ $activeMenu = $activeMenu ?? 'dashboard';
                         <span><?= htmlspecialchars($errorMsg) ?></span>
                     </div>
                 <?php endif; ?>
+

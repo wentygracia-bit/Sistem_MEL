@@ -65,4 +65,26 @@ class MELResult {
         $stmt = $this->db->prepare("UPDATE mel_results SET status = ? WHERE mel_result_id = ?");
         return $stmt->execute([$status, $melResultId]);
     }
+
+    public function countByStatus(string $status): int {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM mel_results WHERE status = ?");
+        $stmt->execute([$status]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    public function getPendingApproval(): array {
+        $stmt = $this->db->query("
+            SELECT mr.*, 
+                   a.activity_name, a.location, p.project_name, p.project_code,
+                   u.name as submitter_name
+            FROM mel_results mr
+            JOIN activities a ON mr.activity_id = a.activity_id
+            JOIN projects p ON a.project_id = p.project_id
+            JOIN users u ON mr.submitted_by = u.user_id
+            WHERE mr.status = 'Diajukan'
+            ORDER BY mr.mel_result_id DESC
+        ");
+        return $stmt->fetchAll();
+    }
 }
+

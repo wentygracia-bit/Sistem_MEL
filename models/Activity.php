@@ -66,4 +66,23 @@ class Activity {
         ";
         return $this->db->query($sql)->fetchAll();
     }
+
+    public function getStatusCounts(): array {
+        $stmt = $this->db->query("
+            SELECT 
+                SUM(CASE WHEN status = 'Berjalan' THEN 1 ELSE 0 END) as berjalan,
+                SUM(CASE WHEN status = 'Selesai' THEN 1 ELSE 0 END) as selesai,
+                SUM(CASE WHEN status = 'Perencanaan' THEN 1 ELSE 0 END) as perencanaan,
+                COUNT(*) as total
+            FROM activities
+        ");
+        $res = $stmt->fetch();
+        return [
+            'Berjalan'    => (int)($res['berjalan'] ?? 0),
+            'Selesai'     => (int)($res['selesai'] ?? 0),
+            'Perencanaan' => (int)($res['perencanaan'] ?? 0),
+            'Total'       => (int)($res['total'] ?? 0),
+        ];
+    }
 }
+

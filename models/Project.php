@@ -99,4 +99,10 @@ class Project {
         $stmt->execute([$userId, $userId]);
         return $stmt->fetchAll();
     }
+
+    public function countActiveProjects(): int {
+        $stmt = $this->db->query("SELECT COUNT(*) FROM projects WHERE status = 'Aktif'");
+        return (int)$stmt->fetchColumn();
+    }
 }
+

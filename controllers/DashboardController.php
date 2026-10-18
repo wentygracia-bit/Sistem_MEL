@@ -30,6 +30,24 @@ class DashboardController {
             // Send reminder to relevant project staff
         }
 
+        // Khusus Role Direktur (role_id = 4)
+        if ((int)$user['role_id'] === 4) {
+            $activeProjectsCount = $projectModel->countActiveProjects();
+            $pendingMelCount = $melResultModel->countByStatus('Diajukan');
+            $approvedMelCount = $melResultModel->countByStatus('Disetujui');
+            $needsFollowUpCount = $melResultModel->countByStatus('Ditolak');
+
+            $pendingMelList = $melResultModel->getPendingApproval();
+            $activityStats = $activityModel->getStatusCounts();
+
+            $pageTitle = 'Dashboard Eksekutif Direktur';
+            $activeMenu = 'dashboard';
+
+            require_once __DIR__ . '/../views/dashboard/director.php';
+            return;
+        }
+
+        // Role lainnya (Staf Lapangan, Staf MEL, Project Leader)
         $projects = $projectModel->getProjectsForUser($user['user_id'], $user['role_id']);
         $recentUpdates = $updateModel->getAll(5);
         $recentCorrections = $correctionModel->getForUser($user['user_id']);
@@ -40,6 +58,7 @@ class DashboardController {
 
         require_once __DIR__ . '/../views/dashboard/index.php';
     }
+
 
     public function publicView(): void {
         $projectModel = new Project();
