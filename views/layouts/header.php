@@ -135,10 +135,7 @@ $activeMenu = $activeMenu ?? 'dashboard';
 
             <div class="content-body">
                 <?php if ($successMsg = AuthHelper::getFlash('success')): ?>
-                    <div class="alert alert-success">
-                        <i class="fa-solid fa-circle-check"></i>
-                        <span><?= htmlspecialchars($successMsg) ?></span>
-                    </div>
+                    
                 <?php endif; ?>
 
                 <?php if ($errorMsg = AuthHelper::getFlash('error')): ?>
