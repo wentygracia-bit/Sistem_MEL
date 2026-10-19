@@ -123,18 +123,18 @@
 
         .hero {
             display: grid;
-            grid-template-columns: minmax(180px, 0.75fr) minmax(0, 2fr);
+            grid-template-columns: minmax(240px, 0.85fr) minmax(0, 2fr);
             align-items: center;
-            gap: 46px;
+            gap: 48px;
             margin: 42px 0 32px;
-            padding: 48px;
+            padding: 48px 52px;
             overflow: hidden;
             border: 1px solid #E0E9D4;
-            border-radius: 26px;
+            border-radius: 28px;
             background:
-                radial-gradient(circle at 10% 20%, #E7F0D9 0, transparent 38%),
+                radial-gradient(circle at 12% 20%, #E7F0D9 0, transparent 42%),
                 linear-gradient(135deg, #FFFFFF 0%, #F4F9EC 100%);
-            box-shadow: 0 8px 26px rgba(38, 61, 32, 0.05);
+            box-shadow: 0 10px 30px rgba(38, 61, 32, 0.06);
         }
 
         .hero-brand {
@@ -144,22 +144,29 @@
         }
 
         .hero-logo-wrap {
-            width: 190px;
-            height: 190px;
-            padding: 18px;
+            width: 240px;
+            height: 240px;
+            padding: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: white;
+            background: #FFFFFF;
             border: 1px solid #DFE8D2;
-            border-radius: 32px;
-            box-shadow: 0 12px 32px rgba(50, 75, 34, 0.09);
+            border-radius: 36px;
+            box-shadow: 0 14px 36px rgba(50, 75, 34, 0.10);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hero-logo-wrap:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 18px 42px rgba(50, 75, 34, 0.14);
         }
 
         .hero-logo {
             width: 100%;
             height: 100%;
             object-fit: contain;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.04));
         }
 
         .eyebrow {
@@ -479,9 +486,9 @@
             }
 
             .hero-logo-wrap {
-                width: 135px;
-                height: 135px;
-                border-radius: 25px;
+                width: 300px;
+                height: 300px;
+                border-radius: 28px;
             }
 
             .hero-actions {

@@ -117,7 +117,7 @@ require_once __DIR__ . '/../layouts/header.php';
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                 <div class="form-group">
                     <label class="form-label">Persentase Progres (%)</label>
-                    <input type="number" step="any" name="progress_percentage" class="form-control" placeholder="cth: 100">
+                    <input type="number" step="any" min="0" max="100" name="progress_percentage" class="form-control" placeholder="cth: 100" oninput="if(parseFloat(this.value) > 100) this.value = 100; if(parseFloat(this.value) < 0) this.value = 0;">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Unggah Bukti / Dokumentasi</label>

@@ -53,6 +53,7 @@ class FieldUpdateController {
         $updateDate = $_POST['update_date'] ?? date('Y-m-d');
         $realizationValue = !empty($_POST['realization_value']) ? (float)$_POST['realization_value'] : 0.0;
         $progressPercentage = !empty($_POST['progress_percentage']) ? (float)$_POST['progress_percentage'] : 0.0;
+        $progressPercentage = max(0.0, min(100.0, $progressPercentage));
         $description = trim($_POST['description'] ?? '');
 
         $evidenceFileName = null;
