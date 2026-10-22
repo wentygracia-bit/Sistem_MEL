@@ -202,10 +202,7 @@ class FieldUpdateController {
             header('Location: ' . BASE_URL . '/field-updates');
             exit;
         }
-<<<<<<< HEAD
-=======
 
->>>>>>> 439332e095f293c74267d2c7c69a66034436f2b2
         // Status check: if already 'Dievaluasi', Field Staff cannot edit arbitrarily
         if ($existing['status'] === 'Dievaluasi' && $user['role_id'] == 1) {
             AuthHelper::setFlash('error', 'Laporan yang telah diverifikasi dan disetujui tidak dapat diedit kembali.');
