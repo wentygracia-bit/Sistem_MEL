@@ -72,18 +72,37 @@ class MELResult {
         return (int)$stmt->fetchColumn();
     }
 
-    public function getPendingApproval(): array {
-        $stmt = $this->db->query("
+    public function countAll(): int {
+        $stmt = $this->db->query("SELECT COUNT(*) FROM mel_results");
+        return (int)$stmt->fetchColumn();
+    }
+
+    public function getRecentWithApproval(int $limit = 5): array {
+        $stmt = $this->db->prepare("
             SELECT mr.*, 
-                   a.activity_name, a.location, p.project_name, p.project_code,
-                   u.name as submitter_name
+                   a.activity_name, p.project_name, p.project_code,
+                   u.name as submitter_name,
+                   ap.approval_id, ap.decision as approval_decision, ap.approval_date, ap.notes as approval_notes,
+                   approver.name as approver_name
             FROM mel_results mr
             JOIN activities a ON mr.activity_id = a.activity_id
             JOIN projects p ON a.project_id = p.project_id
             JOIN users u ON mr.submitted_by = u.user_id
-            WHERE mr.status = 'Diajukan'
+            LEFT JOIN (
+                SELECT ap1.*
+                FROM approvals ap1
+                INNER JOIN (
+                    SELECT mel_result_id, MAX(approval_id) as max_id
+                    FROM approvals
+                    GROUP BY mel_result_id
+                ) ap2 ON ap1.approval_id = ap2.max_id
+            ) ap ON mr.mel_result_id = ap.mel_result_id
+            LEFT JOIN users approver ON ap.approved_by = approver.user_id
             ORDER BY mr.mel_result_id DESC
+            LIMIT ?
         ");
+        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll();
     }
 }

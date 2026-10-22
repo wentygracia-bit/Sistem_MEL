@@ -99,7 +99,25 @@ class DashboardController {
             return;
         }
 
-        // Role lainnya (Staf MEL, Project Leader)
+        // Khusus Role Staf MEL (role_id = 2)
+        if ((int)$user['role_id'] === 2) {
+            $activeProjectsCount = $projectModel->countActiveProjects();
+            $totalReportsCount = $updateModel->countAll();
+            $activeCorrectionsCount = $correctionModel->countActiveGlobal();
+            $totalMelResultsCount = $melResultModel->countAll();
+
+            $recentUpdates = $updateModel->getAll(5);
+            $recentCorrections = $correctionModel->getRecentGlobal(5);
+            $recentMelResults = $melResultModel->getRecentWithApproval(4);
+
+            $pageTitle = 'Dashboard Staf MEL';
+            $activeMenu = 'dashboard';
+
+            require_once __DIR__ . '/../views/dashboard/mel_staff.php';
+            return;
+        }
+
+        // Role lainnya (Project Leader)
         $projects = $projectModel->getProjectsForUser($user['user_id'], $user['role_id']);
         $recentUpdates = $updateModel->getAll(5);
         $recentCorrections = $correctionModel->getForUser($user['user_id']);

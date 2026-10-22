@@ -222,5 +222,10 @@ class FieldUpdate {
             'approved'        => (int)($res['approved_reports'] ?? 0),
         ];
     }
+
+    public function countAll(): int {
+        $stmt = $this->db->query("SELECT COUNT(*) FROM field_updates");
+        return (int)$stmt->fetchColumn();
+    }
 }
 

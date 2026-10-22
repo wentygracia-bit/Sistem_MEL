@@ -82,13 +82,34 @@ class CorrectionRequest {
         return $stmt->fetchAll();
     }
 
-    public function countActiveForUser(int $userId): int {
-        $stmt = $this->db->prepare("
+    public function countActiveGlobal(): int {
+        $stmt = $this->db->query("
             SELECT COUNT(*) 
             FROM correction_requests cr
-            WHERE cr.assigned_to = ? AND (cr.status = 'Diminta' OR cr.status = 'Perlu Direvisi' OR cr.status = 'Sedang Direvisi')
+            WHERE cr.status = 'Diminta'
         ");
-        $stmt->execute([$userId]);
         return (int)$stmt->fetchColumn();
+    }
+
+    public function getRecentGlobal(int $limit = 5): array {
+        $stmt = $this->db->prepare("
+            SELECT cr.*, 
+                   req.name as requested_by_name, 
+                   assign.name as assigned_to_name,
+                   a.activity_name, 
+                   p.project_name
+            FROM correction_requests cr
+            JOIN users req ON cr.requested_by = req.user_id
+            JOIN users assign ON cr.assigned_to = assign.user_id
+            JOIN evaluations e ON cr.evaluation_id = e.evaluation_id
+            JOIN field_updates fu ON e.update_id = fu.update_id
+            JOIN activities a ON fu.activity_id = a.activity_id
+            JOIN projects p ON a.project_id = p.project_id
+            ORDER BY cr.correction_id DESC
+            LIMIT ?
+        ");
+        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 }
