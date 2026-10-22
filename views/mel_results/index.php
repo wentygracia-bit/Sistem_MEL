@@ -4,7 +4,7 @@ require_once __DIR__ . '/../layouts/header.php';
 
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title"><i class="fa-solid fa-stamp" style="color: var(--primary-dark);"></i> Dokumen Hasil Akhir MEL & Pengesahan Direksi</h2>
+        <h2 class="card-title"><i class="fa-solid fa-stamp" style="color: var(--primary-dark);"></i> Hasil Akhir MEL & Pengesahan Direksi</h2>
         <?php if ($currentUser['role_id'] == 2): // Staf MEL menyusun hasil ?>
             <button onclick="toggleModal('modalCreateMEL')" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> Susun Hasil MEL Baru

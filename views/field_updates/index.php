@@ -142,14 +142,16 @@ require_once __DIR__ . '/../layouts/header.php';
 
         <form action="<?= BASE_URL ?>/field-updates/submit" method="POST" enctype="multipart/form-data">
             <div class="form-group">
-                <label class="form-label">Nama Kegiatan *</label>
-                <input type="text" name="activity_name" class="form-control" placeholder="Masukkan nama kegiatan" required list="activityList">
-                <datalist id="activityList">
+                <label class="form-label">Pilih Kegiatan Terdaftar *</label>
+                <select name="activity_id" id="submit_activity_id" class="form-control" required>
+                    <option value="">-- Pilih Kegiatan Proyek --</option>
                     <?php foreach ($activities as $act): ?>
-                        <option value="<?= htmlspecialchars($act['activity_name']) ?>"><?= htmlspecialchars($act['project_name']) ?></option>
+                        <option value="<?= $act['activity_id'] ?>">
+                            <?= htmlspecialchars($act['activity_name']) ?> (<?= htmlspecialchars($act['project_name']) ?>)
+                        </option>
                     <?php endforeach; ?>
-                </datalist>
-                <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">Ketik langsung nama kegiatan secara manual atau pilih dari saran.</small>
+                </select>
+                <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">Pilih kegiatan yang telah didaftarkan dalam modul Proyek & Kegiatan.</small>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
@@ -199,13 +201,15 @@ require_once __DIR__ . '/../layouts/header.php';
             <input type="hidden" name="update_id" id="edit_update_id">
 
             <div class="form-group">
-                <label class="form-label">Nama Kegiatan *</label>
-                <input type="text" name="activity_name" id="edit_activity_name" class="form-control" placeholder="Masukkan nama kegiatan" required list="activityListEdit">
-                <datalist id="activityListEdit">
+                <label class="form-label">Kegiatan Proyek *</label>
+                <select name="activity_id" id="edit_activity_id" class="form-control" required>
+                    <option value="">-- Pilih Kegiatan Proyek --</option>
                     <?php foreach ($activities as $act): ?>
-                        <option value="<?= htmlspecialchars($act['activity_name']) ?>"><?= htmlspecialchars($act['project_name']) ?></option>
+                        <option value="<?= $act['activity_id'] ?>">
+                            <?= htmlspecialchars($act['activity_name']) ?> (<?= htmlspecialchars($act['project_name']) ?>)
+                        </option>
                     <?php endforeach; ?>
-                </datalist>
+                </select>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
@@ -276,7 +280,12 @@ function toggleModal(modalId) {
 
 function openEditModal(data) {
     document.getElementById('edit_update_id').value = data.update_id || '';
-    document.getElementById('edit_activity_name').value = data.activity_name || '';
+    if (document.getElementById('edit_activity_id')) {
+        document.getElementById('edit_activity_id').value = data.activity_id || '';
+    }
+    if (document.getElementById('edit_activity_name')) {
+        document.getElementById('edit_activity_name').value = data.activity_name || '';
+    }
     document.getElementById('edit_update_date').value = data.update_date || '';
     document.getElementById('edit_realization_value').value = data.realization_value || '';
     document.getElementById('edit_progress_percentage').value = data.progress_percentage || '';

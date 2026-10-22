@@ -9,11 +9,38 @@ require_once __DIR__ . '/../models/Notification.php';
 class EvaluationController {
     public function index(): void {
         AuthHelper::requireRole([2, 3, 4]); // MEL, PL, Direktur
+        $user = AuthHelper::getUser();
+
         $evalModel = new Evaluation();
         $evaluations = $evalModel->getAll(100);
 
-        $user = AuthHelper::getUser();
-        $pageTitle = ($user['role_id'] == 4) ? 'Ringkasan Capaian' : 'Evaluasi Capaian Lapangan';
+        // Ambil data koreksi untuk tab Permintaan Perbaikan pada Staf MEL
+        $corrections = [];
+        if ($user['role_id'] == 2) {
+            $stmt = Database::getConnection()->query("
+                SELECT cr.*, req.name as requested_by_name, assign.name as assigned_to_name,
+                       a.activity_name, p.project_name
+                FROM correction_requests cr
+                JOIN users req ON cr.requested_by = req.user_id
+                JOIN users assign ON cr.assigned_to = assign.user_id
+                JOIN evaluations e ON cr.evaluation_id = e.evaluation_id
+                JOIN field_updates fu ON e.update_id = fu.update_id
+                JOIN activities a ON fu.activity_id = a.activity_id
+                JOIN projects p ON a.project_id = p.project_id
+                ORDER BY cr.correction_id DESC
+            ");
+            $corrections = $stmt->fetchAll();
+        }
+
+        $activeTab = $_GET['tab'] ?? 'evaluasi';
+        if ($user['role_id'] == 2) {
+            $pageTitle = 'Evaluasi & Tindak Lanjut';
+        } elseif ($user['role_id'] == 4) {
+            $pageTitle = 'Ringkasan Capaian';
+        } else {
+            $pageTitle = 'Evaluasi Capaian Lapangan';
+        }
+
         $activeMenu = 'evaluations';
         require_once __DIR__ . '/../views/evaluations/index.php';
     }

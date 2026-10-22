@@ -123,8 +123,155 @@ require_once __DIR__ . '/../layouts/header.php';
             </table>
         </div>
     </div>
+<?php elseif ($currentUser['role_id'] == 2): ?>
+    <!-- Halaman Evaluasi & Tindak Lanjut untuk Role Staf MEL (2 Tab) -->
+    <div style="display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
+        <a href="<?= BASE_URL ?>/evaluations?tab=evaluasi" class="btn <?= ($activeTab ?? 'evaluasi') === 'evaluasi' ? 'btn-primary' : 'btn-secondary' ?> btn-sm" style="display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span>Hasil Evaluasi PL</span>
+            <span class="badge" style="background: <?= ($activeTab ?? 'evaluasi') === 'evaluasi' ? 'rgba(255,255,255,0.25)' : '#e2e8f0' ?>; color: <?= ($activeTab ?? 'evaluasi') === 'evaluasi' ? '#ffffff' : '#475569' ?>; padding: 2px 8px; font-size: 0.75rem;">
+                <?= count($evaluations ?? []) ?>
+            </span>
+        </a>
+        <a href="<?= BASE_URL ?>/evaluations?tab=perbaikan" class="btn <?= ($activeTab ?? 'evaluasi') === 'perbaikan' ? 'btn-primary' : 'btn-secondary' ?> btn-sm" style="display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Permintaan Perbaikan</span>
+            <span class="badge" style="background: <?= ($activeTab ?? 'evaluasi') === 'perbaikan' ? 'rgba(255,255,255,0.25)' : '#e2e8f0' ?>; color: <?= ($activeTab ?? 'evaluasi') === 'perbaikan' ? '#ffffff' : '#475569' ?>; padding: 2px 8px; font-size: 0.75rem;">
+                <?= count($corrections ?? []) ?>
+            </span>
+        </a>
+    </div>
+
+    <?php if (($activeTab ?? 'evaluasi') === 'perbaikan'): ?>
+        <!-- Tab 2: Permintaan Perbaikan untuk Staf MEL -->
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 class="card-title"><i class="fa-solid fa-rotate-left" style="color: var(--primary-dark);"></i> Permintaan Perbaikan & Tindak Lanjut</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Pemantauan permintaan klarifikasi/revisi dari Project Leader dan status respons Staf Lapangan.</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Kegiatan & Proyek</th>
+                            <th>Pemohon (PL)</th>
+                            <th>Ditugaskan ke (Staf)</th>
+                            <th>Tanggal Permintaan</th>
+                            <th>Uraian Catatan Perbaikan</th>
+                            <th>Status Tindak Lanjut</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($corrections)): ?>
+                            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Tidak ada permintaan perbaikan aktif.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($corrections as $c): ?>
+                                <tr>
+                                    <td><strong>#<?= $c['correction_id'] ?></strong></td>
+                                    <td>
+                                        <div style="font-weight: 700; color: #0f172a; max-width: 200px;"><?= htmlspecialchars($c['activity_name']) ?></div>
+                                        <div style="font-size: 0.78rem; color: var(--text-muted);"><?= htmlspecialchars($c['project_name']) ?></div>
+                                    </td>
+                                    <td><?= htmlspecialchars($c['requested_by_name']) ?></td>
+                                    <td><?= htmlspecialchars($c['assigned_to_name']) ?></td>
+                                    <td><?= date('d M Y', strtotime($c['request_date'])) ?></td>
+                                    <td>
+                                        <div style="font-size: 0.85rem; max-width: 250px;"><?= htmlspecialchars($c['description']) ?></div>
+                                    </td>
+                                    <td>
+                                        <?php if ($c['status'] === 'Direspons'): ?>
+                                            <span class="badge badge-success"><i class="fa-solid fa-reply"></i> Direspons</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Diminta</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <a href="<?= BASE_URL ?>/corrections/detail?id=<?= $c['correction_id'] ?>" class="btn btn-secondary btn-sm">
+                                            <i class="fa-solid fa-comments"></i> Rincian & Respons
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php else: ?>
+        <!-- Tab 1: Hasil Evaluasi PL untuk Staf MEL -->
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 class="card-title"><i class="fa-solid fa-scale-balanced" style="color: var(--primary-dark);"></i> Hasil Evaluasi Kinerja (Project Leader)</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Daftar penilaian kesesuaian target indikator yang dilakukan oleh Project Leader sebagai dasar penyusunan hasil MEL.</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID Eval</th>
+                            <th>Kegiatan & Proyek</th>
+                            <th>Indikator Target</th>
+                            <th>Evaluator (PL)</th>
+                            <th>Tanggal Evaluasi</th>
+                            <th>Kesesuaian</th>
+                            <th>Catatan Evaluasi</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($evaluations)): ?>
+                            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada data evaluasi.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($evaluations as $e): ?>
+                                <tr>
+                                    <td><strong>#<?= $e['evaluation_id'] ?></strong></td>
+                                    <td>
+                                        <div style="font-weight: 700; color: #0f172a; max-width: 220px;"><?= htmlspecialchars($e['activity_name']) ?></div>
+                                        <div style="font-size: 0.78rem; color: var(--text-muted);"><?= htmlspecialchars($e['project_name']) ?></div>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 600;"><?= htmlspecialchars($e['indicator_name']) ?></div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);"><?= htmlspecialchars($e['unit']) ?></div>
+                                    </td>
+                                    <td>
+                                        <div><?= htmlspecialchars($e['evaluator_name']) ?></div>
+                                    </td>
+                                    <td>
+                                        <div style="font-size: 0.85rem;"><?= date('d M Y', strtotime($e['evaluation_date'])) ?></div>
+                                    </td>
+                                    <td>
+                                        <?php if ($e['result'] === 'Sesuai'): ?>
+                                            <span class="badge badge-success"><i class="fa-solid fa-check"></i> Sesuai</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-danger"><i class="fa-solid fa-xmark"></i> Tidak Sesuai</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <div style="font-size: 0.85rem; max-width: 260px;"><?= htmlspecialchars($e['notes']) ?></div>
+                                    </td>
+                                    <td>
+                                        <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>" class="btn btn-secondary btn-sm">
+                                            <i class="fa-solid fa-eye"></i> Laporan
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php endif; ?>
 <?php else: ?>
-    <!-- Halaman Evaluasi Kinerja untuk Role Project Leader & Staf MEL -->
+    <!-- Halaman Evaluasi Kinerja untuk Role Project Leader (Tunggal) -->
     <div class="card">
         <div class="card-header">
             <h2 class="card-title"><i class="fa-solid fa-scale-balanced" style="color: var(--primary-dark);"></i> Rekapitulasi Evaluasi Capaian</h2>

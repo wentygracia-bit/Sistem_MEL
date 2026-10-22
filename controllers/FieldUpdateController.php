@@ -55,12 +55,12 @@ class FieldUpdateController {
         AuthHelper::requireLogin();
         $user = AuthHelper::getUser();
 
-        $activityName = trim($_POST['activity_name'] ?? '');
         $activityId = (int)($_POST['activity_id'] ?? 0);
+        $activityName = trim($_POST['activity_name'] ?? '');
 
-        // Resolve or create activity from typed name
+        // Resolve or create activity: prioritize selected activity_id, fallback to typed name if provided
         $activityModel = new Activity();
-        if (!empty($activityName)) {
+        if ($activityId <= 0 && !empty($activityName)) {
             $activityId = $activityModel->findOrCreateByName($activityName);
         }
 
@@ -144,11 +144,14 @@ class FieldUpdateController {
             exit;
         }
 
+        $postedActivityId = (int)($_POST['activity_id'] ?? 0);
         $activityName = trim($_POST['activity_name'] ?? '');
         $activityModel = new Activity();
         $activityId = $existing['activity_id'];
 
-        if (!empty($activityName) && strcasecmp($activityName, $existing['activity_name']) !== 0) {
+        if ($postedActivityId > 0) {
+            $activityId = $postedActivityId;
+        } elseif (!empty($activityName) && strcasecmp($activityName, $existing['activity_name']) !== 0) {
             $activityId = $activityModel->findOrCreateByName($activityName, $existing['project_id'] ?? null);
         }
 
