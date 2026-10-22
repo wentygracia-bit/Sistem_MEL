@@ -43,7 +43,7 @@ class ProjectController {
     }
 
     public function create(): void {
-        AuthHelper::requireRole([2, 3, 4]); // MEL, PL, Direktur
+        AuthHelper::requireRole([2, 4]); // Hanya Staf MEL & Direktur
         $user = AuthHelper::getUser();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {

@@ -5,7 +5,7 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="card">
     <div class="card-header">
         <h2 class="card-title">Daftar Proyek & Program</h2>
-        <?php if (in_array($currentUser['role_id'], [2, 3, 4])): ?>
+        <?php if (in_array($currentUser['role_id'], [2, 4])): // Hanya Staf MEL & Direktur ?>
             <a href="<?= BASE_URL ?>/projects/create" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> Tambah Proyek Baru
             </a>

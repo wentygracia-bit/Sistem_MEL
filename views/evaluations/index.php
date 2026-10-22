@@ -3,58 +3,6 @@ require_once __DIR__ . '/../layouts/header.php';
 ?>
 
 <?php if ($currentUser['role_id'] == 4): ?>
-    <?php
-    $totalEval = count($evaluations);
-    $sesuaiCount = 0;
-    $tidakSesuaiCount = 0;
-    $approvedMelCount = 0;
-    foreach ($evaluations as $item) {
-        if (($item['result'] ?? '') === 'Sesuai') $sesuaiCount++;
-        if (($item['result'] ?? '') === 'Tidak Sesuai') $tidakSesuaiCount++;
-        if (!empty($item['approval_decision']) && $item['approval_decision'] === 'Disetujui') $approvedMelCount++;
-    }
-    ?>
-
-    <!-- Stat Ringkasan Pemantauan Direktur -->
-    <div class="grid-cols-4" style="margin-bottom: 24px;">
-        <div class="stat-card">
-            <div class="stat-icon" style="background-color: #f1f5f9; color: #334155;">
-                <i class="fa-solid fa-clipboard-list"></i>
-            </div>
-            <div>
-                <div class="stat-value"><?= $totalEval ?></div>
-                <div class="stat-label">Total Dievaluasi PL</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="background-color: var(--primary-light); color: #2e4a16;">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color: #2e4a16;"><?= $sesuaiCount ?></div>
-                <div class="stat-label">Capaian Sesuai Target</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="background-color: var(--danger-light); color: var(--danger);">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color: var(--danger);"><?= $tidakSesuaiCount ?></div>
-                <div class="stat-label">Perlu Perbaikan / Tidak Sesuai</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="background-color: var(--warning-light); color: #92400e;">
-                <i class="fa-solid fa-stamp"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color: #92400e;"><?= $approvedMelCount ?></div>
-                <div class="stat-label">Hasil MEL Telah Disahkan</div>
-            </div>
-        </div>
-    </div>
-
     <!-- Tabel Ringkasan Capaian Direktur -->
     <div class="card">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
