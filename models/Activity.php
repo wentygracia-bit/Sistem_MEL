@@ -84,5 +84,32 @@ class Activity {
             'Total'       => (int)($res['total'] ?? 0),
         ];
     }
+
+    public function findOrCreateByName(string $activityName, ?int $projectId = null): int {
+        $trimmedName = trim($activityName);
+        if (empty($trimmedName)) {
+            return 0;
+        }
+
+        // Search for existing activity by name (case-insensitive)
+        $stmt = $this->db->prepare("SELECT activity_id FROM activities WHERE LOWER(TRIM(activity_name)) = LOWER(?) LIMIT 1");
+        $stmt->execute([$trimmedName]);
+        $existingId = $stmt->fetchColumn();
+
+        if ($existingId) {
+            return (int)$existingId;
+        }
+
+        // If not found, create new activity under specified project or first project
+        if (!$projectId || $projectId <= 0) {
+            $projStmt = $this->db->query("SELECT project_id FROM projects ORDER BY project_id ASC LIMIT 1");
+            $projectId = (int)$projStmt->fetchColumn();
+            if (!$projectId) {
+                $projectId = 1;
+            }
+        }
+
+        return $this->create($projectId, $trimmedName, 'Kegiatan dibuat melalui input pelaporan lapangan', 'Lapangan', 'Berjalan');
+    }
 }
 

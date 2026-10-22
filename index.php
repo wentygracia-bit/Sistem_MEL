@@ -90,6 +90,14 @@ switch ($path) {
         (new FieldUpdateController())->submit();
         break;
 
+    case '/field-updates/edit':
+        (new FieldUpdateController())->edit();
+        break;
+
+    case '/field-updates/delete':
+        (new FieldUpdateController())->delete();
+        break;
+
     case '/evaluations':
         (new EvaluationController())->index();
         break;

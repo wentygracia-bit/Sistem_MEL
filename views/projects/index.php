@@ -19,7 +19,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     <th>Kode Proyek</th>
                     <th>Nama Proyek & Deskripsi</th>
                     <th>Periode</th>
-                    <th>Kegiatan</th>
+                    <th class="text-center">Kegiatan</th>
                     <th>Status Proyek</th>
                     <th>Visibilitas Publik</th>
                     <th>Aksi</th>
@@ -44,7 +44,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                     <?= $p['end_date'] ? date('d/m/Y', strtotime($p['end_date'])) : '-' ?>
                                 </div>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <span class="badge badge-info"><?= $p['total_activities'] ?> Kegiatan</span>
                             </td>
                             <td>

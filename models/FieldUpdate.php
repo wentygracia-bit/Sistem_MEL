@@ -77,8 +77,53 @@ class FieldUpdate {
         }
     }
 
-    public function updateStatus(int $updateId, string $status): bool {
-        $stmt = $this->db->prepare("UPDATE field_updates SET status = ? WHERE update_id = ?");
-        return $stmt->execute([$status, $updateId]);
+    public function search(string $keyword, int $limit = 50): array {
+        $term = '%' . trim($keyword) . '%';
+        $stmt = $this->db->prepare("
+            SELECT fu.*, u.name as reporter_name, a.activity_name, p.project_name
+            FROM field_updates fu
+            JOIN users u ON fu.user_id = u.user_id
+            JOIN activities a ON fu.activity_id = a.activity_id
+            JOIN projects p ON a.project_id = p.project_id
+            WHERE a.activity_name LIKE ?
+               OR p.project_name LIKE ?
+               OR u.name LIKE ?
+               OR fu.description LIKE ?
+               OR fu.status LIKE ?
+            ORDER BY fu.update_id DESC
+            LIMIT ?
+        ");
+        $stmt->bindValue(1, $term, PDO::PARAM_STR);
+        $stmt->bindValue(2, $term, PDO::PARAM_STR);
+        $stmt->bindValue(3, $term, PDO::PARAM_STR);
+        $stmt->bindValue(4, $term, PDO::PARAM_STR);
+        $stmt->bindValue(5, $term, PDO::PARAM_STR);
+        $stmt->bindValue(6, $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function updateFull(int $updateId, int $activityId, string $updateDate, ?string $description, ?float $realizationValue, ?float $progressPercentage, ?string $evidenceFile): bool {
+        if ($evidenceFile !== null) {
+            $stmt = $this->db->prepare("
+                UPDATE field_updates
+                SET activity_id = ?, update_date = ?, description = ?, realization_value = ?, progress_percentage = ?, evidence_file = ?
+                WHERE update_id = ?
+            ");
+            return $stmt->execute([$activityId, $updateDate, $description, $realizationValue, $progressPercentage, $evidenceFile, $updateId]);
+        } else {
+            $stmt = $this->db->prepare("
+                UPDATE field_updates
+                SET activity_id = ?, update_date = ?, description = ?, realization_value = ?, progress_percentage = ?
+                WHERE update_id = ?
+            ");
+            return $stmt->execute([$activityId, $updateDate, $description, $realizationValue, $progressPercentage, $updateId]);
+        }
+    }
+
+    public function delete(int $updateId): bool {
+        $stmt = $this->db->prepare("DELETE FROM field_updates WHERE update_id = ?");
+        return $stmt->execute([$updateId]);
     }
 }
+

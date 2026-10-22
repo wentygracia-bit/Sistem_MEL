@@ -53,7 +53,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                     <tr>
                         <th>Kode</th>
                         <th>Nama Proyek</th>
-                        <th>Kegiatan</th>
+                        <th class="text-center">Kegiatan</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -69,7 +69,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                                     <div style="font-weight: 600;"><?= htmlspecialchars($prj['project_name']) ?></div>
                                     <div style="font-size: 0.75rem; color: var(--text-muted);"><?= htmlspecialchars($prj['creator_name'] ?? 'YNKI') ?></div>
                                 </td>
-                                <td><span class="badge badge-info"><?= $prj['total_activities'] ?> Kegiatan</span></td>
+                                <td class="text-center"><span class="badge badge-info"><?= $prj['total_activities'] ?> Kegiatan</span></td>
                                 <td><span class="badge badge-success"><?= htmlspecialchars($prj['status']) ?></span></td>
                                 <td>
                                     <a href="<?= BASE_URL ?>/projects/detail?id=<?= $prj['project_id'] ?>" class="btn btn-secondary btn-sm">

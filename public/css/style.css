@@ -581,6 +581,15 @@ a {
     vertical-align: middle;
 }
 
+.table th.text-center,
+.table td.text-center {
+    text-align: center;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
 .table tbody tr:hover {
     background-color: #f8fafc;
 }

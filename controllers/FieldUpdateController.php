@@ -12,7 +12,13 @@ class FieldUpdateController {
         AuthHelper::requireLogin();
         $user = AuthHelper::getUser();
         $updateModel = new FieldUpdate();
-        $updates = $updateModel->getAll(100);
+
+        $search = trim($_GET['search'] ?? '');
+        if ($search !== '') {
+            $updates = $updateModel->search($search, 100);
+        } else {
+            $updates = $updateModel->getAll(100);
+        }
 
         $activityModel = new Activity();
         $activities = $activityModel->getAllWithSummary();
@@ -49,7 +55,15 @@ class FieldUpdateController {
         AuthHelper::requireLogin();
         $user = AuthHelper::getUser();
 
+        $activityName = trim($_POST['activity_name'] ?? '');
         $activityId = (int)($_POST['activity_id'] ?? 0);
+
+        // Resolve or create activity from typed name
+        $activityModel = new Activity();
+        if (!empty($activityName)) {
+            $activityId = $activityModel->findOrCreateByName($activityName);
+        }
+
         $updateDate = $_POST['update_date'] ?? date('Y-m-d');
         $realizationValue = !empty($_POST['realization_value']) ? (float)$_POST['realization_value'] : 0.0;
         $progressPercentage = !empty($_POST['progress_percentage']) ? (float)$_POST['progress_percentage'] : 0.0;
@@ -84,7 +98,6 @@ class FieldUpdateController {
 
             // Notify Project Leader & MEL Staff
             $projectModel = new Project();
-            $activityModel = new Activity();
             $act = $activityModel->findById($activityId);
             $notifModel = new Notification();
             if ($act) {
@@ -101,12 +114,130 @@ class FieldUpdateController {
                 }
             }
 
-            AuthHelper::setFlash('success', 'Laporan lapangan berhasil dikirim.');
+            AuthHelper::setFlash('success', 'Laporan lapangan berhasil disimpan.');
         } else {
-            AuthHelper::setFlash('error', 'Kegiatan dan deskripsi laporan wajib diisi.');
+            AuthHelper::setFlash('error', 'Nama kegiatan dan deskripsi laporan wajib diisi.');
+        }
+
+        header('Location: ' . BASE_URL . '/field-updates');
+        exit;
+    }
+
+    public function edit(): void {
+        AuthHelper::requireLogin();
+        $user = AuthHelper::getUser();
+        $updateId = (int)($_POST['update_id'] ?? 0);
+
+        $updateModel = new FieldUpdate();
+        $existing = $updateModel->findById($updateId);
+
+        if (!$existing) {
+            AuthHelper::setFlash('error', 'Data pelaporan tidak ditemukan.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        // Access check: Only the reporter or MEL Staff/Admin (role 2) or PL (role 3) can edit
+        if ($existing['user_id'] != $user['user_id'] && !in_array($user['role_id'], [2, 3])) {
+            AuthHelper::setFlash('error', 'Anda tidak memiliki hak akses untuk mengubah laporan ini.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        $activityName = trim($_POST['activity_name'] ?? '');
+        $activityModel = new Activity();
+        $activityId = $existing['activity_id'];
+
+        if (!empty($activityName) && strcasecmp($activityName, $existing['activity_name']) !== 0) {
+            $activityId = $activityModel->findOrCreateByName($activityName, $existing['project_id'] ?? null);
+        }
+
+        $updateDate = $_POST['update_date'] ?? $existing['update_date'];
+        $realizationValue = isset($_POST['realization_value']) && $_POST['realization_value'] !== '' ? (float)$_POST['realization_value'] : 0.0;
+        $progressPercentage = isset($_POST['progress_percentage']) && $_POST['progress_percentage'] !== '' ? (float)$_POST['progress_percentage'] : 0.0;
+        $progressPercentage = max(0.0, min(100.0, $progressPercentage));
+        $description = trim($_POST['description'] ?? '');
+
+        if (empty($description)) {
+            AuthHelper::setFlash('error', 'Deskripsi laporan wajib diisi.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        $evidenceFileName = null;
+        if (isset($_FILES['evidence_file']) && $_FILES['evidence_file']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../public/uploads/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $ext = pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION);
+            $fileName = 'evidence_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            if (move_uploaded_file($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
+                $evidenceFileName = $fileName;
+            }
+        }
+
+        $success = $updateModel->updateFull(
+            $updateId,
+            $activityId,
+            $updateDate,
+            $description,
+            $realizationValue,
+            $progressPercentage,
+            $evidenceFileName
+        );
+
+        if ($success) {
+            AuthHelper::setFlash('success', 'Data laporan lapangan #' . $updateId . ' berhasil diperbarui.');
+        } else {
+            AuthHelper::setFlash('error', 'Gagal memperbarui data laporan lapangan.');
+        }
+
+        header('Location: ' . BASE_URL . '/field-updates');
+        exit;
+    }
+
+    public function delete(): void {
+        AuthHelper::requireLogin();
+        $user = AuthHelper::getUser();
+        $updateId = (int)($_POST['update_id'] ?? 0);
+
+        $updateModel = new FieldUpdate();
+        $existing = $updateModel->findById($updateId);
+
+        if (!$existing) {
+            AuthHelper::setFlash('error', 'Data pelaporan tidak ditemukan.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        // Access check: only reporter or role 2/3 can delete
+        if ($existing['user_id'] != $user['user_id'] && !in_array($user['role_id'], [2, 3])) {
+            AuthHelper::setFlash('error', 'Anda tidak memiliki hak akses untuk menghapus laporan ini.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        try {
+            $deleted = $updateModel->delete($updateId);
+            if ($deleted) {
+                // Delete evidence file if exists
+                if (!empty($existing['evidence_file'])) {
+                    $filePath = __DIR__ . '/../public/uploads/' . $existing['evidence_file'];
+                    if (file_exists($filePath)) {
+                        @unlink($filePath);
+                    }
+                }
+                AuthHelper::setFlash('success', 'Laporan lapangan #' . $updateId . ' berhasil dihapus.');
+            } else {
+                AuthHelper::setFlash('error', 'Gagal menghapus laporan lapangan.');
+            }
+        } catch (PDOException $e) {
+            AuthHelper::setFlash('error', 'Laporan tidak dapat dihapus karena terkait dengan data evaluasi atau hasil MEL.');
         }
 
         header('Location: ' . BASE_URL . '/field-updates');
         exit;
     }
 }
+
