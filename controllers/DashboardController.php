@@ -47,7 +47,59 @@ class DashboardController {
             return;
         }
 
-        // Role lainnya (Staf Lapangan, Staf MEL, Project Leader)
+        // Khusus Role Staf Lapangan (role_id = 1)
+        if ((int)$user['role_id'] === 1) {
+            $fieldActivities = $activityModel->getActivitiesForUser($user['user_id'], 1);
+            $fieldStats = $updateModel->getStatsForUser($user['user_id']);
+            $activeCorrectionsCount = $correctionModel->countActiveForUser($user['user_id']);
+
+            // Calculate 4 KPI Cards for Field Staff:
+            // 1. Total Kegiatan
+            $totalAssignedActivities = count($fieldActivities);
+            // 2. Kegiatan Sedang Berjalan
+            $runningActivitiesCount = 0;
+            // 3. Laporan Belum Dikirim (Draft)
+            $draftReportsCount = $fieldStats['draft'];
+            // 4. Permintaan Revisi
+            $pendingRevisionsCount = $activeCorrectionsCount;
+
+            $upcomingDeadlines = [];
+            $today = date('Y-m-d');
+
+            foreach ($fieldActivities as $fa) {
+                if ($fa['status'] === 'Berjalan' || $fa['display_status'] === 'Berjalan') {
+                    $runningActivitiesCount++;
+                }
+                if (!empty($fa['end_date']) && $fa['status'] !== 'Selesai') {
+                    $diffDays = (strtotime($fa['end_date']) - strtotime($today)) / 86400;
+                    if ($diffDays <= 14) { // deadline dalam 2 minggu atau sudah lewat
+                        $upcomingDeadlines[] = [
+                            'activity_id'   => $fa['activity_id'],
+                            'activity_name' => $fa['activity_name'],
+                            'project_name'  => $fa['project_name'],
+                            'end_date'      => $fa['end_date'],
+                            'diff_days'     => (int)$diffDays,
+                            'status'        => $fa['display_status'],
+                        ];
+                    }
+                }
+            }
+
+            // Limit 3-5 activities for progress section
+            $topActivities = array_slice($fieldActivities, 0, 5);
+
+            // Recent Activities from user's reports & notifications
+            $recentStaffUpdates = $updateModel->getAllForUser($user['user_id'], 1, 5);
+            $recentNotifications = $notifModel->getForUser($user['user_id'], 5);
+
+            $pageTitle = 'Dashboard Staf Lapangan';
+            $activeMenu = 'dashboard';
+
+            require_once __DIR__ . '/../views/dashboard/field_staff.php';
+            return;
+        }
+
+        // Role lainnya (Staf MEL, Project Leader)
         $projects = $projectModel->getProjectsForUser($user['user_id'], $user['role_id']);
         $recentUpdates = $updateModel->getAll(5);
         $recentCorrections = $correctionModel->getForUser($user['user_id']);

@@ -151,8 +151,8 @@ $indModel = new Indicator();
         <p style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada kegiatan yang didaftarkan pada proyek ini.</p>
     <?php else: ?>
         <?php foreach ($activities as $act): ?>
-            <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; background: #ffffff;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div id="act-<?= $act['activity_id'] ?>" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; background: #ffffff;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
                     <div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <h3 style="font-size: 1.1rem; font-weight: 700; color: #1e293b;"><?= htmlspecialchars($act['activity_name']) ?></h3>
@@ -166,6 +166,15 @@ $indModel = new Indicator();
                             <?php endif; ?>
                         </div>
                         <p style="font-size: 0.88rem; color: #334155; margin-top: 8px;"><?= nl2br(htmlspecialchars($act['description'] ?? '')) ?></p>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <a href="<?= BASE_URL ?>/field-updates?search=<?= urlencode($act['activity_name']) ?>" class="btn btn-secondary btn-sm" title="Lihat Laporan Terkait">
+                            <i class="fa-solid fa-file-lines"></i> Riwayat Laporan
+                        </a>
+                        <a href="<?= BASE_URL ?>/field-updates" class="btn btn-primary btn-sm" title="Input Laporan untuk Kegiatan Ini">
+                            <i class="fa-solid fa-plus"></i> Input Laporan
+                        </a>
                     </div>
                 </div>
 

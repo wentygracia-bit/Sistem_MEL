@@ -11,9 +11,27 @@ class ProjectController {
         AuthHelper::requireLogin();
         $user = AuthHelper::getUser();
         $projectModel = new Project();
+        $activityModel = new Activity();
+
         $projects = $projectModel->getProjectsForUser($user['user_id'], $user['role_id']);
 
-        $pageTitle = 'Daftar Proyek & Program';
+        // Data khusus untuk Staf Lapangan (Role 1): Daftar Kegiatan Terperinci
+        $search = trim($_GET['search'] ?? '');
+        $statusFilter = trim($_GET['status'] ?? '');
+        $projectIdFilter = !empty($_GET['project_id']) ? (int)$_GET['project_id'] : null;
+
+        $fieldActivities = [];
+        if ($user['role_id'] == 1) {
+            $fieldActivities = $activityModel->getActivitiesForUser(
+                $user['user_id'],
+                1,
+                $search !== '' ? $search : null,
+                $statusFilter !== '' ? $statusFilter : null,
+                $projectIdFilter
+            );
+        }
+
+        $pageTitle = 'Proyek & Kegiatan';
         $activeMenu = 'projects';
         require_once __DIR__ . '/../views/projects/index.php';
     }
