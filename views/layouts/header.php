@@ -80,7 +80,6 @@ $activeMenu = $activeMenu ?? 'dashboard';
                     </a>
                     <?php endif; ?>
 
-<<<<<<< HEAD
                 <?php if ($currentUser['role_id'] == 2): // Khusus Staf MEL ?>
                 <div class="nav-label">Operasional MEL</div>
                 <a href="<?= BASE_URL ?>/field-updates" class="nav-link <?= $activeMenu === 'field-updates' ? 'active' : '' ?>" title="Pelaporan Lapangan">
@@ -93,9 +92,9 @@ $activeMenu = $activeMenu ?? 'dashboard';
                 </a>
                 <a href="<?= BASE_URL ?>/mel-results" class="nav-link <?= $activeMenu === 'mel-results' ? 'active' : '' ?>" title="Hasil MEL & Pengesahan">
                     <i class="fa-solid fa-stamp"></i>
-                    <span class="nav-text"> MEL</span>
+                    <span class="nav-text">Hasil MEL</span>
                 </a>
-                <?php else: // Peran lainnya (Staf Lapangan, Project Leader, Direktur) ?>
+                <?php else: // Peran lainnya (Project Leader, Direktur) ?>
                 <div class="nav-label">Operasional MEL</div>
                 <?php if ($currentUser['role_id'] != 4): // Bukan Direktur ?>
                 <a href="<?= BASE_URL ?>/field-updates" class="nav-link <?= $activeMenu === 'field-updates' ? 'active' : '' ?>" title="Pelaporan Lapangan">
@@ -125,36 +124,6 @@ $activeMenu = $activeMenu ?? 'dashboard';
                 </a>
                 <?php endif; ?>
                 <?php endif; ?>
-=======
-                    <div class="nav-label">Operasional MEL</div>
-                    <?php if ($currentUser['role_id'] != 4): // Bukan Direktur ?>
-                    <a href="<?= BASE_URL ?>/field-updates" class="nav-link <?= $activeMenu === 'field-updates' ? 'active' : '' ?>" title="Pelaporan Lapangan">
-                        <i class="fa-solid fa-clipboard-check"></i>
-                        <span class="nav-text">Pelaporan Lapangan</span>
-                    </a>
-                    <?php endif; ?>
-                    
-                    <?php if (in_array($currentUser['role_id'], [2, 3, 4])): // MEL, PL, Direktur ?>
-                    <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= $activeMenu === 'evaluations' ? 'active' : '' ?>" title="<?= $currentUser['role_id'] == 4 ? 'Ringkasan Capaian' : 'Evaluasi Kinerja' ?>">
-                        <i class="fa-solid <?= $currentUser['role_id'] == 4 ? 'fa-chart-line' : 'fa-scale-balanced' ?>"></i>
-                        <span class="nav-text"><?= $currentUser['role_id'] == 4 ? 'Ringkasan Capaian' : 'Evaluasi Kinerja' ?></span>
-                    </a>
-                    <?php endif; ?>
-
-                    <?php if ($currentUser['role_id'] != 4): // Bukan Direktur ?>
-                    <a href="<?= BASE_URL ?>/corrections" class="nav-link <?= $activeMenu === 'corrections' ? 'active' : '' ?>" title="Permintaan Perbaikan">
-                        <i class="fa-solid fa-rotate-left"></i>
-                        <span class="nav-text">Permintaan Perbaikan</span>
-                    </a>
-                    <?php endif; ?>
-
-                    <?php if (in_array($currentUser['role_id'], [2, 4])): // MEL, Direktur ?>
-                    <a href="<?= BASE_URL ?>/mel-results" class="nav-link <?= $activeMenu === 'mel-results' ? 'active' : '' ?>" title="Verifikasi MEL">
-                        <i class="fa-solid fa-stamp"></i>
-                        <span class="nav-text">Verifikasi MEL</span>
-                    </a>
-                    <?php endif; ?>
->>>>>>> a26196046460ab19fc394a2f0a8016c62d2d298b
 
                     <div class="nav-label">Informasi & Utilitas</div>
                     <a href="<?= BASE_URL ?>/notifications" class="nav-link <?= $activeMenu === 'notifications' ? 'active' : '' ?>" title="Notifikasi & Reminder">

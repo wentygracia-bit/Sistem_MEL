@@ -32,6 +32,72 @@ class EvaluationController {
             $corrections = $stmt->fetchAll();
         }
 
+        // Khusus Role Project Leader (role_id = 3): Ambil dan sediakan fitur pencarian laporan lapangan
+        $fieldUpdates = [];
+        $searchKeyword = trim($_GET['search'] ?? '');
+        $statusFilter = trim($_GET['status'] ?? '');
+        if ((int)$user['role_id'] === 3) {
+            $db = Database::getConnection();
+            $params = [];
+            $where = [];
+
+            // Project Leader melihat laporan proyek di mana ia adalah creator atau member
+            $where[] = "(p.created_by = ? OR p.project_id IN (SELECT project_id FROM project_members WHERE user_id = ?))";
+            $params[] = (int)$user['user_id'];
+            $params[] = (int)$user['user_id'];
+
+            // Pencarian nama pelapor, nama proyek, kode proyek, nama kegiatan, atau tanggal laporan
+            if (!empty($searchKeyword)) {
+                $term = '%' . $searchKeyword . '%';
+                $where[] = "(
+                    u.name LIKE ?
+                    OR p.project_name LIKE ?
+                    OR p.project_code LIKE ?
+                    OR a.activity_name LIKE ?
+                    OR DATE_FORMAT(fu.update_date, '%Y-%m-%d') LIKE ?
+                    OR DATE_FORMAT(fu.update_date, '%d-%m-%Y') LIKE ?
+                    OR DATE_FORMAT(fu.update_date, '%d/%m/%Y') LIKE ?
+                    OR DATE_FORMAT(fu.update_date, '%d %M %Y') LIKE ?
+                )";
+                $params[] = $term;
+                $params[] = $term;
+                $params[] = $term;
+                $params[] = $term;
+                $params[] = $term;
+                $params[] = $term;
+                $params[] = $term;
+                $params[] = $term;
+            }
+
+            if (!empty($statusFilter)) {
+                $where[] = "fu.status = ?";
+                $params[] = $statusFilter;
+            }
+
+            $whereSql = implode(' AND ', $where);
+
+            $sql = "
+                SELECT fu.*, 
+                       u.name as reporter_name, 
+                       u.email as reporter_email,
+                       a.activity_name, 
+                       p.project_name, 
+                       p.project_code,
+                       (SELECT COUNT(*) FROM evaluations e WHERE e.update_id = fu.update_id) as evaluation_count,
+                       (SELECT e.result FROM evaluations e WHERE e.update_id = fu.update_id ORDER BY e.evaluation_id DESC LIMIT 1) as latest_eval_result
+                FROM field_updates fu
+                JOIN users u ON fu.user_id = u.user_id
+                JOIN activities a ON fu.activity_id = a.activity_id
+                JOIN projects p ON a.project_id = p.project_id
+                WHERE {$whereSql}
+                ORDER BY fu.update_id DESC
+            ";
+
+            $stmt = $db->prepare($sql);
+            $stmt->execute($params);
+            $fieldUpdates = $stmt->fetchAll();
+        }
+
         $activeTab = $_GET['tab'] ?? 'evaluasi';
         if ($user['role_id'] == 2) {
             $pageTitle = 'Evaluasi & Tindak Lanjut';

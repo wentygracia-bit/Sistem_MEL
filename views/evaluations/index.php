@@ -271,10 +271,143 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     <?php endif; ?>
 <?php else: ?>
-    <!-- Halaman Evaluasi Kinerja untuk Role Project Leader (Tunggal) -->
+    <!-- Halaman Evaluasi Kinerja untuk Role Project Leader -->
+    <!-- 1. Fitur Pencarian & Pemantauan Laporan Lapangan Masuk -->
+    <div class="card" style="margin-bottom: 24px;">
+        <div class="card-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
+            <div>
+                <h2 class="card-title"><i class="fa-solid fa-magnifying-glass-chart" style="color: var(--primary-dark);"></i> Pencarian & Pemantauan Laporan Lapangan</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Cari, temukan, dan evaluasi laporan lapangan yang telah dikirim oleh pelapor untuk proyek di bawah kewenangan Anda.</p>
+            </div>
+            
+            <!-- Form Pencarian Laporan Lapangan -->
+            <form action="<?= BASE_URL ?>/evaluations" method="GET" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <div style="position: relative;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem;"></i>
+                    <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" placeholder="Cari nama pelapor, proyek, atau kegiatan..." class="form-control" style="padding-left: 32px; width: 320px; height: 38px;">
+                </div>
+
+                <select name="status" class="form-control" style="width: 170px; height: 38px;" onchange="this.form.submit()">
+                    <option value="">-- Semua Status --</option>
+                    <option value="Diajukan" <?= (isset($_GET['status']) && $_GET['status'] === 'Diajukan') ? 'selected' : '' ?>>Diajukan (Perlu Evaluasi)</option>
+                    <option value="Dievaluasi" <?= (isset($_GET['status']) && $_GET['status'] === 'Dievaluasi') ? 'selected' : '' ?>>Dievaluasi / Sesuai</option>
+                    <option value="Perlu Perbaikan" <?= (isset($_GET['status']) && $_GET['status'] === 'Perlu Perbaikan') ? 'selected' : '' ?>>Perlu Perbaikan</option>
+                    <option value="Draft" <?= (isset($_GET['status']) && $_GET['status'] === 'Draft') ? 'selected' : '' ?>>Draft</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary btn-sm" style="height: 38px;" title="Cari Laporan">
+                    <i class="fa-solid fa-magnifying-glass"></i> Cari
+                </button>
+
+                <?php if (!empty($_GET['search']) || !empty($_GET['status'])): ?>
+                    <a href="<?= BASE_URL ?>/evaluations" class="btn btn-secondary btn-sm" style="height: 38px; display: inline-flex; align-items: center;" title="Reset Pencarian">
+                        <i class="fa-solid fa-xmark"></i> Reset
+                    </a>
+                <?php endif; ?>
+            </form>
+        </div>
+
+        <?php if (!empty($_GET['search']) || !empty($_GET['status'])): ?>
+            <div style="padding: 10px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; color: #475569;">
+                Hasil pencarian untuk: 
+                <?php if (!empty($_GET['search'])): ?><strong>"<?= htmlspecialchars($_GET['search']) ?>"</strong><?php endif; ?>
+                <?php if (!empty($_GET['status'])): ?><span class="badge badge-info" style="margin-left: 6px;">Status: <?= htmlspecialchars($_GET['status']) ?></span><?php endif; ?>
+                &bull; Ditemukan <strong><?= count($fieldUpdates ?? []) ?></strong> laporan.
+            </div>
+        <?php endif; ?>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tgl Lapor</th>
+                        <th>Pelapor</th>
+                        <th>Proyek & Kode</th>
+                        <th>Nama Kegiatan</th>
+                        <th>Realisasi & Progres</th>
+                        <th>Status</th>
+                        <th style="text-align: center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($fieldUpdates)): ?>
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 35px 20px;">
+                                <i class="fa-solid fa-folder-open" style="font-size: 2rem; color: #cbd5e1; display: block; margin-bottom: 8px;"></i>
+                                Tidak ditemukan laporan lapangan yang sesuai kriteria pencarian.
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($fieldUpdates as $fu): ?>
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; font-size: 0.85rem; color: #0f172a;">
+                                        <?= date('d M Y', strtotime($fu['update_date'])) ?>
+                                    </div>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted);">
+                                        #<?= $fu['update_id'] ?>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 700; color: #1e330c;"><?= htmlspecialchars($fu['reporter_name']) ?></div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);"><?= htmlspecialchars($fu['reporter_email'] ?? '') ?></div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600; font-size: 0.85rem; color: #0f172a; max-width: 200px;"><?= htmlspecialchars($fu['project_name']) ?></div>
+                                    <span style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted); font-weight: 600;"><?= htmlspecialchars($fu['project_code']) ?></span>
+                                </td>
+                                <td>
+                                    <div style="font-size: 0.85rem; font-weight: 600; max-width: 240px; color: #334155;">
+                                        <?= htmlspecialchars($fu['activity_name']) ?>
+                                    </div>
+                                    <?php if (!empty($fu['description'])): ?>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">
+                                            <?= htmlspecialchars($fu['description']) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong style="color: #1e330c; font-size: 0.9rem;"><?= number_format((float)($fu['realization_value'] ?? 0), 0, ',', '.') ?></strong>
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                        Progres: <strong><?= (float)($fu['progress_percentage'] ?? 0) ?>%</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <?php if ($fu['status'] === 'Dievaluasi'): ?>
+                                        <span class="badge badge-success"><i class="fa-solid fa-check"></i> Dievaluasi</span>
+                                    <?php elseif ($fu['status'] === 'Perlu Perbaikan'): ?>
+                                        <span class="badge badge-danger"><i class="fa-solid fa-triangle-exclamation"></i> Perlu Perbaikan</span>
+                                    <?php elseif ($fu['status'] === 'Draft'): ?>
+                                        <span class="badge" style="background: #f1f5f9; color: #475569;"><i class="fa-solid fa-pen-ruler"></i> Draft</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Diajukan</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td style="text-align: center;">
+                                    <div style="display: inline-flex; gap: 6px;">
+                                        <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $fu['update_id'] ?>" class="btn <?= $fu['status'] === 'Diajukan' ? 'btn-primary' : 'btn-secondary' ?> btn-sm" style="white-space: nowrap;">
+                                            <i class="fa-solid <?= $fu['status'] === 'Diajukan' ? 'fa-scale-balanced' : 'fa-eye' ?>"></i>
+                                            <?= $fu['status'] === 'Diajukan' ? 'Evaluasi' : 'Detail' ?>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. Rekapitulasi Evaluasi Capaian yang Pernah Diberikan -->
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title"><i class="fa-solid fa-scale-balanced" style="color: var(--primary-dark);"></i> Rekapitulasi Evaluasi Capaian</h2>
+            <div>
+                <h2 class="card-title"><i class="fa-solid fa-scale-balanced" style="color: var(--primary-dark);"></i> Riwayat Evaluasi Kinerja (Project Leader)</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Daftar penilaian kesesuaian target indikator yang telah selesai dievaluasi.</p>
+            </div>
         </div>
 
         <div class="table-responsive">

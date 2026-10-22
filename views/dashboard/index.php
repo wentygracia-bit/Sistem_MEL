@@ -4,7 +4,79 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
 
 ?>
 
-<!-- KPI Stats Grid -->
+<?php if ((int)$currentUser['role_id'] === 3 && !empty($plStats)): ?>
+<!-- 4 KPI Cards Khusus Project Leader (Mencerminkan Tanggung Jawab PL) -->
+<div class="grid-cols-4" style="margin-bottom: 24px;">
+    <!-- 1. Proyek Aktif -->
+    <a href="<?= BASE_URL ?>/projects" style="text-decoration: none; color: inherit;">
+        <div class="stat-card" style="border-left: 5px solid #2e4a16; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
+            <div class="stat-icon" style="background: rgba(43, 107, 43, 0.12); color: #2e4a16;">
+                <i class="fa-solid fa-folder-tree"></i>
+            </div>
+            <div>
+                <div class="stat-value" style="color: #2e4a16;"><?= number_format($plStats['active_projects'], 0, ',', '.') ?></div>
+                <div class="stat-label" style="font-weight: 600; color: #1e293b;">Proyek Aktif</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                    Dari total <?= $plStats['total_projects'] ?> proyek kewenangan PL
+                </div>
+            </div>
+        </div>
+    </a>
+
+    <!-- 2. Progres Kegiatan -->
+    <a href="<?= BASE_URL ?>/projects" style="text-decoration: none; color: inherit;">
+        <div class="stat-card" style="border-left: 5px solid #0284c7; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
+            <div class="stat-icon" style="background: rgba(2, 132, 199, 0.12); color: #0284c7;">
+                <i class="fa-solid fa-bars-progress"></i>
+            </div>
+            <div>
+                <div class="stat-value" style="color: #0284c7;"><?= $plStats['avg_progress'] ?>%</div>
+                <div class="stat-label" style="font-weight: 600; color: #1e293b;">Progres Kegiatan</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                    Rata-rata <?= $plStats['total_activities'] ?> kegiatan teragregasi unik
+                </div>
+            </div>
+        </div>
+    </a>
+
+    <!-- 3. Laporan Tindak Lanjut -->
+    <a href="<?= BASE_URL ?>/field-updates?status=Diajukan" style="text-decoration: none; color: inherit;">
+        <div class="stat-card" style="border-left: 5px solid #eab308; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; <?= $plStats['pending_review_reports'] > 0 ? 'background: #fefce8;' : '' ?>">
+            <div class="stat-icon" style="background: rgba(234, 179, 8, 0.14); color: #a16207;">
+                <i class="fa-solid fa-clipboard-check"></i>
+            </div>
+            <div>
+                <div class="stat-value" style="color: <?= $plStats['pending_review_reports'] > 0 ? '#a16207' : '#1e293b' ?>;">
+                    <?= number_format($plStats['pending_review_reports'], 0, ',', '.') ?>
+                </div>
+                <div class="stat-label" style="font-weight: 600; color: #1e293b;">Laporan Tindak Lanjut</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                    Menunggu evaluasi kesesuaian target
+                </div>
+            </div>
+        </div>
+    </a>
+
+    <!-- 4. Perlu Perbaikan -->
+    <a href="<?= BASE_URL ?>/field-updates?status=Perlu+Perbaikan" style="text-decoration: none; color: inherit;">
+        <div class="stat-card" style="border-left: 5px solid #dc2626; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; <?= $plStats['total_attention'] > 0 ? 'background: #fff5f5;' : '' ?>">
+            <div class="stat-icon" style="background: rgba(220, 38, 38, 0.12); color: #dc2626;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <div class="stat-value" style="color: <?= $plStats['total_attention'] > 0 ? '#dc2626' : '#1e293b' ?>;">
+                    <?= number_format($plStats['total_attention'], 0, ',', '.') ?>
+                </div>
+                <div class="stat-label" style="font-weight: 600; color: #1e293b;">Perlu Perbaikan</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                    <?= $plStats['needs_correction_reports'] ?> laporan revisi &bull; <?= $plStats['delayed_activities'] ?> kegiatan terlambat
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+<?php else: ?>
+<!-- KPI Stats Grid Standar (Staf MEL) -->
 <div class="grid-cols-4">
     <div class="stat-card">
         <div class="stat-icon"><i class="fa-solid fa-folder"></i></div>
@@ -35,6 +107,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
         </div>
     </div>
 </div>
+<?php endif; ?>
 
 <div class="grid-cols-2">
     <!-- Projects Section -->

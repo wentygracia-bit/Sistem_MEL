@@ -202,10 +202,6 @@ class FieldUpdateController {
             header('Location: ' . BASE_URL . '/field-updates');
             exit;
         }
-
-<<<<<<< HEAD
-        $postedActivityId = (int)($_POST['activity_id'] ?? 0);
-=======
         // Status check: if already 'Dievaluasi', Field Staff cannot edit arbitrarily
         if ($existing['status'] === 'Dievaluasi' && $user['role_id'] == 1) {
             AuthHelper::setFlash('error', 'Laporan yang telah diverifikasi dan disetujui tidak dapat diedit kembali.');
@@ -213,7 +209,7 @@ class FieldUpdateController {
             exit;
         }
 
->>>>>>> a26196046460ab19fc394a2f0a8016c62d2d298b
+        $postedActivityId = (int)($_POST['activity_id'] ?? 0);
         $activityName = trim($_POST['activity_name'] ?? '');
         $activityModel = new Activity();
         $activityId = $existing['activity_id'];

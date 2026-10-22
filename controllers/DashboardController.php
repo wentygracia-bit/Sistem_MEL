@@ -105,7 +105,129 @@ class DashboardController {
         $recentCorrections = $correctionModel->getForUser($user['user_id']);
         $melResults = $melResultModel->getAll();
 
-        $pageTitle = 'Dashboard Ringkasan';
+        // Khusus Role Project Leader (role_id = 3): Siapkan 4 KPI Card spesifik
+        $plStats = [];
+        if ((int)$user['role_id'] === 3) {
+            // 1. Proyek Aktif — jumlah proyek berstatus 'Aktif' dalam kewenangan Project Leader
+            $activeProjectsCount = 0;
+            $plProjectIds = [];
+            foreach ($projects as $p) {
+                if (isset($p['status']) && strcasecmp($p['status'], 'Aktif') === 0) {
+                    $activeProjectsCount++;
+                }
+                $plProjectIds[] = (int)$p['project_id'];
+            }
+
+            // 2. Progres Kegiatan — persentase agregasi unik per kegiatan berbasis laporan lapangan terbaru
+            // Ambil seluruh kegiatan di bawah proyek kewenangan PL
+            $plActivities = [];
+            if (!empty($plProjectIds)) {
+                $dbConn = Database::getConnection();
+                $inQuery = implode(',', array_fill(0, count($plProjectIds), '?'));
+                
+                // Ambil kegiatan beserta progress terbaru dari laporan lapangan unik per kegiatan (menghindari duplikasi)
+                $actSql = "
+                    SELECT a.activity_id, a.activity_name, a.project_id, a.status,
+                           p.project_name,
+                           t.start_date, t.end_date,
+                           -- Ambil progres persentase terbaru dari laporan lapangan yang sudah diajukan/dievaluasi
+                           (
+                               SELECT fu.progress_percentage 
+                               FROM field_updates fu 
+                               WHERE fu.activity_id = a.activity_id 
+                               ORDER BY fu.update_date DESC, fu.update_id DESC 
+                               LIMIT 1
+                           ) as latest_progress_percentage,
+                           -- Cek apakah ada laporan berstatus 'Perlu Perbaikan'
+                           (
+                               SELECT COUNT(*) 
+                               FROM field_updates fu 
+                               WHERE fu.activity_id = a.activity_id 
+                                 AND fu.status = 'Perlu Perbaikan'
+                           ) as count_needs_correction_reports
+                    FROM activities a
+                    JOIN projects p ON a.project_id = p.project_id
+                    LEFT JOIN activity_timelines t ON a.activity_id = t.activity_id
+                    WHERE a.project_id IN ($inQuery)
+                ";
+                $actStmt = $dbConn->prepare($actSql);
+                $actStmt->execute($plProjectIds);
+                $plActivities = $actStmt->fetchAll();
+            }
+
+            $totalActivitiesCount = count($plActivities);
+            $sumProgress = 0.0;
+            $delayedActivitiesCount = 0;
+            $today = date('Y-m-d');
+
+            foreach ($plActivities as $act) {
+                // Gunakan persentase laporan terbaru jika ada, jika status 'Selesai' anggap 100%
+                if ($act['status'] === 'Selesai') {
+                    $prog = 100.0;
+                } elseif ($act['latest_progress_percentage'] !== null) {
+                    $prog = (float)$act['latest_progress_percentage'];
+                } else {
+                    $prog = 0.0;
+                }
+                $sumProgress += max(0.0, min(100.0, $prog));
+
+                // Deteksi kegiatan terlambat dari jadwal (end_date sudah lewat & belum selesai)
+                if (!empty($act['end_date']) && $act['end_date'] < $today && $act['status'] !== 'Selesai') {
+                    $delayedActivitiesCount++;
+                }
+            }
+
+            $avgActivityProgress = $totalActivitiesCount > 0 ? round($sumProgress / $totalActivitiesCount, 1) : 0.0;
+
+            // 3. Laporan Tindak Lanjut — jumlah laporan lapangan yang butuh pemeriksaan lanjutan (status 'Diajukan')
+            $pendingReviewReportsCount = 0;
+            if (!empty($plProjectIds)) {
+                $dbConn = Database::getConnection();
+                $inQuery = implode(',', array_fill(0, count($plProjectIds), '?'));
+                $fuSql = "
+                    SELECT COUNT(*) 
+                    FROM field_updates fu
+                    JOIN activities a ON fu.activity_id = a.activity_id
+                    WHERE a.project_id IN ($inQuery)
+                      AND fu.status IN ('Diajukan', 'Menunggu Verifikasi')
+                ";
+                $fuStmt = $dbConn->prepare($fuSql);
+                $fuStmt->execute($plProjectIds);
+                $pendingReviewReportsCount = (int)$fuStmt->fetchColumn();
+            }
+
+            // 4. Perlu Perbaikan — laporan berstatus 'Perlu Perbaikan' + kegiatan terlambat (tanpa duplikasi)
+            $needsCorrectionReportsCount = 0;
+            if (!empty($plProjectIds)) {
+                $dbConn = Database::getConnection();
+                $inQuery = implode(',', array_fill(0, count($plProjectIds), '?'));
+                $corrSql = "
+                    SELECT COUNT(*) 
+                    FROM field_updates fu
+                    JOIN activities a ON fu.activity_id = a.activity_id
+                    WHERE a.project_id IN ($inQuery)
+                      AND fu.status IN ('Perlu Perbaikan', 'Perlu Direvisi')
+                ";
+                $corrStmt = $dbConn->prepare($corrSql);
+                $corrStmt->execute($plProjectIds);
+                $needsCorrectionReportsCount = (int)$corrStmt->fetchColumn();
+            }
+
+            $totalAttentionCount = $needsCorrectionReportsCount + $delayedActivitiesCount;
+
+            $plStats = [
+                'active_projects'        => $activeProjectsCount,
+                'total_projects'         => count($projects),
+                'avg_progress'           => $avgActivityProgress,
+                'total_activities'       => $totalActivitiesCount,
+                'pending_review_reports' => $pendingReviewReportsCount,
+                'needs_correction_reports' => $needsCorrectionReportsCount,
+                'delayed_activities'     => $delayedActivitiesCount,
+                'total_attention'        => $totalAttentionCount,
+            ];
+        }
+
+        $pageTitle = ((int)$user['role_id'] === 3) ? 'Dashboard Project Leader' : 'Dashboard Ringkasan';
         $activeMenu = 'dashboard';
 
         require_once __DIR__ . '/../views/dashboard/index.php';
