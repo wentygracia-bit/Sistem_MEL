@@ -31,13 +31,38 @@ require_once __DIR__ . '/../layouts/header.php';
                 <?php endif; ?>
             </form>
 
+            <?php if ((int)$currentUser['role_id'] === 1): ?>
             <button onclick="toggleModal('modalSubmitReport')" class="btn btn-primary" style="height: 38px;">
                 <i class="fa-solid fa-plus"></i> Input Laporan Baru
             </button>
+            <?php endif; ?>
         </div>
     </div>
 
-    <?php if (!empty($_GET['search']) || !empty($_GET['status']) || !empty($_GET['activity_id'])): ?>
+    <?php if (!empty($filteredActivity)): ?>
+        <div style="padding: 14px 20px; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border-bottom: 2px solid #bbf7d0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #166534;">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Laporan Lapangan Terkait Kegiatan
+                </div>
+                <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-top: 2px;">
+                    <?= htmlspecialchars($filteredActivity['activity_name']) ?>
+                </div>
+                <div style="font-size: 0.8rem; color: #475569; margin-top: 2px;">
+                    Proyek: <strong style="color: #1e293b;"><?= htmlspecialchars($filteredActivity['project_name']) ?></strong> (<?= htmlspecialchars($filteredActivity['project_code']) ?>) |
+                    Status Kegiatan: <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 6px;"><?= htmlspecialchars($filteredActivity['status']) ?></span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <a href="<?= BASE_URL ?>/projects/detail?id=<?= $filteredActivity['project_id'] ?>#act-<?= $filteredActivity['activity_id'] ?>" class="btn btn-secondary btn-sm">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Rincian Kegiatan
+                </a>
+                <a href="<?= BASE_URL ?>/field-updates" class="btn btn-secondary btn-sm" title="Tampilkan Semua Laporan">
+                    <i class="fa-solid fa-list"></i> Semua Laporan
+                </a>
+            </div>
+        </div>
+    <?php elseif (!empty($_GET['search']) || !empty($_GET['status'])): ?>
         <div style="padding: 10px 16px; background-color: #f8fafc; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; color: #475569; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
             <span>
                 Filter aktif: 

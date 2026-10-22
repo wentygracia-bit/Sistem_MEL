@@ -8,8 +8,26 @@ class MELResult {
         $this->db = Database::getConnection();
     }
 
-    public function getAll(): array {
-        $stmt = $this->db->query("
+    public function getAll(?string $search = null, ?string $statusFilter = null): array {
+        $where = [];
+        $params = [];
+
+        if (!empty($search)) {
+            $where[] = "(a.activity_name LIKE ? OR p.project_name LIKE ? OR u.name LIKE ?)";
+            $term = '%' . trim($search) . '%';
+            $params[] = $term;
+            $params[] = $term;
+            $params[] = $term;
+        }
+
+        if (!empty($statusFilter)) {
+            $where[] = "mr.status = ?";
+            $params[] = $statusFilter;
+        }
+
+        $whereClause = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
+
+        $sql = "
             SELECT mr.*, 
                    a.activity_name, p.project_name, p.project_code,
                    u.name as submitter_name,
@@ -21,8 +39,11 @@ class MELResult {
             JOIN users u ON mr.submitted_by = u.user_id
             LEFT JOIN approvals ap ON mr.mel_result_id = ap.mel_result_id
             LEFT JOIN users approver ON ap.approved_by = approver.user_id
+            {$whereClause}
             ORDER BY mr.mel_result_id DESC
-        ");
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
@@ -99,6 +120,24 @@ class MELResult {
             ) ap ON mr.mel_result_id = ap.mel_result_id
             LEFT JOIN users approver ON ap.approved_by = approver.user_id
             ORDER BY mr.mel_result_id DESC
+            LIMIT ?
+        ");
+        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function getPendingApproval(int $limit = 10): array {
+        $stmt = $this->db->prepare("
+            SELECT mr.*, 
+                   a.activity_name, p.project_name, p.project_code,
+                   u.name as submitter_name
+            FROM mel_results mr
+            JOIN activities a ON mr.activity_id = a.activity_id
+            JOIN projects p ON a.project_id = p.project_id
+            JOIN users u ON mr.submitted_by = u.user_id
+            WHERE mr.status = 'Diajukan'
+            ORDER BY mr.submission_date ASC, mr.mel_result_id ASC
             LIMIT ?
         ");
         $stmt->bindValue(1, $limit, PDO::PARAM_INT);

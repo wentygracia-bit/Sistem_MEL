@@ -8,19 +8,39 @@ class Project {
         $this->db = Database::getConnection();
     }
 
-    public function getAll(bool $onlyPublic = false): array {
+    public function getAll(bool $onlyPublic = false, ?string $search = null, ?string $statusFilter = null): array {
+        $where = [];
+        $params = [];
+
+        if ($onlyPublic) {
+            $where[] = "p.public_status = 'Dipublikasikan'";
+        }
+
+        if (!empty($search)) {
+            $where[] = "(p.project_name LIKE ? OR p.project_code LIKE ?)";
+            $term = '%' . trim($search) . '%';
+            $params[] = $term;
+            $params[] = $term;
+        }
+
+        if (!empty($statusFilter)) {
+            $where[] = "p.status = ?";
+            $params[] = $statusFilter;
+        }
+
+        $whereClause = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
+
         $sql = "
             SELECT p.*, u.name as creator_name,
                    (SELECT COUNT(*) FROM activities a WHERE a.project_id = p.project_id) as total_activities,
                    (SELECT COUNT(*) FROM project_members pm WHERE pm.project_id = p.project_id) as total_members
             FROM projects p
             LEFT JOIN users u ON p.created_by = u.user_id
+            {$whereClause}
+            ORDER BY p.project_id DESC
         ";
-        if ($onlyPublic) {
-            $sql .= " WHERE p.public_status = 'Dipublikasikan'";
-        }
-        $sql .= " ORDER BY p.project_id DESC";
-        $stmt = $this->db->query($sql);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
@@ -81,22 +101,40 @@ class Project {
         return $stmt->execute([$projectMemberId]);
     }
 
-    public function getProjectsForUser(int $userId, int $roleId): array {
+    public function getProjectsForUser(int $userId, int $roleId, ?string $search = null, ?string $statusFilter = null): array {
         // Direktur & Staf MEL can view all projects
         if ($roleId === 4 || $roleId === 2) {
-            return $this->getAll();
+            return $this->getAll(false, $search, $statusFilter);
         }
+
         // Others view projects where they are creator or assigned member
+        $where = ["(p.created_by = ? OR pm.user_id = ?)"];
+        $params = [$userId, $userId];
+
+        if (!empty($search)) {
+            $where[] = "(p.project_name LIKE ? OR p.project_code LIKE ?)";
+            $term = '%' . trim($search) . '%';
+            $params[] = $term;
+            $params[] = $term;
+        }
+
+        if (!empty($statusFilter)) {
+            $where[] = "p.status = ?";
+            $params[] = $statusFilter;
+        }
+
+        $whereClause = "WHERE " . implode(" AND ", $where);
+
         $stmt = $this->db->prepare("
             SELECT DISTINCT p.*, u.name as creator_name,
                    (SELECT COUNT(*) FROM activities a WHERE a.project_id = p.project_id) as total_activities
             FROM projects p
             LEFT JOIN users u ON p.created_by = u.user_id
             LEFT JOIN project_members pm ON p.project_id = pm.project_id
-            WHERE p.created_by = ? OR pm.user_id = ?
+            {$whereClause}
             ORDER BY p.project_id DESC
         ");
-        $stmt->execute([$userId, $userId]);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

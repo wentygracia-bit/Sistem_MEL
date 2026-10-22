@@ -3,14 +3,52 @@ require_once __DIR__ . '/../layouts/header.php';
 ?>
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
         <h2 class="card-title"><i class="fa-solid fa-stamp" style="color: var(--primary-dark);"></i> Hasil Akhir MEL & Pengesahan Direksi</h2>
-        <?php if ($currentUser['role_id'] == 2): // Staf MEL menyusun hasil ?>
-            <button onclick="toggleModal('modalCreateMEL')" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Susun Hasil MEL Baru
-            </button>
-        <?php endif; ?>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <!-- Form Pencarian & Filter Status Hasil MEL -->
+            <form action="<?= BASE_URL ?>/mel-results" method="GET" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <div style="position: relative;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem;"></i>
+                    <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" placeholder="Cari kegiatan, proyek, staf..." class="form-control" style="padding-left: 32px; width: 220px; height: 38px;">
+                </div>
+
+                <select name="status" class="form-control" style="width: 160px; height: 38px;" onchange="this.form.submit()">
+                    <option value="">Semua Status</option>
+                    <option value="Diajukan" <?= (isset($_GET['status']) && $_GET['status'] === 'Diajukan') ? 'selected' : '' ?>>Diajukan</option>
+                    <option value="Disetujui" <?= (isset($_GET['status']) && $_GET['status'] === 'Disetujui') ? 'selected' : '' ?>>Disetujui</option>
+                    <option value="Ditolak" <?= (isset($_GET['status']) && $_GET['status'] === 'Ditolak') ? 'selected' : '' ?>>Ditolak</option>
+                </select>
+
+                <button type="submit" class="btn btn-secondary btn-sm" style="height: 38px;" title="Cari data">
+                    <i class="fa-solid fa-search"></i>
+                </button>
+                <?php if (!empty($_GET['search']) || !empty($_GET['status'])): ?>
+                    <a href="<?= BASE_URL ?>/mel-results" class="btn btn-secondary btn-sm" style="height: 38px; display: inline-flex; align-items: center;" title="Reset Filter">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                <?php endif; ?>
+            </form>
+
+            <?php if ($currentUser['role_id'] == 2): // Staf MEL menyusun hasil ?>
+                <button onclick="toggleModal('modalCreateMEL')" class="btn btn-primary" style="height: 38px; display: inline-flex; align-items: center;">
+                    <i class="fa-solid fa-plus"></i> Susun Hasil MEL Baru
+                </button>
+            <?php endif; ?>
+        </div>
     </div>
+
+    <?php if (!empty($_GET['search']) || !empty($_GET['status'])): ?>
+        <div style="padding: 10px 16px; background-color: #f8fafc; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; color: #475569; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <span>
+                Filter aktif: 
+                <?php if (!empty($_GET['search'])): ?><strong>"<?= htmlspecialchars($_GET['search']) ?>"</strong> <?php endif; ?>
+                <?php if (!empty($_GET['status'])): ?><span class="badge badge-info" style="margin-left: 4px;"><?= htmlspecialchars($_GET['status']) ?></span><?php endif; ?>
+                (<?= count($results) ?> berkas ditemukan)
+            </span>
+            <a href="<?= BASE_URL ?>/mel-results" style="color: #274312; font-weight: 600; text-decoration: underline;">Reset semua filter</a>
+        </div>
+    <?php endif; ?>
 
     <div class="table-responsive">
         <table class="table">
@@ -28,7 +66,19 @@ require_once __DIR__ . '/../layouts/header.php';
             </thead>
             <tbody>
                 <?php if (empty($results)): ?>
-                    <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada berkas hasil MEL yang disusun.</td></tr>
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            <i class="fa-solid fa-circle-info" style="font-size: 1.8rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
+                            <?php if (!empty($_GET['search']) || !empty($_GET['status'])): ?>
+                                Tidak ada berkas hasil MEL yang sesuai dengan filter Anda.
+                                <div style="margin-top: 8px;">
+                                    <a href="<?= BASE_URL ?>/mel-results" class="btn btn-secondary btn-sm">Reset Filter</a>
+                                </div>
+                            <?php else: ?>
+                                Belum ada berkas hasil MEL yang disusun.
+                            <?php endif; ?>
+                        </td>
+                    </tr>
                 <?php else: ?>
                     <?php foreach ($results as $res): ?>
                         <tr>

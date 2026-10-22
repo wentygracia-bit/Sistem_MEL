@@ -13,13 +13,18 @@ class ProjectController {
         $projectModel = new Project();
         $activityModel = new Activity();
 
-        $projects = $projectModel->getProjectsForUser($user['user_id'], $user['role_id']);
-
-        // Data khusus untuk Staf Lapangan (Role 1): Daftar Kegiatan Terperinci
         $search = trim($_GET['search'] ?? '');
         $statusFilter = trim($_GET['status'] ?? '');
         $projectIdFilter = !empty($_GET['project_id']) ? (int)$_GET['project_id'] : null;
 
+        $projects = $projectModel->getProjectsForUser(
+            $user['user_id'], 
+            $user['role_id'],
+            $search !== '' ? $search : null,
+            $statusFilter !== '' ? $statusFilter : null
+        );
+
+        // Data khusus untuk Staf Lapangan (Role 1): Daftar Kegiatan Penugasan
         $fieldActivities = [];
         if ($user['role_id'] == 1) {
             $fieldActivities = $activityModel->getActivitiesForUser(
@@ -48,8 +53,15 @@ class ProjectController {
             exit;
         }
 
+        $searchActivity = trim($_GET['q'] ?? '');
+        $statusActivity = trim($_GET['status_act'] ?? '');
+
         $activityModel = new Activity();
-        $activities = $activityModel->getByProjectId($projectId);
+        $activities = $activityModel->getByProjectId(
+            $projectId,
+            $searchActivity !== '' ? $searchActivity : null,
+            $statusActivity !== '' ? $statusActivity : null
+        );
         $members = $projectModel->getMembers($projectId);
 
         $userModel = new User();
@@ -163,4 +175,101 @@ class ProjectController {
         header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId);
         exit;
     }
+
+    public function editActivity(): void {
+        AuthHelper::requireRole([2, 3]); // Hanya Staf MEL & Project Leader
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/projects');
+            exit;
+        }
+
+        $projectId = (int)($_POST['project_id'] ?? 0);
+        $activityId = (int)($_POST['activity_id'] ?? 0);
+        $activityName = trim($_POST['activity_name'] ?? '');
+        $location = trim($_POST['location'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $status = trim($_POST['status'] ?? 'Perencanaan');
+
+        $startDate = !empty($_POST['start_date']) ? $_POST['start_date'] : null;
+        $endDate = !empty($_POST['end_date']) ? $_POST['end_date'] : null;
+        $reminderDate = !empty($_POST['reminder_date']) ? $_POST['reminder_date'] : null;
+
+        // Validasi status hanya menerima status yang didukung sistem saat ini
+        $validStatuses = ['Perencanaan', 'Berjalan', 'Selesai'];
+        if (!in_array($status, $validStatuses)) {
+            $status = 'Perencanaan';
+        }
+
+        if ($activityId <= 0 || empty($activityName)) {
+            AuthHelper::setFlash('error', 'Nama kegiatan wajib diisi.');
+            header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+            exit;
+        }
+
+        $activityModel = new Activity();
+        $existing = $activityModel->findById($activityId);
+        if (!$existing) {
+            AuthHelper::setFlash('error', 'Kegiatan tidak ditemukan.');
+            header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId);
+            exit;
+        }
+
+        // Simpan perubahan data kegiatan
+        $activityModel->update($activityId, $activityName, $description, $location, $status);
+
+        // Perbarui data jadwal pada activity_timelines
+        if ($startDate && $endDate) {
+            $timelineModel = new ActivityTimeline();
+            $timelineStatus = ($status === 'Selesai') ? 'Selesai' : 'Dalam Jadwal';
+            $timelineModel->save($activityId, $startDate, $endDate, $reminderDate, $timelineStatus);
+        }
+
+        AuthHelper::setFlash('success', 'Rincian kegiatan berhasil diperbarui.');
+        header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+        exit;
+    }
+
+    public function editIndicator(): void {
+        AuthHelper::requireRole([2, 3]); // Hanya Staf MEL & Project Leader
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/projects');
+            exit;
+        }
+
+        $projectId = (int)($_POST['project_id'] ?? 0);
+        $activityId = (int)($_POST['activity_id'] ?? 0);
+        $indicatorId = (int)($_POST['indicator_id'] ?? 0);
+        $indicatorName = trim($_POST['indicator_name'] ?? '');
+        $targetValue = (float)($_POST['target_value'] ?? 0);
+        $unit = trim($_POST['unit'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+
+        if ($indicatorId <= 0 || empty($indicatorName) || empty($unit)) {
+            AuthHelper::setFlash('error', 'Nama indikator dan satuan target wajib diisi.');
+            header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+            exit;
+        }
+
+        $indicatorModel = new Indicator();
+        $existing = $indicatorModel->findById($indicatorId);
+        if (!$existing) {
+            AuthHelper::setFlash('error', 'Indikator tidak ditemukan.');
+            header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+            exit;
+        }
+
+        // Pastikan indikator memang terdaftar di bawah kegiatan yang sesuai
+        if ((int)$existing['activity_id'] !== $activityId) {
+            AuthHelper::setFlash('error', 'Relasi indikator dan kegiatan tidak valid.');
+            header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+            exit;
+        }
+
+        $indicatorModel->update($indicatorId, $indicatorName, $targetValue, $unit, $description);
+
+        AuthHelper::setFlash('success', 'Indikator KPI berhasil diperbarui.');
+        header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+        exit;
+    }
 }
+

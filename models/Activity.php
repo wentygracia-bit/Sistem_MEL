@@ -8,7 +8,22 @@ class Activity {
         $this->db = Database::getConnection();
     }
 
-    public function getByProjectId(int $projectId): array {
+    public function getByProjectId(int $projectId, ?string $search = null, ?string $statusFilter = null): array {
+        $where = ["a.project_id = ?"];
+        $params = [$projectId];
+
+        if (!empty($search)) {
+            $where[] = "a.activity_name LIKE ?";
+            $params[] = '%' . trim($search) . '%';
+        }
+
+        if (!empty($statusFilter)) {
+            $where[] = "a.status = ?";
+            $params[] = $statusFilter;
+        }
+
+        $whereClause = "WHERE " . implode(" AND ", $where);
+
         $stmt = $this->db->prepare("
             SELECT a.*, 
                    t.start_date, t.end_date, t.reminder_date, t.status as timeline_status,
@@ -16,10 +31,10 @@ class Activity {
                    (SELECT COUNT(*) FROM field_updates fu WHERE fu.activity_id = a.activity_id) as total_updates
             FROM activities a
             LEFT JOIN activity_timelines t ON a.activity_id = t.activity_id
-            WHERE a.project_id = ?
+            {$whereClause}
             ORDER BY a.activity_id ASC
         ");
-        $stmt->execute([$projectId]);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

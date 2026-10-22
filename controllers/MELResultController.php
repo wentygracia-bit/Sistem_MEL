@@ -11,7 +11,14 @@ class MELResultController {
     public function index(): void {
         AuthHelper::requireLogin();
         $melModel = new MELResult();
-        $results = $melModel->getAll();
+
+        $search = trim($_GET['search'] ?? '');
+        $statusFilter = trim($_GET['status'] ?? '');
+
+        $results = $melModel->getAll(
+            $search !== '' ? $search : null,
+            $statusFilter !== '' ? $statusFilter : null
+        );
 
         $evalModel = new Evaluation();
         $evaluations = $evalModel->getAll();

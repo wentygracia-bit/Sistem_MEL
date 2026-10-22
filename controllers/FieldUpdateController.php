@@ -17,6 +17,37 @@ class FieldUpdateController {
         $statusFilter = trim($_GET['status'] ?? '');
         $activityFilter = !empty($_GET['activity_id']) ? (int)$_GET['activity_id'] : null;
 
+        $activityModel = new Activity();
+        $filteredActivity = null;
+
+        // Validasi jika melihat riwayat laporan berdasarkan ID kegiatan tertentu
+        if ($activityFilter !== null) {
+            $filteredActivity = $activityModel->findById($activityFilter);
+            if (!$filteredActivity) {
+                AuthHelper::setFlash('error', 'Kegiatan tidak ditemukan.');
+                header('Location: ' . BASE_URL . '/field-updates');
+                exit;
+            }
+
+            // Otorisasi akses: Staf Lapangan (Role 1) hanya boleh melihat kegiatan proyek yang menjadi penugasannya
+            if ((int)$user['role_id'] === 1) {
+                $projectModel = new Project();
+                $members = $projectModel->getMembers((int)$filteredActivity['project_id']);
+                $isAssigned = false;
+                foreach ($members as $mem) {
+                    if ((int)$mem['user_id'] === (int)$user['user_id']) {
+                        $isAssigned = true;
+                        break;
+                    }
+                }
+                if (!$isAssigned) {
+                    AuthHelper::setFlash('error', 'Akses ditolak: Anda tidak ditugaskan pada proyek kegiatan ini.');
+                    header('Location: ' . BASE_URL . '/projects');
+                    exit;
+                }
+            }
+        }
+
         $updates = $updateModel->getAllForUser(
             $user['user_id'],
             $user['role_id'],
@@ -26,10 +57,11 @@ class FieldUpdateController {
             $activityFilter
         );
 
-        $activityModel = new Activity();
         $activities = $activityModel->getAllWithSummary();
 
-        $pageTitle = 'Pelaporan Lapangan (Field Updates)';
+        $pageTitle = $filteredActivity 
+            ? 'Riwayat Laporan: ' . $filteredActivity['activity_name']
+            : 'Pelaporan Lapangan (Field Updates)';
         $activeMenu = 'field-updates';
         require_once __DIR__ . '/../views/field_updates/index.php';
     }
@@ -60,6 +92,13 @@ class FieldUpdateController {
     public function submit(): void {
         AuthHelper::requireLogin();
         $user = AuthHelper::getUser();
+
+        // Otorisasi ketat di sisi server: Hanya Staf Lapangan (Role 1) yang diizinkan menginput laporan
+        if ((int)$user['role_id'] !== 1) {
+            AuthHelper::setFlash('error', 'Akses ditolak: Hanya Staf Lapangan yang memiliki hak akses untuk menginput laporan pekerjaan.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
 
         $activityId = (int)($_POST['activity_id'] ?? 0);
         $activityName = trim($_POST['activity_name'] ?? '');

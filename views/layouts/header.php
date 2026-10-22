@@ -101,12 +101,15 @@ $activeMenu = $activeMenu ?? 'dashboard';
                         </span>
                         <?php endif; ?>
                     </a>
-
                 <?php elseif ($currentUser['role_id'] == 3): // Aktor: Project Leader ?>
                     <div class="nav-label">Menu Project Leader</div>
                     <a href="<?= BASE_URL ?>/dashboard" class="nav-link <?= $activeMenu === 'dashboard' ? 'active' : '' ?>" title="Dashboard">
                         <i class="fa-solid fa-chart-pie"></i>
                         <span class="nav-text">Dashboard</span>
+                    </a>
+                    <a href="<?= BASE_URL ?>/projects" class="nav-link <?= $activeMenu === 'projects' ? 'active' : '' ?>" title="Proyek & Kegiatan">
+                        <i class="fa-solid fa-folder-tree"></i>
+                        <span class="nav-text">Proyek & Kegiatan</span>
                     </a>
                     <a href="<?= BASE_URL ?>/field-updates" class="nav-link <?= $activeMenu === 'field-updates' ? 'active' : '' ?>" title="Pelaporan Lapangan">
                         <i class="fa-solid fa-clipboard-check"></i>
@@ -135,6 +138,10 @@ $activeMenu = $activeMenu ?? 'dashboard';
                     <a href="<?= BASE_URL ?>/dashboard" class="nav-link <?= $activeMenu === 'dashboard' ? 'active' : '' ?>" title="Dashboard">
                         <i class="fa-solid fa-chart-pie"></i>
                         <span class="nav-text">Dashboard</span>
+                    </a>
+                    <a href="<?= BASE_URL ?>/projects" class="nav-link <?= $activeMenu === 'projects' ? 'active' : '' ?>" title="Proyek & Kegiatan">
+                        <i class="fa-solid fa-folder-tree"></i>
+                        <span class="nav-text">Proyek & Kegiatan</span>
                     </a>
                     <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= $activeMenu === 'evaluations' ? 'active' : '' ?>" title="Ringkasan Capaian">
                         <i class="fa-solid fa-chart-line"></i>
