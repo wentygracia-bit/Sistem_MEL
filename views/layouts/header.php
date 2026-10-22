@@ -35,7 +35,14 @@ $activeMenu = $activeMenu ?? 'dashboard';
             </div>
 
             <nav class="sidebar-nav">
-                <?php if ($currentUser['role_id'] == 1): // Khusus Staf Lapangan: 5 Menu Utama Terstruktur ?>
+                <?php
+                // Hitung notifikasi unread untuk badge sidebar
+                require_once __DIR__ . '/../../models/Notification.php';
+                $notifModelSide = new Notification();
+                $unreadSide = $notifModelSide->getUnreadCount($currentUser['user_id']);
+                ?>
+
+                <?php if ($currentUser['role_id'] == 1): // Aktor: Staf Lapangan ?>
                     <div class="nav-label">Menu Staf Lapangan</div>
                     <a href="<?= BASE_URL ?>/dashboard" class="nav-link <?= $activeMenu === 'dashboard' ? 'active' : '' ?>" title="Dashboard">
                         <i class="fa-solid fa-chart-pie"></i>
@@ -56,83 +63,95 @@ $activeMenu = $activeMenu ?? 'dashboard';
                     <a href="<?= BASE_URL ?>/notifications" class="nav-link <?= $activeMenu === 'notifications' ? 'active' : '' ?>" title="Notifikasi">
                         <i class="fa-solid fa-bell"></i>
                         <span class="nav-text">Notifikasi</span>
-                        <?php
-                        require_once __DIR__ . '/../../models/Notification.php';
-                        $notifModelSide = new Notification();
-                        $unreadSide = $notifModelSide->getUnreadCount($currentUser['user_id']);
-                        if ($unreadSide > 0):
-                        ?>
+                        <?php if ($unreadSide > 0): ?>
                         <span class="badge" style="background: #ef4444; color: #fff; font-size: 0.68rem; padding: 2px 6px; margin-left: auto;">
                             <?= $unreadSide ?>
                         </span>
                         <?php endif; ?>
                     </a>
-                <?php else: // Role lain (Staf MEL, Project Leader, Direktur) ?>
-                    <div class="nav-label">Menu Utama</div>
+
+                <?php elseif ($currentUser['role_id'] == 2): // Aktor: Staf MEL ?>
+                    <div class="nav-label">Menu Staf MEL</div>
                     <a href="<?= BASE_URL ?>/dashboard" class="nav-link <?= $activeMenu === 'dashboard' ? 'active' : '' ?>" title="Dashboard">
                         <i class="fa-solid fa-chart-pie"></i>
                         <span class="nav-text">Dashboard</span>
                     </a>
-                    <?php if (!in_array($currentUser['role_id'], [3, 4])): // Bukan Project Leader & Direktur ?>
                     <a href="<?= BASE_URL ?>/projects" class="nav-link <?= $activeMenu === 'projects' ? 'active' : '' ?>" title="Proyek & Kegiatan">
                         <i class="fa-solid fa-folder-tree"></i>
                         <span class="nav-text">Proyek & Kegiatan</span>
                     </a>
-                    <?php endif; ?>
-
-                <?php if ($currentUser['role_id'] == 2): // Khusus Staf MEL: 6 Menu Terstruktur ?>
-                    <div class="nav-label">Operasional MEL</div>
-                    <a href="<?= BASE_URL ?>/field-updates" class="nav-link <?= $activeMenu === 'field-updates' ? 'active' : '' ?>" title="Pelaporan Lapangan">
+                    <a href="<?= BASE_URL ?>/field-updates" class="nav-link <?= $activeMenu === 'field-updates' ? 'active' : '' ?>" title="Laporan Lapangan">
                         <i class="fa-solid fa-clipboard-check"></i>
-                        <span class="nav-text">Pelaporan Lapangan</span>
+                        <span class="nav-text">Laporan Lapangan</span>
                     </a>
-                    <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= in_array($activeMenu, ['evaluations', 'corrections']) ? 'active' : '' ?>" title="Evaluasi & Tindak Lanjut">
+                    <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= in_array($activeMenu, ['evaluations', 'corrections']) ? 'active' : '' ?>" title="Evaluasi & Perbaikan">
                         <i class="fa-solid fa-scale-balanced"></i>
-                        <span class="nav-text">Evaluasi & Tindak Lanjut</span>
+                        <span class="nav-text">Evaluasi & Perbaikan</span>
                     </a>
-                    <a href="<?= BASE_URL ?>/mel-results" class="nav-link <?= $activeMenu === 'mel-results' ? 'active' : '' ?>" title="Hasil MEL & Pengesahan">
+                    <a href="<?= BASE_URL ?>/mel-results" class="nav-link <?= $activeMenu === 'mel-results' ? 'active' : '' ?>" title="Hasil MEL">
                         <i class="fa-solid fa-stamp"></i>
-                        <span class="nav-text">Hasil MEL & Pengesahan</span>
+                        <span class="nav-text">Hasil MEL</span>
                     </a>
-                <?php else: // Peran lainnya (Project Leader & Direktur) ?>
-                    <div class="nav-label">Operasional MEL</div>
-                    <?php if ($currentUser['role_id'] != 4): // Bukan Direktur ?>
+                    <a href="<?= BASE_URL ?>/notifications" class="nav-link <?= $activeMenu === 'notifications' ? 'active' : '' ?>" title="Notifikasi">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="nav-text">Notifikasi</span>
+                        <?php if ($unreadSide > 0): ?>
+                        <span class="badge" style="background: #ef4444; color: #fff; font-size: 0.68rem; padding: 2px 6px; margin-left: auto;">
+                            <?= $unreadSide ?>
+                        </span>
+                        <?php endif; ?>
+                    </a>
+
+                <?php elseif ($currentUser['role_id'] == 3): // Aktor: Project Leader ?>
+                    <div class="nav-label">Menu Project Leader</div>
+                    <a href="<?= BASE_URL ?>/dashboard" class="nav-link <?= $activeMenu === 'dashboard' ? 'active' : '' ?>" title="Dashboard">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
                     <a href="<?= BASE_URL ?>/field-updates" class="nav-link <?= $activeMenu === 'field-updates' ? 'active' : '' ?>" title="Pelaporan Lapangan">
                         <i class="fa-solid fa-clipboard-check"></i>
                         <span class="nav-text">Pelaporan Lapangan</span>
                     </a>
-                    <?php endif; ?>
-                    
-                    <?php if (in_array($currentUser['role_id'], [3, 4])): // PL, Direktur ?>
-                    <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= $activeMenu === 'evaluations' ? 'active' : '' ?>" title="<?= $currentUser['role_id'] == 4 ? 'Ringkasan Capaian' : 'Evaluasi Kinerja' ?>">
-                        <i class="fa-solid <?= $currentUser['role_id'] == 4 ? 'fa-chart-line' : 'fa-scale-balanced' ?>"></i>
-                        <span class="nav-text"><?= $currentUser['role_id'] == 4 ? 'Ringkasan Capaian' : 'Evaluasi Kinerja' ?></span>
+                    <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= $activeMenu === 'evaluations' ? 'active' : '' ?>" title="Evaluasi Kinerja">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                        <span class="nav-text">Evaluasi Kinerja</span>
                     </a>
-                    <?php endif; ?>
-
-                    <?php if ($currentUser['role_id'] == 3): // Project Leader ?>
                     <a href="<?= BASE_URL ?>/corrections" class="nav-link <?= $activeMenu === 'corrections' ? 'active' : '' ?>" title="Permintaan Perbaikan">
                         <i class="fa-solid fa-rotate-left"></i>
                         <span class="nav-text">Permintaan Perbaikan</span>
                     </a>
-                    <?php endif; ?>
+                    <a href="<?= BASE_URL ?>/notifications" class="nav-link <?= $activeMenu === 'notifications' ? 'active' : '' ?>" title="Notifikasi">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="nav-text">Notifikasi</span>
+                        <?php if ($unreadSide > 0): ?>
+                        <span class="badge" style="background: #ef4444; color: #fff; font-size: 0.68rem; padding: 2px 6px; margin-left: auto;">
+                            <?= $unreadSide ?>
+                        </span>
+                        <?php endif; ?>
+                    </a>
 
-                    <?php if ($currentUser['role_id'] == 4): // Direktur ?>
+                <?php elseif ($currentUser['role_id'] == 4): // Aktor: Direktur ?>
+                    <div class="nav-label">Menu Direktur</div>
+                    <a href="<?= BASE_URL ?>/dashboard" class="nav-link <?= $activeMenu === 'dashboard' ? 'active' : '' ?>" title="Dashboard">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                    <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= $activeMenu === 'evaluations' ? 'active' : '' ?>" title="Ringkasan Capaian">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span class="nav-text">Ringkasan Capaian</span>
+                    </a>
                     <a href="<?= BASE_URL ?>/mel-results" class="nav-link <?= $activeMenu === 'mel-results' ? 'active' : '' ?>" title="Verifikasi MEL">
                         <i class="fa-solid fa-stamp"></i>
                         <span class="nav-text">Verifikasi MEL</span>
                     </a>
-                    <?php endif; ?>
-                <?php endif; ?>
-
-                    <div class="nav-label">Informasi & Utilitas</div>
-                    <a href="<?= BASE_URL ?>/notifications" class="nav-link <?= $activeMenu === 'notifications' ? 'active' : '' ?>" title="Notifikasi & Reminder">
+                    <a href="<?= BASE_URL ?>/notifications" class="nav-link <?= $activeMenu === 'notifications' ? 'active' : '' ?>" title="Notifikasi">
                         <i class="fa-solid fa-bell"></i>
-                        <span class="nav-text">Notifikasi & Reminder</span>
-                    </a>
-                    <a href="<?= BASE_URL ?>/public-dashboard" target="_blank" class="nav-link" title="Portal Publik">
-                        <i class="fa-solid fa-globe"></i>
-                        <span class="nav-text">Portal Publik <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.75rem; margin-left: 4px;"></i></span>
+                        <span class="nav-text">Notifikasi</span>
+                        <?php if ($unreadSide > 0): ?>
+                        <span class="badge" style="background: #ef4444; color: #fff; font-size: 0.68rem; padding: 2px 6px; margin-left: auto;">
+                            <?= $unreadSide ?>
+                        </span>
+                        <?php endif; ?>
                     </a>
                 <?php endif; ?>
             </nav>
