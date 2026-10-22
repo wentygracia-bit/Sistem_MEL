@@ -14,11 +14,17 @@ class FieldUpdateController {
         $updateModel = new FieldUpdate();
 
         $search = trim($_GET['search'] ?? '');
-        if ($search !== '') {
-            $updates = $updateModel->search($search, 100);
-        } else {
-            $updates = $updateModel->getAll(100);
-        }
+        $statusFilter = trim($_GET['status'] ?? '');
+        $activityFilter = !empty($_GET['activity_id']) ? (int)$_GET['activity_id'] : null;
+
+        $updates = $updateModel->getAllForUser(
+            $user['user_id'],
+            $user['role_id'],
+            100,
+            $search !== '' ? $search : null,
+            $statusFilter !== '' ? $statusFilter : null,
+            $activityFilter
+        );
 
         $activityModel = new Activity();
         $activities = $activityModel->getAllWithSummary();
@@ -70,6 +76,10 @@ class FieldUpdateController {
         $progressPercentage = max(0.0, min(100.0, $progressPercentage));
         $description = trim($_POST['description'] ?? '');
 
+        // Determine status based on button clicked: "save_draft" or "submit_verification"
+        $actionType = $_POST['action_type'] ?? 'submit_verification';
+        $status = ($actionType === 'save_draft') ? 'Draft' : 'Diajukan';
+
         $evidenceFileName = null;
         if (isset($_FILES['evidence_file']) && $_FILES['evidence_file']['error'] === UPLOAD_ERR_OK) {
             $uploadDir = __DIR__ . '/../public/uploads/';
@@ -93,32 +103,81 @@ class FieldUpdateController {
                 $realizationValue,
                 $progressPercentage,
                 $evidenceFileName,
-                'Diajukan'
+                $status
             );
 
-            // Notify Project Leader & MEL Staff
-            $projectModel = new Project();
-            $act = $activityModel->findById($activityId);
-            $notifModel = new Notification();
-            if ($act) {
-                $members = $projectModel->getMembers($act['project_id']);
-                foreach ($members as $mem) {
-                    if ($mem['member_role'] === 'Project Leader' || $mem['role_id'] == 3 || $mem['role_id'] == 2) {
-                        $notifModel->sendNotification(
-                            $mem['user_id'],
-                            $activityId,
-                            'Laporan Baru',
-                            'Laporan lapangan baru diajukan oleh ' . $user['name'] . ' pada kegiatan: ' . $act['activity_name']
-                        );
+            // Notify Project Leader & MEL Staff only if submitted for verification
+            if ($status === 'Diajukan') {
+                $projectModel = new Project();
+                $act = $activityModel->findById($activityId);
+                $notifModel = new Notification();
+                if ($act) {
+                    $members = $projectModel->getMembers($act['project_id']);
+                    foreach ($members as $mem) {
+                        if ($mem['member_role'] === 'Project Leader' || $mem['role_id'] == 3 || $mem['role_id'] == 2) {
+                            $notifModel->sendNotification(
+                                $mem['user_id'],
+                                $activityId,
+                                'Laporan Baru',
+                                'Laporan lapangan baru diajukan oleh ' . $user['name'] . ' pada kegiatan: ' . $act['activity_name']
+                            );
+                        }
                     }
                 }
+                AuthHelper::setFlash('success', 'Laporan lapangan berhasil dikirim untuk verifikasi.');
+            } else {
+                AuthHelper::setFlash('success', 'Laporan lapangan berhasil disimpan sebagai Draft.');
             }
-
-            AuthHelper::setFlash('success', 'Laporan lapangan berhasil disimpan.');
         } else {
             AuthHelper::setFlash('error', 'Nama kegiatan dan deskripsi laporan wajib diisi.');
         }
 
+        header('Location: ' . BASE_URL . '/field-updates');
+        exit;
+    }
+
+    public function publish(): void {
+        AuthHelper::requireLogin();
+        $user = AuthHelper::getUser();
+        $updateId = (int)($_POST['update_id'] ?? 0);
+
+        $updateModel = new FieldUpdate();
+        $existing = $updateModel->findById($updateId);
+
+        if (!$existing) {
+            AuthHelper::setFlash('error', 'Data pelaporan tidak ditemukan.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        if ($existing['user_id'] != $user['user_id'] && !in_array($user['role_id'], [2, 3])) {
+            AuthHelper::setFlash('error', 'Anda tidak memiliki hak akses untuk mengirim laporan ini.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        $updateModel->updateStatus($updateId, 'Diajukan');
+
+        // Notify PL & MEL
+        $activityModel = new Activity();
+        $act = $activityModel->findById($existing['activity_id']);
+        if ($act) {
+            $projectModel = new Project();
+            $notifModel = new Notification();
+            $members = $projectModel->getMembers($act['project_id']);
+            foreach ($members as $mem) {
+                if ($mem['member_role'] === 'Project Leader' || $mem['role_id'] == 3 || $mem['role_id'] == 2) {
+                    $notifModel->sendNotification(
+                        $mem['user_id'],
+                        $existing['activity_id'],
+                        'Laporan Baru',
+                        'Laporan draft #' . $updateId . ' telah dikirim untuk verifikasi oleh ' . $user['name'] . ' pada kegiatan: ' . $act['activity_name']
+                    );
+                }
+            }
+        }
+
+        AuthHelper::setFlash('success', 'Laporan #' . $updateId . ' berhasil dikirim untuk proses verifikasi.');
         header('Location: ' . BASE_URL . '/field-updates');
         exit;
     }
@@ -144,6 +203,13 @@ class FieldUpdateController {
             exit;
         }
 
+        // Status check: if already 'Dievaluasi', Field Staff cannot edit arbitrarily
+        if ($existing['status'] === 'Dievaluasi' && $user['role_id'] == 1) {
+            AuthHelper::setFlash('error', 'Laporan yang telah diverifikasi dan disetujui tidak dapat diedit kembali.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
         $activityName = trim($_POST['activity_name'] ?? '');
         $activityModel = new Activity();
         $activityId = $existing['activity_id'];
@@ -162,6 +228,12 @@ class FieldUpdateController {
             AuthHelper::setFlash('error', 'Deskripsi laporan wajib diisi.');
             header('Location: ' . BASE_URL . '/field-updates');
             exit;
+        }
+
+        $actionType = $_POST['action_type'] ?? '';
+        $newStatus = null;
+        if ($actionType === 'submit_verification' && in_array($existing['status'], ['Draft', 'Perlu Perbaikan'])) {
+            $newStatus = 'Diajukan';
         }
 
         $evidenceFileName = null;
@@ -184,11 +256,16 @@ class FieldUpdateController {
             $description,
             $realizationValue,
             $progressPercentage,
-            $evidenceFileName
+            $evidenceFileName,
+            $newStatus
         );
 
         if ($success) {
-            AuthHelper::setFlash('success', 'Data laporan lapangan #' . $updateId . ' berhasil diperbarui.');
+            if ($newStatus === 'Diajukan') {
+                AuthHelper::setFlash('success', 'Data laporan #' . $updateId . ' berhasil diperbarui dan dikirim untuk verifikasi ulang.');
+            } else {
+                AuthHelper::setFlash('success', 'Data laporan lapangan #' . $updateId . ' berhasil diperbarui.');
+            }
         } else {
             AuthHelper::setFlash('error', 'Gagal memperbarui data laporan lapangan.');
         }
@@ -214,6 +291,13 @@ class FieldUpdateController {
         // Access check: only reporter or role 2/3 can delete
         if ($existing['user_id'] != $user['user_id'] && !in_array($user['role_id'], [2, 3])) {
             AuthHelper::setFlash('error', 'Anda tidak memiliki hak akses untuk menghapus laporan ini.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        // Status check: Verified reports cannot be deleted by Field Staff
+        if ($existing['status'] === 'Dievaluasi' && $user['role_id'] == 1) {
+            AuthHelper::setFlash('error', 'Laporan yang telah diverifikasi dan disetujui tidak dapat dihapus.');
             header('Location: ' . BASE_URL . '/field-updates');
             exit;
         }

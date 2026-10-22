@@ -6,17 +6,26 @@ require_once __DIR__ . '/../layouts/header.php';
     <div class="card-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
         <h2 class="card-title"><i class="fa-solid fa-clipboard-list" style="color: var(--primary-dark);"></i> Laporan Lapangan (Field Updates)</h2>
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-            <!-- Form Pencarian Real-Time / Server-Side -->
-            <form action="<?= BASE_URL ?>/field-updates" method="GET" style="display: flex; gap: 8px; align-items: center;">
+            <!-- Form Pencarian & Filter Status -->
+            <form action="<?= BASE_URL ?>/field-updates" method="GET" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <div style="position: relative;">
                     <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem;"></i>
-                    <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" placeholder="Cari kegiatan, staf, proyek..." class="form-control" style="padding-left: 32px; width: 240px; height: 38px;">
+                    <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" placeholder="Cari kegiatan, staf, proyek..." class="form-control" style="padding-left: 32px; width: 220px; height: 38px;">
                 </div>
+
+                <select name="status" class="form-control" style="width: 170px; height: 38px;" onchange="this.form.submit()">
+                    <option value="">-- Semua Status --</option>
+                    <option value="Draft" <?= (isset($_GET['status']) && $_GET['status'] === 'Draft') ? 'selected' : '' ?>>Draft</option>
+                    <option value="Diajukan" <?= (isset($_GET['status']) && $_GET['status'] === 'Diajukan') ? 'selected' : '' ?>>Diajukan / Menunggu</option>
+                    <option value="Perlu Perbaikan" <?= (isset($_GET['status']) && $_GET['status'] === 'Perlu Perbaikan') ? 'selected' : '' ?>>Perlu Perbaikan</option>
+                    <option value="Dievaluasi" <?= (isset($_GET['status']) && $_GET['status'] === 'Dievaluasi') ? 'selected' : '' ?>>Terverifikasi / Sesuai</option>
+                </select>
+
                 <button type="submit" class="btn btn-secondary btn-sm" style="height: 38px;" title="Cari data">
-                    <i class="fa-solid fa-search"></i> Cari
+                    <i class="fa-solid fa-search"></i>
                 </button>
-                <?php if (!empty($_GET['search'])): ?>
-                    <a href="<?= BASE_URL ?>/field-updates" class="btn btn-secondary btn-sm" style="height: 38px; display: inline-flex; align-items: center;" title="Reset Pencarian">
+                <?php if (!empty($_GET['search']) || !empty($_GET['status']) || !empty($_GET['activity_id'])): ?>
+                    <a href="<?= BASE_URL ?>/field-updates" class="btn btn-secondary btn-sm" style="height: 38px; display: inline-flex; align-items: center;" title="Reset Filter">
                         <i class="fa-solid fa-xmark"></i>
                     </a>
                 <?php endif; ?>
@@ -28,10 +37,15 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     </div>
 
-    <?php if (!empty($_GET['search'])): ?>
-        <div style="padding: 10px 16px; background-color: #f8fafc; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; color: #475569; display: flex; justify-content: space-between; align-items: center;">
-            <span>Hasil pencarian untuk kata kunci: <strong>"<?= htmlspecialchars($_GET['search']) ?>"</strong> (<?= count($updates) ?> data ditemukan)</span>
-            <a href="<?= BASE_URL ?>/field-updates" style="color: #274312; font-weight: 600; text-decoration: underline;">Tampilkan semua data</a>
+    <?php if (!empty($_GET['search']) || !empty($_GET['status']) || !empty($_GET['activity_id'])): ?>
+        <div style="padding: 10px 16px; background-color: #f8fafc; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; color: #475569; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <span>
+                Filter aktif: 
+                <?php if (!empty($_GET['search'])): ?><strong>"<?= htmlspecialchars($_GET['search']) ?>"</strong> <?php endif; ?>
+                <?php if (!empty($_GET['status'])): ?><span class="badge badge-info" style="margin-left: 4px;"><?= htmlspecialchars($_GET['status']) ?></span><?php endif; ?>
+                (<?= count($updates) ?> data ditemukan)
+            </span>
+            <a href="<?= BASE_URL ?>/field-updates" style="color: #274312; font-weight: 600; text-decoration: underline;">Reset semua filter</a>
         </div>
     <?php endif; ?>
 
@@ -44,9 +58,9 @@ require_once __DIR__ . '/../layouts/header.php';
                     <th>Pelapor (Staf)</th>
                     <th>Tanggal Lapor</th>
                     <th>Realisasi Lapangan</th>
-                    <th>Progres</th>
+                    <th>Progres Fisik</th>
                     <th>Bukti</th>
-                    <th>Status Verifikasi</th>
+                    <th>Status Laporan</th>
                     <th style="min-width: 170px; text-align: center;">Aksi</th>
                 </tr>
             </thead>
@@ -55,10 +69,10 @@ require_once __DIR__ . '/../layouts/header.php';
                     <tr>
                         <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
                             <i class="fa-solid fa-circle-info" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 10px; display: block;"></i>
-                            <?php if (!empty($_GET['search'])): ?>
-                                Tidak ditemukan data pelaporan yang cocok dengan pencarian "<strong><?= htmlspecialchars($_GET['search']) ?></strong>".
+                            <?php if (!empty($_GET['search']) || !empty($_GET['status'])): ?>
+                                Tidak ditemukan data pelaporan yang cocok dengan kriteria filter.
                                 <div style="margin-top: 10px;">
-                                    <a href="<?= BASE_URL ?>/field-updates" class="btn btn-secondary btn-sm">Reset Pencarian</a>
+                                    <a href="<?= BASE_URL ?>/field-updates" class="btn btn-secondary btn-sm">Reset Filter</a>
                                 </div>
                             <?php else: ?>
                                 Belum ada laporan dari lapangan yang terdaftar.
@@ -92,8 +106,8 @@ require_once __DIR__ . '/../layouts/header.php';
                             </td>
                             <td>
                                 <?php if (!empty($up['evidence_file'])): ?>
-                                    <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($up['evidence_file']) ?>" target="_blank" class="badge badge-info" title="Lihat Bukti">
-                                        <i class="fa-solid fa-file"></i> Bukti
+                                    <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($up['evidence_file']) ?>" target="_blank" class="badge badge-info" title="Lihat Dokumen / Foto Bukti">
+                                        <i class="fa-solid fa-paperclip"></i> Bukti
                                     </a>
                                 <?php else: ?>
                                     <span style="font-size: 0.75rem; color: var(--text-muted);">Tidak ada</span>
@@ -101,26 +115,44 @@ require_once __DIR__ . '/../layouts/header.php';
                             </td>
                             <td>
                                 <?php if ($up['status'] === 'Dievaluasi'): ?>
-                                    <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Dievaluasi</span>
+                                    <span class="badge badge-success" title="Realisasi telah diverifikasi oleh evaluator"><i class="fa-solid fa-circle-check"></i> Terverifikasi</span>
                                 <?php elseif ($up['status'] === 'Perlu Perbaikan'): ?>
-                                    <span class="badge badge-danger"><i class="fa-solid fa-triangle-exclamation"></i> Perlu Perbaikan</span>
+                                    <span class="badge badge-danger" title="Laporan dikembalikan untuk revisi"><i class="fa-solid fa-triangle-exclamation"></i> Perlu Revisi</span>
+                                <?php elseif ($up['status'] === 'Draft'): ?>
+                                    <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;" title="Belum dikirim untuk verifikasi"><i class="fa-solid fa-pen-ruler"></i> Draft</span>
                                 <?php else: ?>
-                                    <span class="badge badge-warning"><i class="fa-solid fa-clock"></i> <?= htmlspecialchars($up['status']) ?></span>
+                                    <span class="badge badge-warning" title="Menunggu pemeriksaan pihak evaluator"><i class="fa-solid fa-clock"></i> Menunggu Verifikasi</span>
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
-                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat Rincian">
+                                <div style="display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat Rincian Laporan">
                                         <i class="fa-solid fa-eye"></i>
                                     </a>
 
+                                    <?php if ($up['status'] === 'Draft' && ($currentUser['user_id'] == $up['user_id'] || in_array($currentUser['role_id'], [2, 3]))): ?>
+                                        <!-- Tombol Kirim Draft untuk Verifikasi -->
+                                        <form action="<?= BASE_URL ?>/field-updates/publish" method="POST" style="display: inline;" onsubmit="return confirm('Kirim laporan #<?= $up['update_id'] ?> untuk proses verifikasi?');">
+                                            <input type="hidden" name="update_id" value="<?= $up['update_id'] ?>">
+                                            <button type="submit" class="btn btn-primary btn-sm" style="background: #274312; padding: 4px 8px; font-size: 0.78rem;" title="Kirim untuk Verifikasi">
+                                                <i class="fa-solid fa-paper-plane"></i> Kirim
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+
                                     <?php if ($currentUser['user_id'] == $up['user_id'] || in_array($currentUser['role_id'], [2, 3])): ?>
-                                        <button type="button" class="btn btn-secondary btn-sm" title="Edit Laporan" onclick='openEditModal(<?= json_encode($up, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
-                                            <i class="fa-solid fa-pen-to-square" style="color: #0284c7;"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-secondary btn-sm" title="Hapus Laporan" onclick="openDeleteModal(<?= $up['update_id'] ?>, '<?= htmlspecialchars(addslashes($up['activity_name'])) ?>')">
-                                            <i class="fa-solid fa-trash" style="color: #dc2626;"></i>
-                                        </button>
+                                        <?php if ($up['status'] !== 'Dievaluasi' || in_array($currentUser['role_id'], [2, 3])): ?>
+                                            <button type="button" class="btn btn-secondary btn-sm" title="Edit Laporan" onclick='openEditModal(<?= json_encode($up, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
+                                                <i class="fa-solid fa-pen-to-square" style="color: #0284c7;"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm" title="Hapus Laporan" onclick="openDeleteModal(<?= $up['update_id'] ?>, '<?= htmlspecialchars(addslashes($up['activity_name'])) ?>')">
+                                                <i class="fa-solid fa-trash" style="color: #dc2626;"></i>
+                                            </button>
+                                        <?php else: ?>
+                                            <span title="Laporan sudah diverifikasi dan tidak dapat diubah" style="color: #94a3b8; font-size: 0.75rem; padding: 2px 4px;">
+                                                <i class="fa-solid fa-lock"></i>
+                                            </span>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -179,9 +211,14 @@ require_once __DIR__ . '/../layouts/header.php';
                 <textarea name="description" class="form-control" rows="3" placeholder="Jelaskan pelaksanaan kegiatan, kehadiran peserta, kendala, atau capaian" required></textarea>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
                 <button type="button" onclick="toggleModal('modalSubmitReport')" class="btn btn-secondary">Batal</button>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Kirim Laporan</button>
+                <button type="submit" name="action_type" value="save_draft" class="btn btn-secondary" style="border: 1px solid #cbd5e1; background: #f8fafc; color: #475569;">
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan Draft
+                </button>
+                <button type="submit" name="action_type" value="submit_verification" class="btn btn-primary">
+                    <i class="fa-solid fa-paper-plane"></i> Kirim untuk Verifikasi
+                </button>
             </div>
         </form>
     </div>
@@ -236,9 +273,14 @@ require_once __DIR__ . '/../layouts/header.php';
                 <textarea name="description" id="edit_description" class="form-control" rows="3" required></textarea>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
                 <button type="button" onclick="toggleModal('modalEditReport')" class="btn btn-secondary">Batal</button>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Simpan Perubahan</button>
+                <button type="submit" name="action_type" value="save_only" class="btn btn-secondary" style="border: 1px solid #cbd5e1; background: #f8fafc; color: #475569;">
+                    <i class="fa-solid fa-save"></i> Simpan Saja
+                </button>
+                <button type="submit" name="action_type" value="submit_verification" class="btn btn-primary" id="btn_edit_resubmit">
+                    <i class="fa-solid fa-paper-plane"></i> Simpan & Kirim Verifikasi
+                </button>
             </div>
         </form>
     </div>
