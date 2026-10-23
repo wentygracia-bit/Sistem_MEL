@@ -170,7 +170,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <?php endif; ?>
             </form>
 
-            <?php if (in_array((int)$currentUser['role_id'], [2, 4])): // Hanya Staf MEL & Direktur ?>
+            <?php if ((int)$currentUser['role_id'] === 2): // Hanya Staf MEL (Direktur hanya memantau) ?>
                 <a href="<?= BASE_URL ?>/projects/create" class="btn btn-primary" style="height: 38px; display: inline-flex; align-items: center;">
                     <i class="fa-solid fa-plus"></i> Tambah Proyek Baru
                 </a>
@@ -246,9 +246,15 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm">
-                                    <i class="fa-solid fa-arrow-right"></i> Kelola
-                                </a>
+                                <?php if ((int)$currentUser['role_id'] === 4): // Khusus Direktur: Memantau rincian kegiatan ?>
+                                    <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat rincian kegiatan proyek ini">
+                                        <i class="fa-solid fa-circle-info"></i> Detail
+                                    </a>
+                                <?php else: ?>
+                                    <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm">
+                                        <i class="fa-solid fa-arrow-right"></i> Kelola
+                                    </a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

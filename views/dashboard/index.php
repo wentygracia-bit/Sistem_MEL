@@ -168,7 +168,7 @@ switch ($userRoleId) {
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">Proyek & Program Berjalan</h2>
-            <?php if (in_array($currentUser['role_id'], [2, 4])): // Hanya Staf MEL & Direktur ?>
+            <?php if ((int)$currentUser['role_id'] === 2): // Hanya Staf MEL ?>
                 <a href="<?= BASE_URL ?>/projects/create" class="btn btn-primary btn-sm">
                     <i class="fa-solid fa-plus"></i> Tambah Proyek
                 </a>

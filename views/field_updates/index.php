@@ -165,8 +165,12 @@ require_once __DIR__ . '/../layouts/header.php';
                                         </form>
                                     <?php endif; ?>
 
-                                    <?php if ($currentUser['user_id'] == $up['user_id'] || in_array($currentUser['role_id'], [2, 3])): ?>
-                                        <?php if ($up['status'] !== 'Dievaluasi' || in_array($currentUser['role_id'], [2, 3])): ?>
+                                    <?php 
+                                    // Project Leader (role 3) hanya bisa melihat laporan, tidak bisa mengedit atau menghapus
+                                    $canManage = ((int)$currentUser['user_id'] === (int)$up['user_id'] && (int)$currentUser['role_id'] !== 3) || (int)$currentUser['role_id'] === 2;
+                                    if ($canManage): 
+                                    ?>
+                                        <?php if ($up['status'] !== 'Dievaluasi' || (int)$currentUser['role_id'] === 2): ?>
                                             <button type="button" class="btn btn-secondary btn-sm" title="Edit Laporan" onclick='openEditModal(<?= json_encode($up, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
                                                 <i class="fa-solid fa-pen-to-square" style="color: #0284c7;"></i>
                                             </button>

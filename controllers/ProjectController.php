@@ -73,7 +73,7 @@ class ProjectController {
     }
 
     public function create(): void {
-        AuthHelper::requireRole([2, 4]); // Hanya Staf MEL & Direktur
+        AuthHelper::requireRole([2]); // Hanya Staf MEL (Direktur hanya memantau)
         $user = AuthHelper::getUser();
         $projectModel = new Project();
 
@@ -144,7 +144,7 @@ class ProjectController {
     }
 
     public function addMember(): void {
-        AuthHelper::requireRole([2, 3, 4]);
+        AuthHelper::requireRole([2, 3]); // Hanya Staf MEL & Project Leader
         $projectId = (int)($_POST['project_id'] ?? 0);
         $userId = (int)($_POST['user_id'] ?? 0);
         $role = trim($_POST['member_role'] ?? 'Anggota');
@@ -159,7 +159,7 @@ class ProjectController {
     }
 
     public function createActivity(): void {
-        AuthHelper::requireRole([2, 3, 4]); // MEL, PL, Direktur
+        AuthHelper::requireRole([2, 3]); // Hanya Staf MEL & Project Leader (Direktur hanya memantau)
         $projectId = (int)($_POST['project_id'] ?? 0);
         $activityName = trim($_POST['activity_name'] ?? '');
         $description = trim($_POST['description'] ?? '');
@@ -196,7 +196,7 @@ class ProjectController {
     }
 
     public function addIndicator(): void {
-        AuthHelper::requireRole([2, 3, 4]);
+        AuthHelper::requireRole([2, 3]); // Hanya Staf MEL & Project Leader
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . BASE_URL . '/projects');
             exit;
