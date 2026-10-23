@@ -150,18 +150,7 @@ class FieldUpdateController {
         $actionType = $_POST['action_type'] ?? 'submit_verification';
         $status = ($actionType === 'save_draft') ? 'Draft' : 'Diajukan';
 
-        $evidenceFileName = null;
-        if (isset($_FILES['evidence_file']) && $_FILES['evidence_file']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../public/uploads/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-            $ext = pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION);
-            $fileName = 'evidence_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-            if (ImageHelper::compressAndSave($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
-                $evidenceFileName = $fileName;
-            }
-        }
+        $evidenceFileName = $this->handleEvidenceUpload();
 
         if ($activityId > 0 && !empty($description)) {
             $updateModel = new FieldUpdate();
@@ -309,18 +298,7 @@ class FieldUpdateController {
             $newStatus = 'Diajukan';
         }
 
-        $evidenceFileName = null;
-        if (isset($_FILES['evidence_file']) && $_FILES['evidence_file']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../public/uploads/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-            $ext = pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION);
-            $fileName = 'evidence_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-            if (ImageHelper::compressAndSave($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
-                $evidenceFileName = $fileName;
-            }
-        }
+        $evidenceFileName = $this->handleEvidenceUpload();
 
         $success = $updateModel->updateFull(
             $updateId,
@@ -395,6 +373,42 @@ class FieldUpdateController {
 
         header('Location: ' . BASE_URL . '/field-updates');
         exit;
+    }
+
+    private function handleEvidenceUpload(): ?string {
+        $uploadDir = __DIR__ . '/../public/uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // Prioritas 1: Gambar bukti (dikompres otomatis)
+        if (isset($_FILES['evidence_image']) && $_FILES['evidence_image']['error'] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['evidence_image']['name'], PATHINFO_EXTENSION);
+            $fileName = 'img_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            if (ImageHelper::compressAndSave($_FILES['evidence_image']['tmp_name'], $uploadDir . $fileName)) {
+                return $fileName;
+            }
+        }
+
+        // Prioritas 2: Dokumen pendukung
+        if (isset($_FILES['evidence_doc']) && $_FILES['evidence_doc']['error'] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['evidence_doc']['name'], PATHINFO_EXTENSION);
+            $fileName = 'doc_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            if (move_uploaded_file($_FILES['evidence_doc']['tmp_name'], $uploadDir . $fileName)) {
+                return $fileName;
+            }
+        }
+
+        // Backward compatibility jika form lain mengirim 'evidence_file'
+        if (isset($_FILES['evidence_file']) && $_FILES['evidence_file']['error'] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION);
+            $fileName = 'evidence_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            if (ImageHelper::compressAndSave($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
+                return $fileName;
+            }
+        }
+
+        return null;
     }
 }
 

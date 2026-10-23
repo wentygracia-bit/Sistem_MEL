@@ -242,14 +242,21 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                <div class="form-group">
-                    <label class="form-label">Persentase Progres (%)</label>
-                    <input type="number" step="any" min="0" max="100" name="progress_percentage" class="form-control" placeholder="cth: 100" oninput="if(parseFloat(this.value) > 100) this.value = 100; if(parseFloat(this.value) < 0) this.value = 0;">
+            <div class="form-group">
+                <label class="form-label">Persentase Progres (%)</label>
+                <input type="number" step="any" min="0" max="100" name="progress_percentage" class="form-control" placeholder="cth: 100" oninput="if(parseFloat(this.value) > 100) this.value = 100; if(parseFloat(this.value) < 0) this.value = 0;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label"><i class="fa-solid fa-image"></i> Gambar Bukti <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
+                    <input type="file" name="evidence_image" accept="image/*" class="form-control">
+                    <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 3px;">JPG, PNG, WEBP (dikompresi)</small>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Unggah Bukti / Dokumentasi</label>
-                    <input type="file" name="evidence_file" class="form-control">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label"><i class="fa-solid fa-file-lines"></i> Dokumen Pendukung <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
+                    <input type="file" name="evidence_doc" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" class="form-control">
+                    <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 3px;">PDF, DOC, XLS, ZIP</small>
                 </div>
             </div>
 
@@ -305,17 +312,22 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                <div class="form-group">
-                    <label class="form-label">Persentase Progres (%)</label>
-                    <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="cth: 100">
+            <div class="form-group">
+                <label class="form-label">Persentase Progres (%)</label>
+                <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="cth: 100">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label"><i class="fa-solid fa-image"></i> Ganti Gambar <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
+                    <input type="file" name="evidence_image" accept="image/*" class="form-control">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Ganti Bukti / Dokumentasi (Opsional)</label>
-                    <input type="file" name="evidence_file" class="form-control">
-                    <small id="edit_evidence_info" style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;"></small>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label"><i class="fa-solid fa-file-lines"></i> Ganti Dokumen <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
+                    <input type="file" name="evidence_doc" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" class="form-control">
                 </div>
             </div>
+            <small id="edit_evidence_info" style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: -8px; margin-bottom: 14px;"></small>
 
             <div class="form-group">
                 <label class="form-label">Deskripsi & Narasi Lapangan *</label>
