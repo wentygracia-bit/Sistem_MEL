@@ -142,8 +142,17 @@ class FieldUpdateController {
 
         $updateDate = $_POST['update_date'] ?? date('Y-m-d');
         $realizationValue = !empty($_POST['realization_value']) ? (float)$_POST['realization_value'] : 0.0;
-        $progressPercentage = !empty($_POST['progress_percentage']) ? (float)$_POST['progress_percentage'] : 0.0;
-        $progressPercentage = max(0.0, min(100.0, $progressPercentage));
+        
+        // Akumulasi / perhitungan otomatis persentase capaian oleh sistem
+        $totalTarget = (float)($activityData['total_target'] ?? 0);
+        if ($totalTarget > 0) {
+            $calcPercent = ($realizationValue / $totalTarget) * 100.0;
+            $progressPercentage = round(max(0.0, min(100.0, $calcPercent)), 1);
+        } else {
+            // Jika kegiatan belum memiliki target terdefinisi atau target = 0
+            $progressPercentage = $realizationValue > 0 ? 100.0 : 0.0;
+        }
+
         $description = trim($_POST['description'] ?? '');
 
         // Determine status based on button clicked: "save_draft" or "submit_verification"

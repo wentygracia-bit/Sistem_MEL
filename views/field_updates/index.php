@@ -237,19 +237,41 @@ require_once __DIR__ . '/../layouts/header.php';
                     <input type="date" name="update_date" value="<?= date('Y-m-d') ?>" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Realisasi Angka Capaian</label>
-                    <input type="number" step="any" name="realization_value" class="form-control" placeholder="cth: 38 (peserta / bibit)">
+                    <label class="form-label">Unggah Bukti / Dokumentasi</label>
+                    <input type="file" name="evidence_file" class="form-control">
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                <div class="form-group">
-                    <label class="form-label">Persentase Progres (%)</label>
-                    <input type="number" step="any" min="0" max="100" name="progress_percentage" class="form-control" placeholder="cth: 100" oninput="if(parseFloat(this.value) > 100) this.value = 100; if(parseFloat(this.value) < 0) this.value = 0;">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Unggah Bukti / Dokumentasi</label>
-                    <input type="file" name="evidence_file" class="form-control">
+            <!-- Input Angka Capaian & Akumulasi Persentase Otomatis Sistem -->
+            <div class="form-group" style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center;">
+                    <div>
+                        <label class="form-label" style="margin-bottom: 4px;">
+                            Realisasi Angka Capaian * 
+                            <span id="submit_unit_badge" style="font-weight: 500; font-size: 0.78rem; color: var(--text-muted);">(Satuan)</span>
+                        </label>
+                        <input type="number" step="any" min="0" name="realization_value" id="submit_realization_value" class="form-control" placeholder="Masukkan capaian (cth: 50)" required>
+                        <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 4px;">
+                            Cukup inputkan angka capaian lapangan Anda.
+                        </small>
+                    </div>
+
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 10px 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.78rem; font-weight: 600; color: #475569;">
+                                <i class="fa-solid fa-chart-pie" style="color: #2e4a16;"></i> Persentase Capaian:
+                            </span>
+                            <span id="submit_calc_percent_text" style="font-size: 1.1rem; font-weight: 800; color: #1e330c;">
+                                0%
+                            </span>
+                        </div>
+                        <div class="progress-bar-bg" style="height: 6px; margin-top: 6px; background-color: #f1f5f9;">
+                            <div id="submit_calc_percent_bar" class="progress-bar-fill" style="width: 0%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <div id="submit_target_info_text" style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">
+                            Target kegiatan: -
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -406,7 +428,9 @@ const availableActivities = <?= json_encode(array_map(function($a) {
         'name' => (string)$a['activity_name'],
         'project_name' => (string)($a['project_name'] ?? ''),
         'project_code' => (string)($a['project_code'] ?? ''),
-        'location' => (string)($a['location'] ?? '')
+        'location' => (string)($a['location'] ?? ''),
+        'total_target' => (float)($a['total_target'] ?? 0),
+        'unit' => (string)($a['unit'] ?? 'Satuan')
     ];
 }, $activities), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 
@@ -496,10 +520,69 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const realizationInput = document.getElementById('submit_realization_value');
+    const percentText = document.getElementById('submit_calc_percent_text');
+    const percentBar = document.getElementById('submit_calc_percent_bar');
+    const targetInfoText = document.getElementById('submit_target_info_text');
+    const unitBadge = document.getElementById('submit_unit_badge');
+    let currentSelectedActivity = null;
+
+    function recalculateProgress() {
+        if (!currentSelectedActivity) {
+            if (percentText) percentText.textContent = '0%';
+            if (percentBar) percentBar.style.width = '0%';
+            if (targetInfoText) targetInfoText.textContent = 'Pilih kegiatan terlebih dahulu';
+            if (unitBadge) unitBadge.textContent = '(Satuan)';
+            return;
+        }
+
+        const target = parseFloat(currentSelectedActivity.total_target) || 0;
+        const val = parseFloat(realizationInput ? realizationInput.value : 0) || 0;
+        const unit = currentSelectedActivity.unit || 'Satuan';
+
+        if (unitBadge) unitBadge.textContent = '(' + unit + ')';
+
+        if (target > 0) {
+            let percentage = (val / target) * 100;
+            let displayPercent = Math.min(100, Math.max(0, percentage)).toFixed(1);
+            // Hilangkan .0 jika bilangan bulat
+            if (displayPercent.endsWith('.0')) {
+                displayPercent = parseInt(displayPercent);
+            }
+            if (percentText) {
+                percentText.textContent = displayPercent + '%';
+                if (percentage >= 100) {
+                    percentText.style.color = '#15803d'; // hijau sukses
+                } else {
+                    percentText.style.color = '#1e330c';
+                }
+            }
+            if (percentBar) {
+                percentBar.style.width = Math.min(100, Math.max(0, percentage)) + '%';
+            }
+            if (targetInfoText) {
+                targetInfoText.innerHTML = `Target: <strong>${target.toLocaleString('id-ID')} ${escapeHtml(unit)}</strong> (Realisasi: ${val.toLocaleString('id-ID')} ${escapeHtml(unit)})`;
+            }
+        } else {
+            // Jika kegiatan belum ada target KPI
+            const percentage = val > 0 ? 100 : 0;
+            if (percentText) percentText.textContent = percentage + '%';
+            if (percentBar) percentBar.style.width = percentage + '%';
+            if (targetInfoText) targetInfoText.textContent = 'Target kegiatan belum ditentukan (KPI fleksibel)';
+        }
+    }
+
+    if (realizationInput) {
+        realizationInput.addEventListener('input', recalculateProgress);
+    }
+
     function selectActivity(id, name, projectName) {
         hiddenIdInput.value = id;
         searchInput.value = name;
         searchInput.setCustomValidity(''); // clear validity error
+
+        // Ambil objek kegiatan terpilih
+        currentSelectedActivity = availableActivities.find(function(a) { return a.id === parseInt(id); }) || null;
 
         // Display selected badge
         selectedText.textContent = name + (projectName ? ' (' + projectName + ')' : '');
@@ -510,17 +593,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (helpText) {
             helpText.style.display = 'none';
         }
+
+        // Hitung ulang persentase progres capaian
+        recalculateProgress();
     }
 
     function clearSelection() {
         hiddenIdInput.value = '';
         searchInput.value = '';
+        currentSelectedActivity = null;
         selectedBadge.style.display = 'none';
         clearBtn.style.display = 'none';
         dropdown.style.display = 'none';
         if (helpText) {
             helpText.style.display = 'block';
         }
+        recalculateProgress();
         searchInput.focus();
     }
 
