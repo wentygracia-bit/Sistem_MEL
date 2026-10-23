@@ -231,21 +231,9 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                <div class="form-group">
-                    <label class="form-label">Tanggal Lapor *</label>
-                    <input type="date" name="update_date" value="<?= date('Y-m-d') ?>" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Unggah Bukti / Dokumentasi</label>
-                    <input type="file" name="evidence_file" class="form-control">
-                </div>
-            </div>
-
-<<<<<<< HEAD
             <div class="form-group">
-                <label class="form-label">Persentase Progres (%)</label>
-                <input type="number" step="any" min="0" max="100" name="progress_percentage" class="form-control" placeholder="cth: 100" oninput="if(parseFloat(this.value) > 100) this.value = 100; if(parseFloat(this.value) < 0) this.value = 0;">
+                <label class="form-label">Tanggal Lapor *</label>
+                <input type="date" name="update_date" value="<?= date('Y-m-d') ?>" class="form-control" required>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
@@ -258,7 +246,9 @@ require_once __DIR__ . '/../layouts/header.php';
                     <label class="form-label"><i class="fa-solid fa-file-lines"></i> Dokumen Pendukung <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
                     <input type="file" name="evidence_doc" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" class="form-control">
                     <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 3px;">PDF, DOC, XLS, ZIP</small>
-=======
+                </div>
+            </div>
+
             <!-- Input Angka Capaian & Akumulasi Persentase Otomatis Sistem -->
             <div class="form-group" style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center;">
@@ -289,7 +279,6 @@ require_once __DIR__ . '/../layouts/header.php';
                             Target kegiatan: -
                         </div>
                     </div>
->>>>>>> 82d6d20aed40e1c9c0f5cb19847b3ef1473668eb
                 </div>
             </div>
 
