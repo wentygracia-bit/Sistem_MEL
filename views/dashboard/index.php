@@ -49,6 +49,13 @@ switch ($userRoleId) {
             <?= htmlspecialchars($roleDescription) ?>
         </p>
     </div>
+    <?php if ((int)$currentUser['role_id'] === 3): ?>
+        <div>
+            <a href="<?= BASE_URL ?>/users" class="btn btn-primary" style="height: 38px; display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-users-gear"></i> Manajemen Pengguna
+            </a>
+        </div>
+    <?php endif; ?>
 </div>
 
 <?php if ((int)$currentUser['role_id'] === 3 && !empty($plStats)): ?>

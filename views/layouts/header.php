@@ -123,6 +123,10 @@ $activeMenu = $activeMenu ?? 'dashboard';
                         <i class="fa-solid fa-rotate-left"></i>
                         <span class="nav-text">Permintaan Perbaikan</span>
                     </a>
+                    <a href="<?= BASE_URL ?>/users" class="nav-link <?= $activeMenu === 'users' ? 'active' : '' ?>" title="Manajemen Pengguna">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <span class="nav-text">Manajemen Pengguna</span>
+                    </a>
                     <a href="<?= BASE_URL ?>/notifications" class="nav-link <?= $activeMenu === 'notifications' ? 'active' : '' ?>" title="Notifikasi">
                         <i class="fa-solid fa-bell"></i>
                         <span class="nav-text">Notifikasi</span>

@@ -231,10 +231,22 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                                     </span>
                                 </div>
                             </div>
-                            <div>
-                                <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 0.75rem;" title="Lihat">
-                                    <i class="fa-solid fa-arrow-right"></i>
+                            <div style="display: flex; gap: 4px; align-items: center; flex-wrap: nowrap;">
+                                <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 0.75rem;" title="Lihat Laporan">
+                                    <i class="fa-solid fa-eye"></i>
                                 </a>
+                                <?php if ($up['status'] !== 'Dievaluasi'): ?>
+                                    <button type="button" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 0.75rem;" title="Edit Laporan" onclick='openEditModal(<?= json_encode($up, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
+                                        <i class="fa-solid fa-pen-to-square" style="color: #0284c7;"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 0.75rem;" title="Hapus Laporan" onclick="openDeleteModal(<?= $up['update_id'] ?>, '<?= htmlspecialchars(addslashes($up['activity_name'])) ?>')">
+                                        <i class="fa-solid fa-trash" style="color: #dc2626;"></i>
+                                    </button>
+                                <?php else: ?>
+                                    <span title="Laporan sudah diverifikasi dan tidak dapat diubah" style="color: #94a3b8; font-size: 0.75rem; padding: 2px 4px;">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </span>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -243,6 +255,133 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
         </div>
     </div>
 </div>
+
+<!-- Modal Edit Laporan Lapangan -->
+<div id="modalEditReport" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 1.15rem; font-weight: 700;"><i class="fa-solid fa-pen-to-square" style="color: #0284c7;"></i> Edit Laporan Lapangan</h3>
+            <button onclick="toggleModal('modalEditReport')" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
+
+        <form action="<?= BASE_URL ?>/field-updates/edit" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="update_id" id="edit_update_id">
+
+            <div class="form-group">
+                <label class="form-label">Kegiatan Proyek *</label>
+                <select name="activity_id" id="edit_activity_id" class="form-control" required>
+                    <option value="">-- Pilih Kegiatan Proyek --</option>
+                    <?php foreach ($activities as $act): ?>
+                        <option value="<?= $act['activity_id'] ?>">
+                            <?= htmlspecialchars($act['activity_name']) ?> (<?= htmlspecialchars($act['project_name']) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div class="form-group">
+                    <label class="form-label">Tanggal Lapor *</label>
+                    <input type="date" name="update_date" id="edit_update_date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Realisasi Angka Capaian</label>
+                    <input type="number" step="any" name="realization_value" id="edit_realization_value" class="form-control" placeholder="cth: 38">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Persentase Progres (%)</label>
+                <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="cth: 100">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label"><i class="fa-solid fa-image"></i> Ganti Gambar <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
+                    <input type="file" name="evidence_image" accept="image/*" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label"><i class="fa-solid fa-file-lines"></i> Ganti Dokumen <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
+                    <input type="file" name="evidence_doc" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" class="form-control">
+                </div>
+            </div>
+            <small id="edit_evidence_info" style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: -8px; margin-bottom: 14px;"></small>
+
+            <div class="form-group">
+                <label class="form-label">Deskripsi & Narasi Lapangan *</label>
+                <textarea name="description" id="edit_description" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                <button type="button" onclick="toggleModal('modalEditReport')" class="btn btn-secondary">Batal</button>
+                <button type="submit" name="action_type" value="save_only" class="btn btn-secondary" style="border: 1px solid #cbd5e1; background: #f8fafc; color: #475569;">
+                    <i class="fa-solid fa-save"></i> Simpan Saja
+                </button>
+                <button type="submit" name="action_type" value="submit_verification" class="btn btn-primary" id="btn_edit_resubmit">
+                    <i class="fa-solid fa-paper-plane"></i> Simpan & Kirim Verifikasi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus Laporan -->
+<div id="modalDeleteReport" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 440px;">
+        <div style="text-align: center; padding: 10px 0 20px 0;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 16px auto;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Konfirmasi Hapus Laporan</h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 4px;">Apakah Anda yakin ingin menghapus data laporan pelaporan ini?</p>
+            <p id="delete_activity_preview" style="font-weight: 600; color: #1e293b; font-size: 0.95rem;"></p>
+            <p style="color: #dc2626; font-size: 0.8rem; margin-top: 6px;">Tindakan ini tidak dapat dibatalkan.</p>
+        </div>
+
+        <form action="<?= BASE_URL ?>/field-updates/delete" method="POST">
+            <input type="hidden" name="update_id" id="delete_update_id">
+            <div style="display: flex; justify-content: center; gap: 12px;">
+                <button type="button" onclick="toggleModal('modalDeleteReport')" class="btn btn-secondary" style="min-width: 100px;">Batal</button>
+                <button type="submit" class="btn btn-danger" style="min-width: 100px;"><i class="fa-solid fa-trash"></i> Hapus</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    const isOpening = (modal.style.display === 'none' || modal.style.display === '');
+    modal.style.display = isOpening ? 'flex' : 'none';
+}
+
+function openEditModal(data) {
+    document.getElementById('edit_update_id').value = data.update_id || '';
+    if (document.getElementById('edit_activity_id')) {
+        document.getElementById('edit_activity_id').value = data.activity_id || '';
+    }
+    document.getElementById('edit_update_date').value = data.update_date || '';
+    document.getElementById('edit_realization_value').value = data.realization_value || '';
+    document.getElementById('edit_progress_percentage').value = data.progress_percentage || '';
+    document.getElementById('edit_description').value = data.description || '';
+    
+    const infoEl = document.getElementById('edit_evidence_info');
+    if (data.evidence_file) {
+        infoEl.textContent = 'File saat ini: ' + data.evidence_file;
+    } else {
+        infoEl.textContent = 'Belum ada bukti yang diunggah.';
+    }
+
+    toggleModal('modalEditReport');
+}
+
+function openDeleteModal(id, activityName) {
+    document.getElementById('delete_update_id').value = id;
+    document.getElementById('delete_activity_preview').textContent = 'Laporan #' + id + ': ' + activityName;
+    toggleModal('modalDeleteReport');
+}
+</script>
 
 <?php
 require_once __DIR__ . '/../layouts/footer.php';
