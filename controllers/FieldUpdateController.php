@@ -57,7 +57,11 @@ class FieldUpdateController {
             $activityFilter
         );
 
-        $activities = $activityModel->getAllWithSummary();
+        if ((int)$user['role_id'] === 1) {
+            $activities = $activityModel->getActivitiesForUser((int)$user['user_id'], 1);
+        } else {
+            $activities = $activityModel->getAllWithSummary();
+        }
 
         $pageTitle = $filteredActivity 
             ? 'Riwayat Laporan: ' . $filteredActivity['activity_name']
@@ -101,12 +105,38 @@ class FieldUpdateController {
         }
 
         $activityId = (int)($_POST['activity_id'] ?? 0);
-        $activityName = trim($_POST['activity_name'] ?? '');
-
-        // Resolve or create activity: prioritize selected activity_id, fallback to typed name if provided
         $activityModel = new Activity();
-        if ($activityId <= 0 && !empty($activityName)) {
-            $activityId = $activityModel->findOrCreateByName($activityName);
+
+        // Validasi: Wajib memilih kegiatan yang valid dari autocomplete
+        if ($activityId <= 0) {
+            AuthHelper::setFlash('error', 'Silakan pilih kegiatan yang valid dari daftar pencarian.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        // Validasi keberadaan kegiatan dan hak akses Staf Lapangan
+        $activityData = $activityModel->findById($activityId);
+        if (!$activityData) {
+            AuthHelper::setFlash('error', 'Kegiatan tidak ditemukan.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        // Periksa apakah Staf Lapangan ditugaskan pada proyek kegiatan ini
+        $projectModel = new Project();
+        $members = $projectModel->getMembers((int)$activityData['project_id']);
+        $isAssigned = false;
+        foreach ($members as $mem) {
+            if ((int)$mem['user_id'] === (int)$user['user_id']) {
+                $isAssigned = true;
+                break;
+            }
+        }
+
+        if (!$isAssigned) {
+            AuthHelper::setFlash('error', 'Akses ditolak: Anda tidak ditugaskan pada proyek untuk kegiatan ini.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
         }
 
         $updateDate = $_POST['update_date'] ?? date('Y-m-d');
