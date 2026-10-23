@@ -198,31 +198,87 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
 
         <form action="<?= BASE_URL ?>/field-updates/submit" method="POST" enctype="multipart/form-data">
+            <div class="form-group" style="position: relative;">
+                <label class="form-label">Kegiatan Proyek *</label>
+                <!-- Hidden input untuk menyimpan activity_id yang dipilih secara valid -->
+                <input type="hidden" name="activity_id" id="submit_activity_id" value="" required>
+
+                <div style="position: relative;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem; pointer-events: none;"></i>
+                    <input type="text" id="submit_activity_search" class="form-control" 
+                           placeholder="Ketik untuk mencari kegiatan proyek..." 
+                           autocomplete="off" 
+                           style="padding-left: 38px; padding-right: 36px; cursor: pointer;"
+                           required>
+                    <button type="button" id="submit_activity_clear_btn" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; font-size: 0.95rem; cursor: pointer; padding: 4px;" title="Hapus pilihan">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Petunjuk & Indikator Validasi Terpilih -->
+                <div id="submit_activity_selected_badge" style="display: none; margin-top: 6px; font-size: 0.82rem; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 6px 10px; border-radius: var(--radius-sm); align-items: center; justify-content: space-between;">
+                    <div>
+                        <i class="fa-solid fa-circle-check"></i> Kegiatan Terpilih: <strong id="submit_activity_selected_text"></strong>
+                    </div>
+                </div>
+
+                <small id="submit_activity_help_text" style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">
+                    <i class="fa-solid fa-circle-info"></i> Ketik nama kegiatan yang ingin dilaporkan lalu pilih dari daftar saran.
+                </small>
+
+                <!-- Dropdown Saran Hasil Pencarian Autocomplete -->
+                <div id="submit_activity_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1050; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); max-height: 230px; overflow-y: auto; margin-top: 4px;">
+                </div>
+            </div>
+
             <div class="form-group">
-                <label class="form-label">Nama Kegiatan *</label>
-                <input type="text" name="activity_name" id="submit_activity_name" class="form-control" placeholder="Masukkan nama kegiatan..." required autocomplete="off">
-                <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">Ketik nama kegiatan yang ingin dilaporkan.</small>
+                <label class="form-label">Tanggal Lapor *</label>
+                <input type="date" name="update_date" value="<?= date('Y-m-d') ?>" class="form-control" required>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                <div class="form-group">
-                    <label class="form-label">Tanggal Lapor *</label>
-                    <input type="date" name="update_date" value="<?= date('Y-m-d') ?>" class="form-control" required>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label"><i class="fa-solid fa-image"></i> Gambar Bukti <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
+                    <input type="file" name="evidence_image" accept="image/*" class="form-control">
+                    <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 3px;">JPG, PNG, WEBP (dikompresi)</small>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Realisasi Angka Capaian</label>
-                    <input type="number" step="any" name="realization_value" class="form-control" placeholder="cth: 38 (peserta / bibit)">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label"><i class="fa-solid fa-file-lines"></i> Dokumen Pendukung <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
+                    <input type="file" name="evidence_doc" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" class="form-control">
+                    <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 3px;">PDF, DOC, XLS, ZIP</small>
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                <div class="form-group">
-                    <label class="form-label">Persentase Progres (%)</label>
-                    <input type="number" step="any" min="0" max="100" name="progress_percentage" class="form-control" placeholder="cth: 100" oninput="if(parseFloat(this.value) > 100) this.value = 100; if(parseFloat(this.value) < 0) this.value = 0;">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Unggah Bukti / Dokumentasi</label>
-                    <input type="file" name="evidence_file" class="form-control">
+            <!-- Input Angka Capaian & Akumulasi Persentase Otomatis Sistem -->
+            <div class="form-group" style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center;">
+                    <div>
+                        <label class="form-label" style="margin-bottom: 4px;">
+                            Realisasi Angka Capaian * 
+                            <span id="submit_unit_badge" style="font-weight: 500; font-size: 0.78rem; color: var(--text-muted);">(Satuan)</span>
+                        </label>
+                        <input type="number" step="any" min="0" name="realization_value" id="submit_realization_value" class="form-control" placeholder="Masukkan capaian (cth: 50)" required>
+                        <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 4px;">
+                            Cukup inputkan angka capaian lapangan Anda.
+                        </small>
+                    </div>
+
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 10px 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.78rem; font-weight: 600; color: #475569;">
+                                <i class="fa-solid fa-chart-pie" style="color: #2e4a16;"></i> Persentase Capaian:
+                            </span>
+                            <span id="submit_calc_percent_text" style="font-size: 1.1rem; font-weight: 800; color: #1e330c;">
+                                0%
+                            </span>
+                        </div>
+                        <div class="progress-bar-bg" style="height: 6px; margin-top: 6px; background-color: #f1f5f9;">
+                            <div id="submit_calc_percent_bar" class="progress-bar-fill" style="width: 0%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <div id="submit_target_info_text" style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">
+                            Target kegiatan: -
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -278,17 +334,22 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                <div class="form-group">
-                    <label class="form-label">Persentase Progres (%)</label>
-                    <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="cth: 100">
+            <div class="form-group">
+                <label class="form-label">Persentase Progres (%)</label>
+                <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="cth: 100">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label"><i class="fa-solid fa-image"></i> Ganti Gambar <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
+                    <input type="file" name="evidence_image" accept="image/*" class="form-control">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Ganti Bukti / Dokumentasi (Opsional)</label>
-                    <input type="file" name="evidence_file" class="form-control">
-                    <small id="edit_evidence_info" style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;"></small>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label"><i class="fa-solid fa-file-lines"></i> Ganti Dokumen <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
+                    <input type="file" name="evidence_doc" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" class="form-control">
                 </div>
             </div>
+            <small id="edit_evidence_info" style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: -8px; margin-bottom: 14px;"></small>
 
             <div class="form-group">
                 <label class="form-label">Deskripsi & Narasi Lapangan *</label>
@@ -335,7 +396,12 @@ require_once __DIR__ . '/../layouts/header.php';
 function toggleModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
-    modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
+    const isOpening = (modal.style.display === 'none' || modal.style.display === '');
+    modal.style.display = isOpening ? 'flex' : 'none';
+
+    if (modalId === 'modalSubmitReport' && isOpening && typeof window.resetSubmitActivityAutocomplete === 'function') {
+        window.resetSubmitActivityAutocomplete();
+    }
 }
 
 function openEditModal(data) {
@@ -366,6 +432,270 @@ function openDeleteModal(id, activityName) {
     document.getElementById('delete_activity_preview').textContent = 'Laporan #' + id + ': ' + activityName;
     toggleModal('modalDeleteReport');
 }
+
+// Data kegiatan yang diizinkan untuk pengguna saat ini (dari PHP)
+const availableActivities = <?= json_encode(array_map(function($a) {
+    return [
+        'id' => (int)$a['activity_id'],
+        'name' => (string)$a['activity_name'],
+        'project_name' => (string)($a['project_name'] ?? ''),
+        'project_code' => (string)($a['project_code'] ?? ''),
+        'location' => (string)($a['location'] ?? ''),
+        'total_target' => (float)($a['total_target'] ?? 0),
+        'unit' => (string)($a['unit'] ?? 'Satuan')
+    ];
+}, $activities), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('submit_activity_search');
+    const hiddenIdInput = document.getElementById('submit_activity_id');
+    const dropdown = document.getElementById('submit_activity_dropdown');
+    const clearBtn = document.getElementById('submit_activity_clear_btn');
+    const selectedBadge = document.getElementById('submit_activity_selected_badge');
+    const selectedText = document.getElementById('submit_activity_selected_text');
+    const helpText = document.getElementById('submit_activity_help_text');
+    const submitForm = searchInput ? searchInput.closest('form') : null;
+
+    if (!searchInput || !dropdown) return;
+
+    function renderSuggestions(query) {
+        const cleanQuery = (query || '').trim().toLowerCase();
+
+        // Ketentuan: Jangan menampilkan seluruh daftar kegiatan sekaligus, hanya tampil saat mengetik / membuka
+        if (cleanQuery.length === 0) {
+            dropdown.innerHTML = `
+                <div style="padding: 12px 14px; font-size: 0.85rem; color: #64748b; text-align: center;">
+                    <i class="fa-solid fa-keyboard" style="margin-right: 6px; color: #94a3b8;"></i>
+                    Ketik nama kegiatan yang ingin dilaporkan
+                </div>
+            `;
+            dropdown.style.display = 'block';
+            return;
+        }
+
+        const filtered = availableActivities.filter(function(item) {
+            const actName = (item.name || '').toLowerCase();
+            const prjName = (item.project_name || '').toLowerCase();
+            const prjCode = (item.project_code || '').toLowerCase();
+            return actName.includes(cleanQuery) || prjName.includes(cleanQuery) || prjCode.includes(cleanQuery);
+        });
+
+        if (filtered.length === 0) {
+            dropdown.innerHTML = `
+                <div style="padding: 14px; font-size: 0.85rem; color: #dc2626; text-align: center; background: #fffaf0;">
+                    <i class="fa-solid fa-circle-exclamation" style="margin-right: 6px;"></i>
+                    Kegiatan tidak ditemukan
+                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">Pastikan Anda ditugaskan pada proyek kegiatan tersebut.</div>
+                </div>
+            `;
+            dropdown.style.display = 'block';
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(function(item) {
+            // Highlight matching text on activity name
+            const escapedName = escapeHtml(item.name);
+            const escapedProject = escapeHtml(item.project_name);
+            const escapedCode = escapeHtml(item.project_code);
+
+            html += `
+                <div class="autocomplete-item" data-id="${item.id}" data-name="${escapedName}" data-project="${escapedProject}" style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s ease;">
+                    <div style="font-weight: 600; color: #0f172a; font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span>${escapedName}</span>
+                        ${item.location ? `<span style="font-size: 0.72rem; color: #64748b; font-weight: 400;"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(item.location)}</span>` : ''}
+                    </div>
+                    ${item.project_name ? `
+                        <div style="font-size: 0.75rem; color: #475569; margin-top: 2px;">
+                            <span style="font-family: monospace; font-weight: 600; color: #2e4a16;">${escapedCode}</span> &bull; ${escapedProject}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+
+        dropdown.innerHTML = html;
+        dropdown.style.display = 'block';
+
+        // Add event listeners to rendered items
+        dropdown.querySelectorAll('.autocomplete-item').forEach(function(el) {
+            el.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f4faeb';
+            });
+            el.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '#ffffff';
+            });
+            el.addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectActivity(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-project'));
+            });
+        });
+    }
+
+    const realizationInput = document.getElementById('submit_realization_value');
+    const percentText = document.getElementById('submit_calc_percent_text');
+    const percentBar = document.getElementById('submit_calc_percent_bar');
+    const targetInfoText = document.getElementById('submit_target_info_text');
+    const unitBadge = document.getElementById('submit_unit_badge');
+    let currentSelectedActivity = null;
+
+    function recalculateProgress() {
+        if (!currentSelectedActivity) {
+            if (percentText) percentText.textContent = '0%';
+            if (percentBar) percentBar.style.width = '0%';
+            if (targetInfoText) targetInfoText.textContent = 'Pilih kegiatan terlebih dahulu';
+            if (unitBadge) unitBadge.textContent = '(Satuan)';
+            return;
+        }
+
+        const target = parseFloat(currentSelectedActivity.total_target) || 0;
+        const val = parseFloat(realizationInput ? realizationInput.value : 0) || 0;
+        const unit = currentSelectedActivity.unit || 'Satuan';
+
+        if (unitBadge) unitBadge.textContent = '(' + unit + ')';
+
+        if (target > 0) {
+            let percentage = (val / target) * 100;
+            let displayPercent = Math.min(100, Math.max(0, percentage)).toFixed(1);
+            // Hilangkan .0 jika bilangan bulat
+            if (displayPercent.endsWith('.0')) {
+                displayPercent = parseInt(displayPercent);
+            }
+            if (percentText) {
+                percentText.textContent = displayPercent + '%';
+                if (percentage >= 100) {
+                    percentText.style.color = '#15803d'; // hijau sukses
+                } else {
+                    percentText.style.color = '#1e330c';
+                }
+            }
+            if (percentBar) {
+                percentBar.style.width = Math.min(100, Math.max(0, percentage)) + '%';
+            }
+            if (targetInfoText) {
+                targetInfoText.innerHTML = `Target: <strong>${target.toLocaleString('id-ID')} ${escapeHtml(unit)}</strong> (Realisasi: ${val.toLocaleString('id-ID')} ${escapeHtml(unit)})`;
+            }
+        } else {
+            // Jika kegiatan belum ada target KPI
+            const percentage = val > 0 ? 100 : 0;
+            if (percentText) percentText.textContent = percentage + '%';
+            if (percentBar) percentBar.style.width = percentage + '%';
+            if (targetInfoText) targetInfoText.textContent = 'Target kegiatan belum ditentukan (KPI fleksibel)';
+        }
+    }
+
+    if (realizationInput) {
+        realizationInput.addEventListener('input', recalculateProgress);
+    }
+
+    function selectActivity(id, name, projectName) {
+        hiddenIdInput.value = id;
+        searchInput.value = name;
+        searchInput.setCustomValidity(''); // clear validity error
+
+        // Ambil objek kegiatan terpilih
+        currentSelectedActivity = availableActivities.find(function(a) { return a.id === parseInt(id); }) || null;
+
+        // Display selected badge
+        selectedText.textContent = name + (projectName ? ' (' + projectName + ')' : '');
+        selectedBadge.style.display = 'flex';
+        clearBtn.style.display = 'block';
+        dropdown.style.display = 'none';
+
+        if (helpText) {
+            helpText.style.display = 'none';
+        }
+
+        // Hitung ulang persentase progres capaian
+        recalculateProgress();
+    }
+
+    function clearSelection() {
+        hiddenIdInput.value = '';
+        searchInput.value = '';
+        currentSelectedActivity = null;
+        selectedBadge.style.display = 'none';
+        clearBtn.style.display = 'none';
+        dropdown.style.display = 'none';
+        if (helpText) {
+            helpText.style.display = 'block';
+        }
+        recalculateProgress();
+        searchInput.focus();
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Input typing event
+    searchInput.addEventListener('input', function() {
+        // Jika pengguna mengetik ulang, batalkan id yang terpilih sebelumnya sampai memilih kembali
+        if (hiddenIdInput.value !== '') {
+            hiddenIdInput.value = '';
+            selectedBadge.style.display = 'none';
+            if (helpText) helpText.style.display = 'block';
+        }
+
+        if (this.value.trim() !== '') {
+            clearBtn.style.display = 'block';
+        } else {
+            clearBtn.style.display = 'none';
+        }
+        renderSuggestions(this.value);
+    });
+
+    // Focus event
+    searchInput.addEventListener('focus', function() {
+        renderSuggestions(this.value);
+    });
+
+    // Clear button event
+    clearBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        clearSelection();
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+
+            // Jika input berisi teks tapi belum memilih dari dropdown (id kosong), reset atau berikan peringatan
+            if (hiddenIdInput.value === '' && searchInput.value.trim() !== '') {
+                searchInput.setCustomValidity('Pilih kegiatan dari daftar hasil pencarian.');
+            }
+        }
+    });
+
+    // Validasi form submit: Pengguna WAJIB memilih kegiatan yang valid dari autocomplete
+    if (submitForm) {
+        submitForm.addEventListener('submit', function(e) {
+            if (!hiddenIdInput.value || parseInt(hiddenIdInput.value) <= 0) {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.setCustomValidity('Silakan ketik dan pilih kegiatan yang valid dari hasil autocomplete.');
+                searchInput.reportValidity();
+                renderSuggestions(searchInput.value);
+                return false;
+            }
+            searchInput.setCustomValidity('');
+        });
+    }
+
+    // Reset autocomplete state saat modal ditutup atau dibuka
+    window.resetSubmitActivityAutocomplete = function() {
+        clearSelection();
+    };
+});
 </script>
 
 <?php

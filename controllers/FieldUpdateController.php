@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../helpers/AuthHelper.php';
+require_once __DIR__ . '/../helpers/ImageHelper.php';
 require_once __DIR__ . '/../models/FieldUpdate.php';
 require_once __DIR__ . '/../models/Activity.php';
 require_once __DIR__ . '/../models/Indicator.php';
@@ -57,7 +58,11 @@ class FieldUpdateController {
             $activityFilter
         );
 
-        $activities = $activityModel->getAllWithSummary();
+        if ((int)$user['role_id'] === 1) {
+            $activities = $activityModel->getActivitiesForUser((int)$user['user_id'], 1);
+        } else {
+            $activities = $activityModel->getAllWithSummary();
+        }
 
         $pageTitle = $filteredActivity 
             ? 'Riwayat Laporan: ' . $filteredActivity['activity_name']
@@ -101,36 +106,60 @@ class FieldUpdateController {
         }
 
         $activityId = (int)($_POST['activity_id'] ?? 0);
-        $activityName = trim($_POST['activity_name'] ?? '');
-
-        // Resolve or create activity: prioritize selected activity_id, fallback to typed name if provided
         $activityModel = new Activity();
-        if ($activityId <= 0 && !empty($activityName)) {
-            $activityId = $activityModel->findOrCreateByName($activityName);
+
+        // Validasi: Wajib memilih kegiatan yang valid dari autocomplete
+        if ($activityId <= 0) {
+            AuthHelper::setFlash('error', 'Silakan pilih kegiatan yang valid dari daftar pencarian.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        // Validasi keberadaan kegiatan dan hak akses Staf Lapangan
+        $activityData = $activityModel->findById($activityId);
+        if (!$activityData) {
+            AuthHelper::setFlash('error', 'Kegiatan tidak ditemukan.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        // Periksa apakah Staf Lapangan ditugaskan pada proyek kegiatan ini
+        $projectModel = new Project();
+        $members = $projectModel->getMembers((int)$activityData['project_id']);
+        $isAssigned = false;
+        foreach ($members as $mem) {
+            if ((int)$mem['user_id'] === (int)$user['user_id']) {
+                $isAssigned = true;
+                break;
+            }
+        }
+
+        if (!$isAssigned) {
+            AuthHelper::setFlash('error', 'Akses ditolak: Anda tidak ditugaskan pada proyek untuk kegiatan ini.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
         }
 
         $updateDate = $_POST['update_date'] ?? date('Y-m-d');
         $realizationValue = !empty($_POST['realization_value']) ? (float)$_POST['realization_value'] : 0.0;
-        $progressPercentage = !empty($_POST['progress_percentage']) ? (float)$_POST['progress_percentage'] : 0.0;
-        $progressPercentage = max(0.0, min(100.0, $progressPercentage));
+        
+        // Akumulasi / perhitungan otomatis persentase capaian oleh sistem
+        $totalTarget = (float)($activityData['total_target'] ?? 0);
+        if ($totalTarget > 0) {
+            $calcPercent = ($realizationValue / $totalTarget) * 100.0;
+            $progressPercentage = round(max(0.0, min(100.0, $calcPercent)), 1);
+        } else {
+            // Jika kegiatan belum memiliki target terdefinisi atau target = 0
+            $progressPercentage = $realizationValue > 0 ? 100.0 : 0.0;
+        }
+
         $description = trim($_POST['description'] ?? '');
 
         // Determine status based on button clicked: "save_draft" or "submit_verification"
         $actionType = $_POST['action_type'] ?? 'submit_verification';
         $status = ($actionType === 'save_draft') ? 'Draft' : 'Diajukan';
 
-        $evidenceFileName = null;
-        if (isset($_FILES['evidence_file']) && $_FILES['evidence_file']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../public/uploads/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-            $ext = pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION);
-            $fileName = 'evidence_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-            if (move_uploaded_file($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
-                $evidenceFileName = $fileName;
-            }
-        }
+        $evidenceFileName = $this->handleEvidenceUpload();
 
         if ($activityId > 0 && !empty($description)) {
             $updateModel = new FieldUpdate();
@@ -278,18 +307,7 @@ class FieldUpdateController {
             $newStatus = 'Diajukan';
         }
 
-        $evidenceFileName = null;
-        if (isset($_FILES['evidence_file']) && $_FILES['evidence_file']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../public/uploads/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-            $ext = pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION);
-            $fileName = 'evidence_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-            if (move_uploaded_file($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
-                $evidenceFileName = $fileName;
-            }
-        }
+        $evidenceFileName = $this->handleEvidenceUpload();
 
         $success = $updateModel->updateFull(
             $updateId,
@@ -364,6 +382,42 @@ class FieldUpdateController {
 
         header('Location: ' . BASE_URL . '/field-updates');
         exit;
+    }
+
+    private function handleEvidenceUpload(): ?string {
+        $uploadDir = __DIR__ . '/../public/uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // Prioritas 1: Gambar bukti (dikompres otomatis)
+        if (isset($_FILES['evidence_image']) && $_FILES['evidence_image']['error'] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['evidence_image']['name'], PATHINFO_EXTENSION);
+            $fileName = 'img_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            if (ImageHelper::compressAndSave($_FILES['evidence_image']['tmp_name'], $uploadDir . $fileName)) {
+                return $fileName;
+            }
+        }
+
+        // Prioritas 2: Dokumen pendukung
+        if (isset($_FILES['evidence_doc']) && $_FILES['evidence_doc']['error'] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['evidence_doc']['name'], PATHINFO_EXTENSION);
+            $fileName = 'doc_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            if (move_uploaded_file($_FILES['evidence_doc']['tmp_name'], $uploadDir . $fileName)) {
+                return $fileName;
+            }
+        }
+
+        // Backward compatibility jika form lain mengirim 'evidence_file'
+        if (isset($_FILES['evidence_file']) && $_FILES['evidence_file']['error'] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION);
+            $fileName = 'evidence_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            if (ImageHelper::compressAndSave($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
+                return $fileName;
+            }
+        }
+
+        return null;
     }
 }
 
