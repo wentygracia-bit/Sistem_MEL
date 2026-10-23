@@ -199,16 +199,9 @@ require_once __DIR__ . '/../layouts/header.php';
 
         <form action="<?= BASE_URL ?>/field-updates/submit" method="POST" enctype="multipart/form-data">
             <div class="form-group">
-                <label class="form-label">Pilih Kegiatan Terdaftar *</label>
-                <select name="activity_id" id="submit_activity_id" class="form-control" required>
-                    <option value="">-- Pilih Kegiatan Proyek --</option>
-                    <?php foreach ($activities as $act): ?>
-                        <option value="<?= $act['activity_id'] ?>">
-                            <?= htmlspecialchars($act['activity_name']) ?> (<?= htmlspecialchars($act['project_name']) ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">Pilih kegiatan yang telah didaftarkan dalam modul Proyek & Kegiatan.</small>
+                <label class="form-label">Nama Kegiatan *</label>
+                <input type="text" name="activity_name" id="submit_activity_name" class="form-control" placeholder="Masukkan nama kegiatan..." required autocomplete="off">
+                <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">Ketik nama kegiatan yang ingin dilaporkan.</small>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
