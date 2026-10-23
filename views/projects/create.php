@@ -17,7 +17,12 @@ require_once __DIR__ . '/../layouts/header.php';
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
             <div class="form-group">
                 <label class="form-label">Kode Proyek *</label>
-                <input type="text" name="project_code" class="form-control" placeholder="Contoh: PRJ-YNKI-2026-02" required>
+                <input type="text" name="project_code" class="form-control" 
+                       value="<?= htmlspecialchars($autoProjectCode ?? '', ENT_QUOTES, 'UTF-8') ?>" 
+                       readonly style="background-color: #f1f5f9; cursor: not-allowed; font-family: monospace; font-weight: 600;" required>
+                <small style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block;">
+                    <i class="fa-solid fa-circle-info"></i> Kode dibuat otomatis oleh sistem (PRJ-YNKI-YYYY-NNN).
+                </small>
             </div>
             <div class="form-group">
                 <label class="form-label">Nama Proyek / Program *</label>

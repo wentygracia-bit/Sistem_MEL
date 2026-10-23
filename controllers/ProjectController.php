@@ -75,9 +75,9 @@ class ProjectController {
     public function create(): void {
         AuthHelper::requireRole([2, 4]); // Hanya Staf MEL & Direktur
         $user = AuthHelper::getUser();
+        $projectModel = new Project();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $code = trim($_POST['project_code'] ?? '');
             $name = trim($_POST['project_name'] ?? '');
             $desc = trim($_POST['description'] ?? '');
             $startDate = !empty($_POST['start_date']) ? $_POST['start_date'] : null;
@@ -85,19 +85,49 @@ class ProjectController {
             $status = $_POST['status'] ?? 'Aktif';
             $publicStatus = $_POST['public_status'] ?? 'Draft';
 
-            if (empty($code) || empty($name)) {
-                AuthHelper::setFlash('error', 'Kode dan Nama Proyek wajib diisi.');
+            if (empty($name)) {
+                AuthHelper::setFlash('error', 'Nama Proyek wajib diisi.');
                 header('Location: ' . BASE_URL . '/projects/create');
                 exit;
             }
 
-            $projectModel = new Project();
+            // Tentukan tahun berdasarkan tanggal mulai proyek jika ada, atau tahun sekarang
+            $targetYear = !empty($startDate) ? (int)date('Y', strtotime($startDate)) : (int)date('Y');
+            
+            // Generate kode di sisi server dengan penanganan konkurensi (retry loop)
+            $newId = null;
+            $maxRetries = 5;
+            $attempt = 0;
+
+            while ($attempt < $maxRetries) {
+                $attempt++;
+                $code = $projectModel->generateNextProjectCode($targetYear);
+                try {
+                    $newId = $projectModel->create($code, $name, $desc, $startDate, $endDate, $status, $publicStatus, $user['user_id']);
+                    break;
+                } catch (PDOException $e) {
+                    // Kode 23000 adalah integrity constraint violation (e.g. duplicate key)
+                    if ($e->getCode() == '23000' || str_contains($e->getMessage(), 'Duplicate entry')) {
+                        if ($attempt >= $maxRetries) {
+                            AuthHelper::setFlash('error', 'Gagal membuat kode proyek unik. Silakan coba lagi.');
+                            header('Location: ' . BASE_URL . '/projects/create');
+                            exit;
+                        }
+                        // Lanjutkan iterasi berikutnya untuk mengambil kode urutan berikutnya
+                        usleep(50000); // 50ms pause
+                        continue;
+                    }
+                    throw $e;
+                } catch (Exception $e) {
+                    throw $e;
+                }
+            }
+
             try {
-                $newId = $projectModel->create($code, $name, $desc, $startDate, $endDate, $status, $publicStatus, $user['user_id']);
                 // Automatically add creator as member
                 $projectModel->addMember($newId, $user['user_id'], $user['role_name']);
 
-                AuthHelper::setFlash('success', 'Proyek berhasil dibuat.');
+                AuthHelper::setFlash('success', 'Proyek berhasil dibuat dengan kode ' . htmlspecialchars($code) . '.');
                 header('Location: ' . BASE_URL . '/projects/detail?id=' . $newId);
                 exit;
             } catch (Exception $e) {
@@ -107,6 +137,7 @@ class ProjectController {
             }
         }
 
+        $autoProjectCode = $projectModel->generateNextProjectCode();
         $pageTitle = 'Tambah Proyek Baru';
         $activeMenu = 'projects';
         require_once __DIR__ . '/../views/projects/create.php';

@@ -56,6 +56,44 @@ class Project {
         return $res ?: null;
     }
 
+    public function generateNextProjectCode(?int $year = null): string {
+        $targetYear = $year ?? (int)date('Y');
+        $prefix = "PRJ-YNKI-{$targetYear}-";
+
+        // Cari semua project_code dengan prefix tahun yang bersangkutan
+        $stmt = $this->db->prepare("
+            SELECT project_code 
+            FROM projects 
+            WHERE project_code LIKE ?
+        ");
+        $stmt->execute([$prefix . '%']);
+        $codes = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $maxNumber = 0;
+        foreach ($codes as $code) {
+            // Ambil bagian nomor setelah prefix PRJ-YNKI-YYYY-
+            $suffix = substr($code, strlen($prefix));
+            if (is_numeric($suffix)) {
+                $num = (int)$suffix;
+                if ($num > $maxNumber) {
+                    $maxNumber = $num;
+                }
+            }
+        }
+
+        $nextNumber = $maxNumber + 1;
+        // Format minimal 3 digit dengan leading zero, jika >= 1000 tetap utuh
+        $formattedNumber = str_pad((string)$nextNumber, 3, '0', STR_PAD_LEFT);
+
+        return $prefix . $formattedNumber;
+    }
+
+    public function codeExists(string $projectCode): bool {
+        $stmt = $this->db->prepare("SELECT 1 FROM projects WHERE project_code = ? LIMIT 1");
+        $stmt->execute([$projectCode]);
+        return (bool)$stmt->fetchColumn();
+    }
+
     public function create(string $projectCode, string $projectName, string $description, ?string $startDate, ?string $endDate, string $status, string $publicStatus, int $createdBy): int {
         $stmt = $this->db->prepare("
             INSERT INTO projects (project_code, project_name, description, start_date, end_date, status, public_status, created_by, created_at)
