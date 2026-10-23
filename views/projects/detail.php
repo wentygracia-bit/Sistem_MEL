@@ -39,7 +39,7 @@ $indModel = new Indicator();
 </div>
 
 <!-- Grid Members & Activities -->
-<div class="grid-cols-2">
+<div class="<?= in_array((int)$currentUser['role_id'], [2, 3]) ? 'grid-cols-2' : '' ?>">
     <!-- Project Members -->
     <div class="card">
         <div class="card-header">
@@ -74,7 +74,7 @@ $indModel = new Indicator();
             </table>
         </div>
 
-        <?php if (in_array($currentUser['role_id'], [2, 3, 4])): ?>
+        <?php if (in_array((int)$currentUser['role_id'], [2, 3])): ?>
         <div style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
             <form action="<?= BASE_URL ?>/projects/add-member" method="POST" style="display: flex; gap: 10px; align-items: flex-end;">
                 <input type="hidden" name="project_id" value="<?= $project['project_id'] ?>">
@@ -99,7 +99,7 @@ $indModel = new Indicator();
     </div>
 
     <!-- Quick Add Activity -->
-    <?php if (in_array($currentUser['role_id'], [2, 3, 4])): ?>
+    <?php if (in_array((int)$currentUser['role_id'], [2, 3])): ?>
     <div class="card">
         <div class="card-header">
             <h2 class="card-title"><i class="fa-solid fa-calendar-plus" style="color: var(--primary-dark);"></i> Tambah Rincian Kegiatan</h2>
@@ -156,7 +156,9 @@ $indModel = new Indicator();
     <div class="card-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
         <div>
             <h2 class="card-title"><i class="fa-solid fa-list-check" style="color: var(--primary-dark);"></i> Rincian Kegiatan & Indikator Kinerja</h2>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Kelola kegiatan dan target indikator capaian untuk proyek ini.</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+                <?= (int)$currentUser['role_id'] === 4 ? 'Pantau daftar kegiatan dan target indikator capaian untuk proyek ini.' : 'Kelola kegiatan dan target indikator capaian untuk proyek ini.' ?>
+            </div>
         </div>
         
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
