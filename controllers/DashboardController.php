@@ -104,6 +104,7 @@ class DashboardController {
             // Recent Activities from user's reports & notifications
             $recentStaffUpdates = $updateModel->getAllForUser($user['user_id'], 1, 5);
             $recentNotifications = $notifModel->getForUser($user['user_id'], 5);
+            $activities = $fieldActivities;
 
             $pageTitle = 'Dashboard Staf Lapangan';
             $activeMenu = 'dashboard';

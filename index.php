@@ -14,6 +14,7 @@ require_once __DIR__ . '/controllers/EvaluationController.php';
 require_once __DIR__ . '/controllers/CorrectionController.php';
 require_once __DIR__ . '/controllers/MELResultController.php';
 require_once __DIR__ . '/controllers/NotificationController.php';
+require_once __DIR__ . '/controllers/UserController.php';
 
 // URI normalization
 $requestUri = $_SERVER['REQUEST_URI'];
@@ -157,6 +158,26 @@ switch ($path) {
 
     case '/notifications/read':
         (new NotificationController())->markAsRead();
+        break;
+
+    case '/users':
+        (new UserController())->index();
+        break;
+
+    case '/users/create':
+        (new UserController())->create();
+        break;
+
+    case '/users/edit':
+        (new UserController())->edit();
+        break;
+
+    case '/users/reset-password':
+        (new UserController())->resetPassword();
+        break;
+
+    case '/users/delete':
+        (new UserController())->delete();
         break;
 
     default:
