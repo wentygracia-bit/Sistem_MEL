@@ -168,7 +168,8 @@ class ProjectController {
 
         $startDate = $_POST['start_date'] ?? null;
         $endDate = $_POST['end_date'] ?? null;
-        $reminderDate = $_POST['reminder_date'] ?? null;
+        // Hitung reminder otomatis 10 hari sebelum kegiatan dimulai
+        $reminderDate = !empty($startDate) ? date('Y-m-d', strtotime($startDate . ' -10 days')) : null;
 
         if ($projectId > 0 && !empty($activityName)) {
             $activityModel = new Activity();
@@ -223,7 +224,8 @@ class ProjectController {
 
         $startDate = !empty($_POST['start_date']) ? $_POST['start_date'] : null;
         $endDate = !empty($_POST['end_date']) ? $_POST['end_date'] : null;
-        $reminderDate = !empty($_POST['reminder_date']) ? $_POST['reminder_date'] : null;
+        // Hitung reminder otomatis 10 hari sebelum kegiatan dimulai jika tidak diisi
+        $reminderDate = !empty($startDate) ? date('Y-m-d', strtotime($startDate . ' -10 days')) : null;
 
         // Validasi status hanya menerima status yang didukung sistem saat ini
         $validStatuses = ['Perencanaan', 'Berjalan', 'Selesai'];

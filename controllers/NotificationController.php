@@ -16,10 +16,20 @@ class NotificationController {
         $projectModel = new Project();
 
         foreach ($due as $d) {
+            $phase = $d['reminder_phase'] ?? 'Jadwal';
+            $formattedStart = date('d M Y', strtotime($d['start_date']));
+            $msg = ($phase === 'H-10')
+                ? "Pengingat Jadwal (H-10): Kegiatan '{$d['activity_name']}' pada proyek '{$d['project_name']}' akan dimulai dalam 10 hari ({$formattedStart}). Harap siapkan rencana pelaksanaan teknis."
+                : (($phase === 'H-3')
+                    ? "Pengingat Jadwal (H-3): Kegiatan '{$d['activity_name']}' pada proyek '{$d['project_name']}' akan segera dimulai dalam 3 hari ({$formattedStart}). Pastikan kesiapan lapangan dan tim."
+                    : "Pengingat Jadwal: Kegiatan '{$d['activity_name']}' mendekati jadwal ({$formattedStart}).");
+
             $members = $projectModel->getMembers($d['project_id']);
             foreach ($members as $m) {
-                // If notification not exists recently, create one
-                // Simple send reminder
+                $targetUserId = (int)$m['user_id'];
+                if (!$notifModel->reminderExists($targetUserId, (int)$d['activity_id'], $phase)) {
+                    $notifModel->sendNotification($targetUserId, (int)$d['activity_id'], 'Reminder', $msg);
+                }
             }
         }
 

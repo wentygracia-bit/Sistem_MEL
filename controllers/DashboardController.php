@@ -21,13 +21,26 @@ class DashboardController {
         $correctionModel = new CorrectionRequest();
         $melResultModel = new MELResult();
 
-        // Automatic reminder check
+        // Automatic reminder check (H-10 dan H-3 sebelum tanggal kegiatan)
         $timelineModel = new ActivityTimeline();
         $dueReminders = $timelineModel->calculateReminder();
         $notifModel = new Notification();
         foreach ($dueReminders as $rem) {
-            // Check if reminder was recently notified to avoid flood
-            // Send reminder to relevant project staff
+            $phase = $rem['reminder_phase'] ?? 'Jadwal';
+            $formattedStart = date('d M Y', strtotime($rem['start_date']));
+            $msg = ($phase === 'H-10')
+                ? "Pengingat Jadwal (H-10): Kegiatan '{$rem['activity_name']}' pada proyek '{$rem['project_name']}' akan dimulai dalam 10 hari ({$formattedStart}). Harap siapkan rencana pelaksanaan teknis."
+                : (($phase === 'H-3')
+                    ? "Pengingat Jadwal (H-3): Kegiatan '{$rem['activity_name']}' pada proyek '{$rem['project_name']}' akan segera dimulai dalam 3 hari ({$formattedStart}). Pastikan kesiapan lapangan dan tim."
+                    : "Pengingat Jadwal: Kegiatan '{$rem['activity_name']}' mendekati jadwal ({$formattedStart}).");
+
+            $members = $projectModel->getMembers($rem['project_id']);
+            foreach ($members as $m) {
+                $targetUserId = (int)$m['user_id'];
+                if (!$notifModel->reminderExists($targetUserId, (int)$rem['activity_id'], $phase)) {
+                    $notifModel->sendNotification($targetUserId, (int)$rem['activity_id'], 'Reminder', $msg);
+                }
+            }
         }
 
         // Khusus Role Direktur (role_id = 4)

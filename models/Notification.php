@@ -8,6 +8,19 @@ class Notification {
         $this->db = Database::getConnection();
     }
 
+    public function reminderExists(int $userId, int $activityId, string $phase): bool {
+        $stmt = $this->db->prepare("
+            SELECT 1 FROM notifications 
+            WHERE user_id = ? 
+              AND activity_id = ? 
+              AND notification_type = 'Reminder'
+              AND message LIKE ?
+            LIMIT 1
+        ");
+        $stmt->execute([$userId, $activityId, "%{$phase}%"]);
+        return (bool)$stmt->fetchColumn();
+    }
+
     public function sendNotification(int $userId, ?int $activityId, string $notificationType, string $message): int {
         $stmt = $this->db->prepare("
             INSERT INTO notifications (user_id, activity_id, notification_type, message, sent_at, is_read)

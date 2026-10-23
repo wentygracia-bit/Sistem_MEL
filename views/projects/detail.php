@@ -114,19 +114,20 @@ $indModel = new Indicator();
                 <label class="form-label">Lokasi Pelaksanaan</label>
                 <input type="text" name="location" class="form-control" placeholder="Misal: Muara Gembong / Balai Desa">
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div class="form-group">
-                    <label class="form-label">Mulai</label>
+                    <label class="form-label">Mulai *</label>
                     <input type="date" name="start_date" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Selesai</label>
+                    <label class="form-label">Selesai *</label>
                     <input type="date" name="end_date" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Pengingat (Reminder)</label>
-                    <input type="date" name="reminder_date" class="form-control">
-                </div>
+            </div>
+            <div style="margin-top: -6px; margin-bottom: 14px;">
+                <small style="font-size: 0.78rem; color: #4b7a1e; display: flex; align-items: center; gap: 6px; font-weight: 500;">
+                    <i class="fa-solid fa-bell"></i> Pengingat otomatis diatur sistem: 10 hari &amp; 3 hari sebelum kegiatan dimulai.
+                </small>
             </div>
             <div class="form-group">
                 <label class="form-label">Deskripsi / Ruang Lingkup</label>
@@ -220,8 +221,13 @@ $indModel = new Indicator();
                         <div style="font-size: 0.85rem; color: #64748b; margin-top: 6px;">
                             <i class="fa-solid fa-location-dot"></i> <?= htmlspecialchars($act['location'] ?: 'Lokasi belum diset') ?> | 
                             <i class="fa-regular fa-calendar"></i> Jadwal: <?= $act['start_date'] ? date('d M Y', strtotime($act['start_date'])) : '-' ?> s/d <?= $act['end_date'] ? date('d M Y', strtotime($act['end_date'])) : '-' ?>
-                            <?php if ($act['reminder_date']): ?>
-                                | <span style="color: #b45309;"><i class="fa-solid fa-bell"></i> Reminder: <?= date('d M Y', strtotime($act['reminder_date'])) ?></span>
+                            <?php if (!empty($act['start_date'])): 
+                                $r10 = date('d M Y', strtotime($act['start_date'] . ' -10 days'));
+                                $r3 = date('d M Y', strtotime($act['start_date'] . ' -3 days'));
+                            ?>
+                                | <span style="color: #b45309;" title="Pengingat otomatis sistem dikirim 10 hari dan 3 hari sebelum kegiatan dimulai">
+                                    <i class="fa-solid fa-bell"></i> Reminder: H-10 (<?= $r10 ?>) &amp; H-3 (<?= $r3 ?>)
+                                </span>
                             <?php endif; ?>
                         </div>
                         <p style="font-size: 0.88rem; color: #334155; margin-top: 8px;"><?= nl2br(htmlspecialchars($act['description'] ?? '')) ?></p>
@@ -327,7 +333,7 @@ $indModel = new Indicator();
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div class="form-group">
                     <label class="form-label">Mulai *</label>
                     <input type="date" name="start_date" id="edit_act_start_date" class="form-control" required>
@@ -336,10 +342,11 @@ $indModel = new Indicator();
                     <label class="form-label">Selesai *</label>
                     <input type="date" name="end_date" id="edit_act_end_date" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Pengingat (Reminder)</label>
-                    <input type="date" name="reminder_date" id="edit_act_reminder_date" class="form-control">
-                </div>
+            </div>
+            <div style="margin-top: -6px; margin-bottom: 14px;">
+                <small style="font-size: 0.78rem; color: #4b7a1e; display: flex; align-items: center; gap: 6px; font-weight: 500;">
+                    <i class="fa-solid fa-bell"></i> Pengingat otomatis diatur sistem: 10 hari &amp; 3 hari sebelum kegiatan dimulai.
+                </small>
             </div>
 
             <div class="form-group">
@@ -411,7 +418,6 @@ function openEditActivityModal(data) {
     document.getElementById('edit_act_status').value = data.status || 'Perencanaan';
     document.getElementById('edit_act_start_date').value = data.start_date || '';
     document.getElementById('edit_act_end_date').value = data.end_date || '';
-    document.getElementById('edit_act_reminder_date').value = data.reminder_date || '';
     document.getElementById('edit_act_description').value = data.description || '';
     toggleModal('modalEditActivity');
 }
