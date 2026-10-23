@@ -100,7 +100,12 @@ require_once __DIR__ . '/../layouts/header.php';
                     <select name="indicator_id" class="form-control" required>
                         <?php foreach ($indicators as $ind): ?>
                             <option value="<?= $ind['indicator_id'] ?>">
-                                <?= htmlspecialchars($ind['indicator_name']) ?> (Target: <?= number_format($ind['target_value'], 0, ',', '.') ?> <?= htmlspecialchars($ind['unit']) ?>)
+                                <?= htmlspecialchars($ind['indicator_name']) ?> 
+                                <?php if (($ind['activity_type'] ?? 'Kuantitatif') === 'Kualitatif'): ?>
+                                    [Kualitatif: <?= htmlspecialchars(mb_strimwidth($ind['target_description'] ?: ($ind['description'] ?: 'Deskriptif'), 0, 45, '...')) ?>]
+                                <?php else: ?>
+                                    (Target: <?= number_format($ind['target_value'] ?? 0, 0, ',', '.') ?> <?= htmlspecialchars($ind['unit'] ?? '') ?>)
+                                <?php endif; ?>
                             </option>
                         <?php endforeach; ?>
                     </select>

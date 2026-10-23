@@ -164,7 +164,13 @@ class ProjectController {
         $activityName = trim($_POST['activity_name'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $location = trim($_POST['location'] ?? '');
+        $activityType = trim($_POST['activity_type'] ?? 'Kuantitatif');
         $status = $_POST['status'] ?? 'Perencanaan';
+
+        // Validasi jenis kegiatan
+        if (!in_array($activityType, ['Kuantitatif', 'Kualitatif'])) {
+            $activityType = 'Kuantitatif';
+        }
 
         $startDate = $_POST['start_date'] ?? null;
         $endDate = $_POST['end_date'] ?? null;
@@ -173,7 +179,7 @@ class ProjectController {
 
         if ($projectId > 0 && !empty($activityName)) {
             $activityModel = new Activity();
-            $activityId = $activityModel->create($projectId, $activityName, $description, $location, $status);
+            $activityId = $activityModel->create($projectId, $activityName, $description, $location, $status, $activityType);
 
             if ($startDate && $endDate) {
                 $timelineModel = new ActivityTimeline();
@@ -191,20 +197,62 @@ class ProjectController {
 
     public function addIndicator(): void {
         AuthHelper::requireRole([2, 3, 4]);
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/projects');
+            exit;
+        }
+
         $activityId = (int)($_POST['activity_id'] ?? 0);
         $projectId = (int)($_POST['project_id'] ?? 0);
         $indicatorName = trim($_POST['indicator_name'] ?? '');
-        $targetValue = (float)($_POST['target_value'] ?? 0);
-        $unit = trim($_POST['unit'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $targetDescription = trim($_POST['target_description'] ?? '');
 
-        if ($activityId > 0 && !empty($indicatorName)) {
-            $indicatorModel = new Indicator();
-            $indicatorModel->create($activityId, $indicatorName, $targetValue, $unit, $description);
-            AuthHelper::setFlash('success', 'Indikator kinerja berhasil ditambahkan.');
+        // Ambil jenis kegiatan langsung dari kegiatan induk agar selalu sinkron
+        $activityModel = new Activity();
+        $parentActivity = $activityModel->findById($activityId);
+        $activityType = $parentActivity['activity_type'] ?? (trim($_POST['activity_type'] ?? 'Kuantitatif'));
+
+        if (!in_array($activityType, ['Kuantitatif', 'Kualitatif'])) {
+            $activityType = 'Kuantitatif';
         }
 
-        header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId);
+        if ($activityId <= 0 || empty($indicatorName)) {
+            AuthHelper::setFlash('error', 'Nama indikator wajib diisi.');
+            header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+            exit;
+        }
+
+        $targetValue = null;
+        $unit = null;
+
+        if ($activityType === 'Kuantitatif') {
+            if (!isset($_POST['target_value']) || $_POST['target_value'] === '' || empty(trim($_POST['unit'] ?? ''))) {
+                AuthHelper::setFlash('error', 'Untuk indikator Kuantitatif, Target Angka dan Satuan wajib diisi.');
+                header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+                exit;
+            }
+            $targetValue = (float)$_POST['target_value'];
+            $unit = trim($_POST['unit']);
+        } else {
+            // Kualitatif
+            if (empty($targetDescription) && !empty($description)) {
+                $targetDescription = $description;
+            }
+            if (empty($targetDescription)) {
+                AuthHelper::setFlash('error', 'Untuk indikator Kualitatif, Target Capaian Kualitatif wajib diisi.');
+                header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+                exit;
+            }
+            $targetValue = (isset($_POST['target_value']) && $_POST['target_value'] !== '') ? (float)$_POST['target_value'] : null;
+            $unit = !empty(trim($_POST['unit'] ?? '')) ? trim($_POST['unit']) : 'Deskriptif';
+        }
+
+        $indicatorModel = new Indicator();
+        $indicatorModel->create($activityId, $indicatorName, $targetValue, $unit, $description, $activityType, $targetDescription);
+        AuthHelper::setFlash('success', 'Indikator kinerja (' . $activityType . ') berhasil ditambahkan.');
+
+        header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
         exit;
     }
 
@@ -220,12 +268,18 @@ class ProjectController {
         $activityName = trim($_POST['activity_name'] ?? '');
         $location = trim($_POST['location'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $activityType = trim($_POST['activity_type'] ?? 'Kuantitatif');
         $status = trim($_POST['status'] ?? 'Perencanaan');
 
         $startDate = !empty($_POST['start_date']) ? $_POST['start_date'] : null;
         $endDate = !empty($_POST['end_date']) ? $_POST['end_date'] : null;
         // Hitung reminder otomatis 10 hari sebelum kegiatan dimulai jika tidak diisi
         $reminderDate = !empty($startDate) ? date('Y-m-d', strtotime($startDate . ' -10 days')) : null;
+
+        // Validasi jenis kegiatan
+        if (!in_array($activityType, ['Kuantitatif', 'Kualitatif'])) {
+            $activityType = 'Kuantitatif';
+        }
 
         // Validasi status hanya menerima status yang didukung sistem saat ini
         $validStatuses = ['Perencanaan', 'Berjalan', 'Selesai'];
@@ -248,7 +302,7 @@ class ProjectController {
         }
 
         // Simpan perubahan data kegiatan
-        $activityModel->update($activityId, $activityName, $description, $location, $status);
+        $activityModel->update($activityId, $activityName, $description, $location, $status, $activityType);
 
         // Perbarui data jadwal pada activity_timelines
         if ($startDate && $endDate) {
@@ -273,12 +327,20 @@ class ProjectController {
         $activityId = (int)($_POST['activity_id'] ?? 0);
         $indicatorId = (int)($_POST['indicator_id'] ?? 0);
         $indicatorName = trim($_POST['indicator_name'] ?? '');
-        $targetValue = (float)($_POST['target_value'] ?? 0);
-        $unit = trim($_POST['unit'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $targetDescription = trim($_POST['target_description'] ?? '');
 
-        if ($indicatorId <= 0 || empty($indicatorName) || empty($unit)) {
-            AuthHelper::setFlash('error', 'Nama indikator dan satuan target wajib diisi.');
+        // Ambil jenis kegiatan langsung dari kegiatan induk agar selalu sinkron
+        $activityModel = new Activity();
+        $parentActivity = $activityModel->findById($activityId);
+        $activityType = $parentActivity['activity_type'] ?? (trim($_POST['activity_type'] ?? 'Kuantitatif'));
+
+        if (!in_array($activityType, ['Kuantitatif', 'Kualitatif'])) {
+            $activityType = 'Kuantitatif';
+        }
+
+        if ($indicatorId <= 0 || empty($indicatorName)) {
+            AuthHelper::setFlash('error', 'Nama indikator wajib diisi.');
             header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
             exit;
         }
@@ -298,11 +360,90 @@ class ProjectController {
             exit;
         }
 
-        $indicatorModel->update($indicatorId, $indicatorName, $targetValue, $unit, $description);
+        $targetValue = null;
+        $unit = null;
 
-        AuthHelper::setFlash('success', 'Indikator KPI berhasil diperbarui.');
+        if ($activityType === 'Kuantitatif') {
+            if (!isset($_POST['target_value']) || $_POST['target_value'] === '' || empty(trim($_POST['unit'] ?? ''))) {
+                AuthHelper::setFlash('error', 'Untuk indikator Kuantitatif, Target Angka dan Satuan wajib diisi.');
+                header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+                exit;
+            }
+            $targetValue = (float)$_POST['target_value'];
+            $unit = trim($_POST['unit']);
+        } else {
+            // Kualitatif
+            if (empty($targetDescription) && !empty($description)) {
+                $targetDescription = $description;
+            }
+            if (empty($targetDescription)) {
+                AuthHelper::setFlash('error', 'Untuk indikator Kualitatif, Target Capaian Kualitatif wajib diisi.');
+                header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+                exit;
+            }
+            $targetValue = (isset($_POST['target_value']) && $_POST['target_value'] !== '') ? (float)$_POST['target_value'] : null;
+            $unit = !empty(trim($_POST['unit'] ?? '')) ? trim($_POST['unit']) : 'Deskriptif';
+        }
+
+        $indicatorModel->update($indicatorId, $indicatorName, $targetValue, $unit, $description, $activityType, $targetDescription);
+
+        AuthHelper::setFlash('success', 'Indikator KPI (' . $activityType . ') berhasil diperbarui.');
+        header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
+        exit;
+    }
+
+    public function updateActivityType(): void {
+        AuthHelper::requireRole([2, 3]); // Hanya Staf MEL & Project Leader
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/projects');
+            exit;
+        }
+
+        $projectId = (int)($_POST['project_id'] ?? 0);
+        $activityId = (int)($_POST['activity_id'] ?? 0);
+        $activityType = trim($_POST['activity_type'] ?? 'Kuantitatif');
+
+        if (!in_array($activityType, ['Kuantitatif', 'Kualitatif'])) {
+            $activityType = 'Kuantitatif';
+        }
+
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') 
+                  || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+
+        if ($activityId <= 0) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'ID Kegiatan tidak valid.']);
+                exit;
+            }
+            AuthHelper::setFlash('error', 'ID Kegiatan tidak valid.');
+            header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId);
+            exit;
+        }
+
+        $activityModel = new Activity();
+        $updated = $activityModel->updateActivityType($activityId, $activityType);
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => $updated,
+                'activity_id' => $activityId,
+                'activity_type' => $activityType,
+                'message' => $updated ? 'Jenis kegiatan berhasil diperbarui menjadi ' . $activityType : 'Gagal memperbarui jenis kegiatan.'
+            ]);
+            exit;
+        }
+
+        if ($updated) {
+            AuthHelper::setFlash('success', 'Jenis kegiatan berhasil diperbarui menjadi ' . $activityType . '.');
+        } else {
+            AuthHelper::setFlash('error', 'Gagal memperbarui jenis kegiatan.');
+        }
+
         header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
         exit;
     }
 }
+
 

@@ -27,22 +27,22 @@ class Indicator {
         return $res ?: null;
     }
 
-    public function create(int $activityId, string $indicatorName, float $targetValue, string $unit, ?string $description): int {
+    public function create(int $activityId, string $indicatorName, ?float $targetValue, ?string $unit, ?string $description, string $activityType = 'Kuantitatif', ?string $targetDescription = null): int {
         $stmt = $this->db->prepare("
-            INSERT INTO indicators (activity_id, indicator_name, target_value, unit, description)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO indicators (activity_id, activity_type, indicator_name, target_value, unit, description, target_description)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
-        $stmt->execute([$activityId, $indicatorName, $targetValue, $unit, $description]);
+        $stmt->execute([$activityId, $activityType, $indicatorName, $targetValue, $unit, $description, $targetDescription]);
         return (int)$this->db->lastInsertId();
     }
 
-    public function update(int $indicatorId, string $indicatorName, float $targetValue, string $unit, ?string $description): bool {
+    public function update(int $indicatorId, string $indicatorName, ?float $targetValue, ?string $unit, ?string $description, string $activityType = 'Kuantitatif', ?string $targetDescription = null): bool {
         $stmt = $this->db->prepare("
             UPDATE indicators
-            SET indicator_name = ?, target_value = ?, unit = ?, description = ?
+            SET indicator_name = ?, target_value = ?, unit = ?, description = ?, activity_type = ?, target_description = ?
             WHERE indicator_id = ?
         ");
-        return $stmt->execute([$indicatorName, $targetValue, $unit, $description, $indicatorId]);
+        return $stmt->execute([$indicatorName, $targetValue, $unit, $description, $activityType, $targetDescription, $indicatorId]);
     }
 
     public function delete(int $indicatorId): bool {

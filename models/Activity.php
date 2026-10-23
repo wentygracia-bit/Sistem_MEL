@@ -52,22 +52,37 @@ class Activity {
         return $res ?: null;
     }
 
-    public function create(int $projectId, string $activityName, ?string $description, ?string $location, string $status = 'Perencanaan'): int {
+    public function create(int $projectId, string $activityName, ?string $description, ?string $location, string $status = 'Perencanaan', string $activityType = 'Kuantitatif'): int {
         $stmt = $this->db->prepare("
-            INSERT INTO activities (project_id, activity_name, description, location, status, created_at)
-            VALUES (?, ?, ?, ?, ?, NOW())
+            INSERT INTO activities (project_id, activity_name, description, location, activity_type, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
         ");
-        $stmt->execute([$projectId, $activityName, $description, $location, $status]);
+        $stmt->execute([$projectId, $activityName, $description, $location, $activityType, $status]);
         return (int)$this->db->lastInsertId();
     }
 
-    public function update(int $activityId, string $activityName, ?string $description, ?string $location, string $status): bool {
+    public function update(int $activityId, string $activityName, ?string $description, ?string $location, string $status, string $activityType = 'Kuantitatif'): bool {
         $stmt = $this->db->prepare("
             UPDATE activities 
-            SET activity_name = ?, description = ?, location = ?, status = ?
+            SET activity_name = ?, description = ?, location = ?, activity_type = ?, status = ?
             WHERE activity_id = ?
         ");
-        return $stmt->execute([$activityName, $description, $location, $status, $activityId]);
+        $ok = $stmt->execute([$activityName, $description, $location, $activityType, $status, $activityId]);
+        if ($ok) {
+            $stmtInd = $this->db->prepare("UPDATE indicators SET activity_type = ? WHERE activity_id = ?");
+            $stmtInd->execute([$activityType, $activityId]);
+        }
+        return $ok;
+    }
+
+    public function updateActivityType(int $activityId, string $activityType): bool {
+        $stmt = $this->db->prepare("UPDATE activities SET activity_type = ? WHERE activity_id = ?");
+        $ok = $stmt->execute([$activityType, $activityId]);
+        if ($ok) {
+            $stmtInd = $this->db->prepare("UPDATE indicators SET activity_type = ? WHERE activity_id = ?");
+            $stmtInd->execute([$activityType, $activityId]);
+        }
+        return $ok;
     }
 
     public function getAllWithSummary(): array {

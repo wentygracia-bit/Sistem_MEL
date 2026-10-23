@@ -86,6 +86,10 @@ switch ($path) {
         (new ProjectController())->editIndicator();
         break;
 
+    case '/projects/update-activity-type':
+        (new ProjectController())->updateActivityType();
+        break;
+
     case '/field-updates':
         (new FieldUpdateController())->index();
         break;

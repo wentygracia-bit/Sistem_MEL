@@ -33,6 +33,7 @@ CREATE TABLE `activities` (
   `activity_name` varchar(200) NOT NULL,
   `description` text DEFAULT NULL,
   `location` varchar(200) DEFAULT NULL,
+  `activity_type` varchar(50) DEFAULT 'Kuantitatif' COMMENT 'Jenis kegiatan: Kuantitatif atau Kualitatif',
   `status` varchar(50) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -41,9 +42,9 @@ CREATE TABLE `activities` (
 -- Dumping data for table `activities`
 --
 
-INSERT INTO `activities` (`activity_id`, `project_id`, `activity_name`, `description`, `location`, `status`, `created_at`) VALUES
-(1, 1, 'Penanaman 5.000 Bibit Mangrove Rhizophora', 'Kegiatan penanaman bibit mangrove bersama kelompok tani pesisir.', 'Kawasan Pesisir Muara Gembong', 'Berjalan', '2026-10-06 14:14:58'),
-(2, 1, 'Pelatihan Pengolahan Sirup Mangrove bagi KWT', 'Peningkatan kapasitas Kelompok Wanita Tani untuk nilai tambah ekonomi produk pesisir.', 'Balai Desa Pantai Bahagia', 'Selesai', '2026-10-06 14:14:58');
+INSERT INTO `activities` (`activity_id`, `project_id`, `activity_name`, `description`, `location`, `activity_type`, `status`, `created_at`) VALUES
+(1, 1, 'Penanaman 5.000 Bibit Mangrove Rhizophora', 'Kegiatan penanaman bibit mangrove bersama kelompok tani pesisir.', 'Kawasan Pesisir Muara Gembong', 'Kuantitatif', 'Berjalan', '2026-10-06 14:14:58'),
+(2, 1, 'Pelatihan Pengolahan Sirup Mangrove bagi KWT', 'Peningkatan kapasitas Kelompok Wanita Tani untuk nilai tambah ekonomi produk pesisir.', 'Balai Desa Pantai Bahagia', 'Kualitatif', 'Selesai', '2026-10-06 14:14:58');
 
 -- --------------------------------------------------------
 
@@ -165,19 +166,21 @@ INSERT INTO `field_updates` (`update_id`, `activity_id`, `user_id`, `update_date
 CREATE TABLE `indicators` (
   `indicator_id` int(11) NOT NULL,
   `activity_id` int(11) NOT NULL,
+  `activity_type` varchar(50) DEFAULT 'Kuantitatif' COMMENT 'Jenis kegiatan: Kuantitatif atau Kualitatif',
   `indicator_name` varchar(200) NOT NULL,
   `target_value` decimal(15,2) DEFAULT NULL,
   `unit` varchar(100) DEFAULT NULL,
-  `description` text DEFAULT NULL
+  `description` text DEFAULT NULL,
+  `target_description` text DEFAULT NULL COMMENT 'Deskripsi target capaian kualitatif'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `indicators`
 --
 
-INSERT INTO `indicators` (`indicator_id`, `activity_id`, `indicator_name`, `target_value`, `unit`, `description`) VALUES
-(1, 1, 'Jumlah bibit tertanam dan hidup', 5000.00, 'Bibit', 'Bibit mangrove jenis Rhizophora mucronata'),
-(2, 2, 'Jumlah peserta wanita terlatih', 35.00, 'Orang', 'Peserta perempuan dari perwakilan 5 RT');
+INSERT INTO `indicators` (`indicator_id`, `activity_id`, `activity_type`, `indicator_name`, `target_value`, `unit`, `description`, `target_description`) VALUES
+(1, 1, 'Kuantitatif', 'Jumlah bibit tertanam dan hidup', 5000.00, 'Bibit', 'Bibit mangrove jenis Rhizophora mucronata', NULL),
+(2, 2, 'Kuantitatif', 'Jumlah peserta wanita terlatih', 35.00, 'Orang', 'Peserta perempuan dari perwakilan 5 RT', NULL);
 
 -- --------------------------------------------------------
 

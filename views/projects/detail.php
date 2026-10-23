@@ -114,6 +114,16 @@ $indModel = new Indicator();
                 <label class="form-label">Lokasi Pelaksanaan</label>
                 <input type="text" name="location" class="form-control" placeholder="Misal: Muara Gembong / Balai Desa">
             </div>
+            <div class="form-group">
+                <label class="form-label">Jenis Kegiatan *</label>
+                <select name="activity_type" class="form-control" required>
+                    <option value="Kuantitatif" selected>Kuantitatif (Terukur Angka)</option>
+                    <option value="Kualitatif">Kualitatif (Deskriptif/Narasi)</option>
+                </select>
+                <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">
+                    <i class="fa-solid fa-circle-info"></i> <strong>Kuantitatif</strong>: hasil diukur dengan angka (jumlah peserta, bibit, dll). <strong>Kualitatif</strong>: hasil diukur secara deskriptif/naratif.
+                </small>
+            </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div class="form-group">
                     <label class="form-label">Mulai *</label>
@@ -212,6 +222,34 @@ $indModel = new Indicator();
                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                             <h3 style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin: 0;"><?= htmlspecialchars($act['activity_name']) ?></h3>
                             <span class="badge badge-success"><?= htmlspecialchars($act['status']) ?></span>
+                            <?php 
+                            $currentType = $act['activity_type'] ?? 'Kuantitatif';
+                            if (in_array((int)$currentUser['role_id'], [2, 3])): 
+                            ?>
+                                <div style="display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 2px 8px; border-radius: 20px; border: 1px solid #e2e8f0;" title="Ubah jenis kegiatan secara langsung tanpa klik Edit Kegiatan">
+                                    <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">Jenis:</span>
+                                    <select 
+                                        id="act-type-select-<?= (int)$act['activity_id'] ?>"
+                                        class="activity-type-direct-select"
+                                        data-prev="<?= htmlspecialchars($currentType) ?>"
+                                        onchange="quickChangeActivityType(this, <?= (int)$act['activity_id'] ?>, <?= (int)$project['project_id'] ?>)"
+                                        style="font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 14px; cursor: pointer; outline: none; border: 1px solid <?= $currentType === 'Kuantitatif' ? '#93c5fd' : '#fcd34d' ?>; background: <?= $currentType === 'Kuantitatif' ? '#eff6ff' : '#fffbeb' ?>; color: <?= $currentType === 'Kuantitatif' ? '#1d4ed8' : '#b45309' ?>; transition: all 0.2s ease;">
+                                        <option value="Kuantitatif" <?= $currentType === 'Kuantitatif' ? 'selected' : '' ?>>📊 Kuantitatif</option>
+                                        <option value="Kualitatif" <?= $currentType === 'Kualitatif' ? 'selected' : '' ?>>📄 Kualitatif</option>
+                                    </select>
+                                    <span id="type-feedback-<?= (int)$act['activity_id'] ?>" style="font-size: 0.72rem; display: none;"></span>
+                                </div>
+                            <?php else: ?>
+                                <?php if ($currentType === 'Kuantitatif'): ?>
+                                    <span class="badge" style="background: linear-gradient(135deg, #dbeafe, #eff6ff); color: #1d4ed8; border: 1px solid #93c5fd; font-size: 0.72rem; padding: 2px 8px;" title="Kegiatan berjenis Kuantitatif: diukur dengan angka/numerik">
+                                        <i class="fa-solid fa-chart-bar"></i> Kuantitatif
+                                    </span>
+                                <?php else: ?>
+                                    <span class="badge" style="background: linear-gradient(135deg, #fef3c7, #fffbeb); color: #b45309; border: 1px solid #fcd34d; font-size: 0.72rem; padding: 2px 8px;" title="Kegiatan berjenis Kualitatif: diukur dengan narasi/deskriptif">
+                                        <i class="fa-solid fa-file-lines"></i> Kualitatif
+                                    </span>
+                                <?php endif; ?>
+                            <?php endif; ?>
                             <?php if (in_array((int)$currentUser['role_id'], [2, 3])): ?>
                                 <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.75rem; border-color: #cbd5e1;" title="Edit Rincian Kegiatan" onclick='openEditActivityModal(<?= json_encode($act, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
                                     <i class="fa-solid fa-pen-to-square" style="color: #0284c7;"></i> Edit Kegiatan
@@ -247,8 +285,11 @@ $indModel = new Indicator();
 
                 <!-- Indicators for this activity -->
                 <div style="margin-top: 16px; background: #f8fafc; border-radius: var(--radius-sm); padding: 14px; border: 1px solid #e2e8f0;">
-                    <div style="font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                    <div style="font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <span><i class="fa-solid fa-bullseye"></i> Indikator Capaian Kinerja (KPI)</span>
+                        <span style="font-size: 0.78rem; font-weight: normal; color: #64748b;">
+                            Tipe Kegiatan: <strong id="kpi-type-badge-<?= (int)$act['activity_id'] ?>" style="color: <?= $currentType === 'Kuantitatif' ? '#1d4ed8' : '#b45309' ?>;"><?= htmlspecialchars($currentType) ?></strong>
+                        </span>
                     </div>
 
                     <?php
@@ -259,23 +300,43 @@ $indModel = new Indicator();
                     <?php else: ?>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
                             <?php foreach ($indicators as $ind): ?>
-                                <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; position: relative;">
+                                <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 14px; position: relative;">
                                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                                        <div style="font-size: 0.85rem; font-weight: 600; color: #1e293b;"><?= htmlspecialchars($ind['indicator_name']) ?></div>
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                                <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;"><?= htmlspecialchars($ind['indicator_name']) ?></div>
+                                                <span id="ind-badge-<?= (int)$ind['indicator_id'] ?>" class="ind-type-badge-act-<?= (int)$act['activity_id'] ?> badge" style="<?= ($currentType === 'Kualitatif') ? 'background: #fffbeb; color: #b45309; border: 1px solid #fcd34d;' : 'background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd;' ?> font-size: 0.68rem; padding: 1px 7px;">
+                                                    <?= ($currentType === 'Kualitatif') ? '<i class="fa-solid fa-file-lines"></i> Kualitatif' : '<i class="fa-solid fa-chart-bar"></i> Kuantitatif' ?>
+                                                </span>
+                                            </div>
+                                        </div>
                                         <?php if (in_array((int)$currentUser['role_id'], [2, 3])): ?>
                                             <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 6px; font-size: 0.72rem; border-color: #cbd5e1;" title="Edit Indikator KPI" onclick='openEditIndicatorModal(<?= json_encode($ind, JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= (int)$act['activity_id'] ?>)'>
                                                 <i class="fa-solid fa-pen-to-square" style="color: #0284c7;"></i>
                                             </button>
                                         <?php endif; ?>
                                     </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px;">
-                                        <div style="font-size: 0.78rem; color: var(--text-muted);">Target:</div>
-                                        <div style="font-size: 1rem; font-weight: 800; color: #2e4a16;">
-                                            <?= number_format($ind['target_value'], 0, ',', '.') ?> <?= htmlspecialchars($ind['unit']) ?>
+
+                                    <!-- Tampilan Target Kualitatif -->
+                                    <div id="ind-kual-view-<?= (int)$ind['indicator_id'] ?>" class="ind-kual-box-act-<?= (int)$act['activity_id'] ?>" style="display: <?= ($currentType === 'Kualitatif') ? 'block' : 'none' ?>; margin-top: 8px; padding: 8px 10px; background: #fffdf5; border-left: 3px solid #f59e0b; border-radius: 4px;">
+                                        <div style="font-size: 0.74rem; color: #78350f; font-weight: 700;">Target Capaian Kualitatif:</div>
+                                        <div style="font-size: 0.83rem; color: #334155; margin-top: 3px; line-height: 1.4;">
+                                            <?= nl2br(htmlspecialchars($ind['target_description'] ?: ($ind['description'] ?: 'Belum ada deskripsi target kualitatif'))) ?>
                                         </div>
                                     </div>
-                                    <?php if ($ind['description']): ?>
-                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;"><?= htmlspecialchars($ind['description']) ?></div>
+
+                                    <!-- Tampilan Target Kuantitatif -->
+                                    <div id="ind-kuan-view-<?= (int)$ind['indicator_id'] ?>" class="ind-kuan-box-act-<?= (int)$act['activity_id'] ?>" style="display: <?= ($currentType === 'Kuantitatif') ? 'flex' : 'none' ?>; justify-content: space-between; align-items: baseline; margin-top: 6px;">
+                                        <div style="font-size: 0.78rem; color: var(--text-muted);">Target Angka:</div>
+                                        <div style="font-size: 1rem; font-weight: 800; color: #2e4a16;">
+                                            <?= number_format($ind['target_value'] ?? 0, 0, ',', '.') ?> <?= htmlspecialchars($ind['unit'] ?? '') ?>
+                                        </div>
+                                    </div>
+
+                                    <?php if (!empty($ind['description'])): ?>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+                                            <i class="fa-solid fa-circle-info" style="font-size: 0.7rem;"></i> <?= htmlspecialchars($ind['description']) ?>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
@@ -283,17 +344,61 @@ $indModel = new Indicator();
                     <?php endif; ?>
 
                     <?php if (in_array((int)$currentUser['role_id'], [2, 3])): ?>
-                    <!-- Inline Form Add Indicator -->
-                    <form action="<?= BASE_URL ?>/projects/add-indicator" method="POST" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-                        <input type="hidden" name="project_id" value="<?= $project['project_id'] ?>">
-                        <input type="hidden" name="activity_id" value="<?= $act['activity_id'] ?>">
-                        <input type="text" name="indicator_name" class="form-control" placeholder="Nama Indikator (cth: Jumlah Peserta)" style="flex: 2; min-width: 200px;" required>
-                        <input type="number" step="any" name="target_value" class="form-control" placeholder="Target Angka" style="flex: 1; min-width: 100px;" required>
-                        <input type="text" name="unit" class="form-control" placeholder="Satuan (Orang/Bibit)" style="flex: 1; min-width: 120px;" required>
-                        <button type="submit" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
-                            <i class="fa-solid fa-plus"></i> Indikator
-                        </button>
-                    </form>
+                    <!-- Form Tambah Indikator Capaian Kinerja (KPI) (Tanpa dropdown duplikat) -->
+                    <div style="margin-top: 14px; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 12px 14px;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                            <span style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-circle-plus" style="color: #274312;"></i> Tambah Indikator Capaian Kinerja (KPI)
+                            </span>
+                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">
+                                Mengikuti Jenis Kegiatan: <strong id="add-ind-current-type-label-<?= (int)$act['activity_id'] ?>" style="color: <?= $currentType === 'Kuantitatif' ? '#1d4ed8' : '#b45309' ?>;"><?= htmlspecialchars($currentType) ?></strong>
+                            </span>
+                        </div>
+                        <form action="<?= BASE_URL ?>/projects/add-indicator" method="POST" id="form-add-ind-<?= (int)$act['activity_id'] ?>">
+                            <input type="hidden" name="project_id" value="<?= (int)$project['project_id'] ?>">
+                            <input type="hidden" name="activity_id" value="<?= (int)$act['activity_id'] ?>">
+                            <!-- Jenis Kegiatan otomatis mengikuti jenis kegiatan utama di atas -->
+                            <input type="hidden" name="activity_type" id="add-ind-type-hidden-<?= (int)$act['activity_id'] ?>" value="<?= htmlspecialchars($currentType) ?>">
+
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-size: 0.74rem; font-weight: 600; color: #475569; display: block; margin-bottom: 3px;">Nama Indikator *</label>
+                                <input type="text" name="indicator_name" class="form-control form-control-sm" style="padding: 6px 10px; font-size: 0.82rem; height: auto;" placeholder="Contoh: Jumlah Peserta Pelatihan / Peningkatan Mutu Pelayanan" required>
+                            </div>
+
+                            <!-- Bidang Pengukuran Numerik (Kuantitatif) -->
+                            <div id="add-ind-kuantitatif-<?= (int)$act['activity_id'] ?>" style="display: <?= ($currentType === 'Kualitatif') ? 'none' : 'block' ?>; margin-bottom: 8px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div>
+                                        <label style="font-size: 0.74rem; font-weight: 600; color: #475569; display: block; margin-bottom: 3px;">Target Angka *</label>
+                                        <input type="number" step="any" name="target_value" id="add-ind-target-<?= (int)$act['activity_id'] ?>" class="form-control" style="padding: 6px 10px; font-size: 0.82rem; height: auto;" placeholder="Contoh: 100" <?= ($currentType === 'Kualitatif') ? '' : 'required' ?>>
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.74rem; font-weight: 600; color: #475569; display: block; margin-bottom: 3px;">Satuan Target *</label>
+                                        <input type="text" name="unit" id="add-ind-unit-<?= (int)$act['activity_id'] ?>" class="form-control" style="padding: 6px 10px; font-size: 0.82rem; height: auto;" placeholder="Contoh: Orang, UMKM, %, Dokumen" <?= ($currentType === 'Kualitatif') ? '' : 'required' ?>>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bidang Deskripsi Capaian (Kualitatif) -->
+                            <div id="add-ind-kualitatif-<?= (int)$act['activity_id'] ?>" style="display: <?= ($currentType === 'Kualitatif') ? 'block' : 'none' ?>; margin-bottom: 8px;">
+                                <div>
+                                    <label style="font-size: 0.74rem; font-weight: 600; color: #475569; display: block; margin-bottom: 3px;">Target Capaian Kualitatif *</label>
+                                    <textarea name="target_description" id="add-ind-target-desc-<?= (int)$act['activity_id'] ?>" class="form-control" rows="2" style="font-size: 0.82rem;" placeholder="Deskripsikan kondisi, standar kualitas, atau hasil deskriptif yang diharapkan..." <?= ($currentType === 'Kualitatif') ? 'required' : '' ?>></textarea>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                                <div style="font-size: 0.72rem; color: var(--text-muted);">
+                                    <span id="add-ind-hint-<?= (int)$act['activity_id'] ?>">
+                                        <?= ($currentType === 'Kualitatif') ? 'Pengukuran kualitatif dinilai dari mutu deskripsi capaian' : 'Pengukuran kuantitatif dihitung berdasarkan perbandingan target dan realisasi angka' ?>
+                                    </span>
+                                </div>
+                                <button type="submit" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+                                    <i class="fa-solid fa-plus"></i> Simpan Indikator
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -333,6 +438,17 @@ $indModel = new Indicator();
                 </div>
             </div>
 
+            <div class="form-group">
+                <label class="form-label">Jenis Kegiatan *</label>
+                <select name="activity_type" id="edit_act_type" class="form-control" required>
+                    <option value="Kuantitatif">Kuantitatif (Terukur Angka)</option>
+                    <option value="Kualitatif">Kualitatif (Deskriptif/Narasi)</option>
+                </select>
+                <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">
+                    <i class="fa-solid fa-circle-info"></i> <strong>Kuantitatif</strong>: hasil diukur dengan angka. <strong>Kualitatif</strong>: hasil diukur secara deskriptif.
+                </small>
+            </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div class="form-group">
                     <label class="form-label">Mulai *</label>
@@ -364,7 +480,7 @@ $indModel = new Indicator();
 
 <!-- Modal Edit Indikator KPI -->
 <div id="modalEditIndicator" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 520px;">
+    <div class="modal-content" style="max-width: 560px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <h3 style="font-size: 1.15rem; font-weight: 700;"><i class="fa-solid fa-pen-to-square" style="color: var(--primary-dark);"></i> Edit Indikator Kinerja (KPI)</h3>
             <button type="button" onclick="toggleModal('modalEditIndicator')" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
@@ -376,23 +492,46 @@ $indModel = new Indicator();
             <input type="hidden" name="indicator_id" id="edit_ind_id">
 
             <div class="form-group">
-                <label class="form-label">Nama Indikator *</label>
-                <input type="text" name="indicator_name" id="edit_ind_name" class="form-control" required>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div class="form-group">
-                    <label class="form-label">Target Nilai *</label>
-                    <input type="number" step="any" name="target_value" id="edit_ind_target" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Satuan Target *</label>
-                    <input type="text" name="unit" id="edit_ind_unit" class="form-control" placeholder="Misal: Bibit, Orang" required>
+                <label class="form-label">Jenis Kegiatan (Mengikuti Kegiatan Utama)</label>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="hidden" name="activity_type" id="edit_ind_type" value="Kuantitatif">
+                    <span id="edit_ind_type_badge" class="badge" style="font-size: 0.82rem; padding: 5px 12px; font-weight: 600;">
+                        Kuantitatif
+                    </span>
+                    <small style="color: var(--text-muted); font-size: 0.76rem;">Jenis indikator otomatis mengikuti jenis kegiatan induk.</small>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Deskripsi Indikator</label>
+                <label class="form-label">Nama Indikator *</label>
+                <input type="text" name="indicator_name" id="edit_ind_name" class="form-control" placeholder="Contoh: Jumlah Peserta / Peningkatan Mutu Pelayanan" required>
+            </div>
+
+            <!-- Bagian Pengukuran Numerik (Kuantitatif) -->
+            <div id="edit_ind_kuantitatif_fields">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label class="form-label">Target Nilai *</label>
+                        <input type="number" step="any" name="target_value" id="edit_ind_target" class="form-control" placeholder="Contoh: 100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Satuan Target *</label>
+                        <input type="text" name="unit" id="edit_ind_unit" class="form-control" placeholder="Misal: Bibit, Orang, %">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian Deskripsi Capaian (Kualitatif) -->
+            <div id="edit_ind_kualitatif_fields" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Target Capaian Kualitatif *</label>
+                    <textarea name="target_description" id="edit_ind_target_desc" class="form-control" rows="3" placeholder="Deskripsikan kondisi, standar kualitas, atau mutu hasil yang diharapkan..."></textarea>
+                    <small style="color: var(--text-muted); font-size: 0.74rem;">Contoh: Tingkat kepuasan peserta minimal 85%, SOP tata kelola selesai divalidasi tanpa revisi mayor.</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Catatan Tambahan (Opsional)</label>
                 <textarea name="description" id="edit_ind_description" class="form-control" rows="2" placeholder="Keterangan tambahan parameter"></textarea>
             </div>
 
@@ -416,18 +555,212 @@ function openEditActivityModal(data) {
     document.getElementById('edit_act_name').value = data.activity_name || '';
     document.getElementById('edit_act_location').value = data.location || '';
     document.getElementById('edit_act_status').value = data.status || 'Perencanaan';
+    // Sinkronkan jenis kegiatan dengan nilai terbaru dari select langsung jika sudah diubah
+    const directSelect = document.getElementById('act-type-select-' + data.activity_id);
+    document.getElementById('edit_act_type').value = directSelect ? directSelect.value : (data.activity_type || 'Kuantitatif');
     document.getElementById('edit_act_start_date').value = data.start_date || '';
     document.getElementById('edit_act_end_date').value = data.end_date || '';
     document.getElementById('edit_act_description').value = data.description || '';
     toggleModal('modalEditActivity');
 }
 
+function quickChangeActivityType(selectEl, activityId, projectId) {
+    const newType = selectEl.value;
+    const prevType = selectEl.getAttribute('data-prev') || 'Kuantitatif';
+
+    // Perubahan style visual seketika (optimistic UI)
+    if (newType === 'Kuantitatif') {
+        selectEl.style.background = '#eff6ff';
+        selectEl.style.color = '#1d4ed8';
+        selectEl.style.borderColor = '#93c5fd';
+    } else {
+        selectEl.style.background = '#fffbeb';
+        selectEl.style.color = '#b45309';
+        selectEl.style.borderColor = '#fcd34d';
+    }
+
+    const feedback = document.getElementById('type-feedback-' + activityId);
+    if (feedback) {
+        feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color: #64748b;"></i>';
+        feedback.style.display = 'inline';
+    }
+
+    const formData = new FormData();
+    formData.append('activity_id', activityId);
+    formData.append('project_id', projectId);
+    formData.append('activity_type', newType);
+
+    fetch('<?= BASE_URL ?>/projects/update-activity-type', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && data.success) {
+            selectEl.setAttribute('data-prev', newType);
+            if (feedback) {
+                feedback.innerHTML = '<span style="color: #16a34a; font-weight: 600;"><i class="fa-solid fa-check"></i> Tersimpan</span>';
+                setTimeout(() => {
+                    feedback.style.display = 'none';
+                }, 2000);
+            }
+            const kpiBadge = document.getElementById('kpi-type-badge-' + activityId);
+            if (kpiBadge) {
+                kpiBadge.textContent = newType;
+                kpiBadge.style.color = (newType === 'Kuantitatif') ? '#1d4ed8' : '#b45309';
+            }
+
+            // Sinkronkan badge jenis pada seluruh kartu indikator di bawah kegiatan ini
+            document.querySelectorAll('.ind-type-badge-act-' + activityId).forEach(el => {
+                if (newType === 'Kualitatif') {
+                    el.style.background = '#fffbeb';
+                    el.style.color = '#b45309';
+                    el.style.borderColor = '#fcd34d';
+                    el.innerHTML = '<i class="fa-solid fa-file-lines"></i> Kualitatif';
+                } else {
+                    el.style.background = '#eff6ff';
+                    el.style.color = '#1d4ed8';
+                    el.style.borderColor = '#93c5fd';
+                    el.innerHTML = '<i class="fa-solid fa-chart-bar"></i> Kuantitatif';
+                }
+            });
+
+            // Tampilkan/sembunyikan blok target kualitatif vs kuantitatif pada kartu indikator
+            document.querySelectorAll('.ind-kual-box-act-' + activityId).forEach(el => {
+                el.style.display = (newType === 'Kualitatif') ? 'block' : 'none';
+            });
+            document.querySelectorAll('.ind-kuan-box-act-' + activityId).forEach(el => {
+                el.style.display = (newType === 'Kuantitatif') ? 'flex' : 'none';
+            });
+
+            // Sinkronkan form tambah indikator untuk kegiatan ini
+            const addHiddenType = document.getElementById('add-ind-type-hidden-' + activityId);
+            if (addHiddenType) {
+                addHiddenType.value = newType;
+            }
+            const addTypeLabel = document.getElementById('add-ind-current-type-label-' + activityId);
+            if (addTypeLabel) {
+                addTypeLabel.textContent = newType;
+                addTypeLabel.style.color = (newType === 'Kuantitatif') ? '#1d4ed8' : '#b45309';
+            }
+            toggleAddKpiType(activityId, newType);
+        } else {
+            throw new Error((data && data.message) ? data.message : 'Gagal menyimpan perubahan.');
+        }
+    })
+    .catch(err => {
+        console.error('Error updating activity type:', err);
+        // Rollback pilihan
+        selectEl.value = prevType;
+        if (prevType === 'Kuantitatif') {
+            selectEl.style.background = '#eff6ff';
+            selectEl.style.color = '#1d4ed8';
+            selectEl.style.borderColor = '#93c5fd';
+        } else {
+            selectEl.style.background = '#fffbeb';
+            selectEl.style.color = '#b45309';
+            selectEl.style.borderColor = '#fcd34d';
+        }
+        if (feedback) {
+            feedback.innerHTML = '<span style="color: #dc2626; font-weight: 600;"><i class="fa-solid fa-circle-exclamation"></i> Gagal</span>';
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 3000);
+        }
+        alert('Gagal memperbarui jenis kegiatan: ' + err.message);
+    });
+}
+
+function toggleAddKpiType(activityId, type) {
+    const kuanBox = document.getElementById('add-ind-kuantitatif-' + activityId);
+    const kualBox = document.getElementById('add-ind-kualitatif-' + activityId);
+    const targetInput = document.getElementById('add-ind-target-' + activityId);
+    const unitInput = document.getElementById('add-ind-unit-' + activityId);
+    const targetDescInput = document.getElementById('add-ind-target-desc-' + activityId);
+    const hint = document.getElementById('add-ind-hint-' + activityId);
+
+    if (type === 'Kualitatif') {
+        if (kuanBox) kuanBox.style.display = 'none';
+        if (kualBox) kualBox.style.display = 'block';
+        if (targetInput) targetInput.required = false;
+        if (unitInput) unitInput.required = false;
+        if (targetDescInput) targetDescInput.required = true;
+        if (hint) hint.textContent = 'Pengukuran kualitatif dinilai dari mutu deskripsi capaian';
+    } else {
+        if (kuanBox) kuanBox.style.display = 'block';
+        if (kualBox) kualBox.style.display = 'none';
+        if (targetInput) targetInput.required = true;
+        if (unitInput) unitInput.required = true;
+        if (targetDescInput) targetDescInput.required = false;
+        if (hint) hint.textContent = 'Pengukuran kuantitatif dihitung berdasarkan perbandingan target dan realisasi angka';
+    }
+}
+
+function toggleKpiEditType(type) {
+    const kuanBox = document.getElementById('edit_ind_kuantitatif_fields');
+    const kualBox = document.getElementById('edit_ind_kualitatif_fields');
+    const targetInput = document.getElementById('edit_ind_target');
+    const unitInput = document.getElementById('edit_ind_unit');
+    const targetDescInput = document.getElementById('edit_ind_target_desc');
+
+    if (type === 'Kualitatif') {
+        if (kuanBox) kuanBox.style.display = 'none';
+        if (kualBox) kualBox.style.display = 'block';
+        if (targetInput) targetInput.required = false;
+        if (unitInput) unitInput.required = false;
+        if (targetDescInput) targetDescInput.required = true;
+    } else {
+        if (kuanBox) kuanBox.style.display = 'block';
+        if (kualBox) kualBox.style.display = 'none';
+        if (targetInput) targetInput.required = true;
+        if (unitInput) unitInput.required = true;
+        if (targetDescInput) targetDescInput.required = false;
+    }
+}
+
 function openEditIndicatorModal(ind, activityId) {
     document.getElementById('edit_ind_id').value = ind.indicator_id || '';
     document.getElementById('edit_ind_activity_id').value = activityId || '';
     document.getElementById('edit_ind_name').value = ind.indicator_name || '';
-    document.getElementById('edit_ind_target').value = ind.target_value || '';
+
+    // Ambil jenis kegiatan dari kegiatan induk (menggunakan dropdown atas jika ada)
+    const actDirectSelect = document.getElementById('act-type-select-' + activityId);
+    const parentType = actDirectSelect ? actDirectSelect.value : (ind.activity_type || 'Kuantitatif');
+
+    const typeHidden = document.getElementById('edit_ind_type');
+    if (typeHidden) {
+        typeHidden.value = parentType;
+    }
+
+    const typeBadge = document.getElementById('edit_ind_type_badge');
+    if (typeBadge) {
+        if (parentType === 'Kualitatif') {
+            typeBadge.style.background = '#fffbeb';
+            typeBadge.style.color = '#b45309';
+            typeBadge.style.border = '1px solid #fcd34d';
+            typeBadge.innerHTML = '<i class="fa-solid fa-file-lines"></i> Kualitatif';
+        } else {
+            typeBadge.style.background = '#eff6ff';
+            typeBadge.style.color = '#1d4ed8';
+            typeBadge.style.border = '1px solid #93c5fd';
+            typeBadge.innerHTML = '<i class="fa-solid fa-chart-bar"></i> Kuantitatif';
+        }
+    }
+
+    toggleKpiEditType(parentType);
+
+    document.getElementById('edit_ind_target').value = (ind.target_value !== null && ind.target_value !== undefined) ? ind.target_value : '';
     document.getElementById('edit_ind_unit').value = ind.unit || '';
+    document.getElementById('edit_ind_target_desc').value = ind.target_description || '';
     document.getElementById('edit_ind_description').value = ind.description || '';
     toggleModal('modalEditIndicator');
 }
