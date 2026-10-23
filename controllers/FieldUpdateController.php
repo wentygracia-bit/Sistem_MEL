@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../helpers/AuthHelper.php';
+require_once __DIR__ . '/../helpers/ImageHelper.php';
 require_once __DIR__ . '/../models/FieldUpdate.php';
 require_once __DIR__ . '/../models/Activity.php';
 require_once __DIR__ . '/../models/Indicator.php';
@@ -157,7 +158,7 @@ class FieldUpdateController {
             }
             $ext = pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION);
             $fileName = 'evidence_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-            if (move_uploaded_file($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
+            if (ImageHelper::compressAndSave($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
                 $evidenceFileName = $fileName;
             }
         }
@@ -316,7 +317,7 @@ class FieldUpdateController {
             }
             $ext = pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION);
             $fileName = 'evidence_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-            if (move_uploaded_file($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
+            if (ImageHelper::compressAndSave($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
                 $evidenceFileName = $fileName;
             }
         }

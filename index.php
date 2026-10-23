@@ -3,6 +3,7 @@
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/Database.php';
 require_once __DIR__ . '/helpers/AuthHelper.php';
+require_once __DIR__ . '/helpers/ImageHelper.php';
 
 // Controllers
 require_once __DIR__ . '/controllers/AuthController.php';
