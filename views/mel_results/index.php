@@ -124,14 +124,14 @@ require_once __DIR__ . '/../layouts/header.php';
 <!-- Modal Susun Hasil MEL -->
 <?php if ($currentUser['role_id'] == 2): ?>
 <div id="modalCreateMEL" class="modal" style="display: none;">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 80%; width: 80%; max-height: 90vh; overflow-y: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <h3 style="font-size: 1.15rem; font-weight: 700;">Susun Hasil Akhir MEL untuk Direksi</h3>
             <button onclick="toggleModal('modalCreateMEL')" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
         </div>
 
         <form action="<?= BASE_URL ?>/mel-results/create" method="POST">
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom: 16px;">
                 <label class="form-label">Pilih Evaluasi Terkait (Project Leader) *</label>
                 <select name="evaluation_id" id="evalSelect" class="form-control" onchange="updateActivityId()" required>
                     <option value="">-- Pilih Hasil Evaluasi PL --</option>
@@ -147,24 +147,30 @@ require_once __DIR__ . '/../layouts/header.php';
 
             <input type="hidden" name="activity_id" id="activityIdInput">
 
-            <div class="form-group" style="margin-bottom: 14px;">
-                <label class="form-label">Ringkasan Capaian Indikator *</label>
-                <textarea name="summary_capaian" class="form-control" rows="3" placeholder="Jelaskan perbandingan realisasi fisik/capaian lapangan terhadap target indikator kegiatan..." required></textarea>
+            <!-- Baris 1: Capaian Indikator (Kiri) & Kendala (Kanan) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div class="form-group">
+                    <label class="form-label">Ringkasan Capaian Indikator *</label>
+                    <textarea name="summary_capaian" class="form-control" rows="3" placeholder="Jelaskan perbandingan realisasi fisik/capaian lapangan terhadap target indikator kegiatan..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Kendala di Lapangan *</label>
+                    <textarea name="summary_kendala" class="form-control" rows="3" placeholder="Tuliskan hambatan teknis, cuaca, logistik, atau faktor eksternal selama pelaksanaan..." required></textarea>
+                </div>
             </div>
 
-            <div class="form-group" style="margin-bottom: 14px;">
-                <label class="form-label">Kendala di Lapangan *</label>
-                <textarea name="summary_kendala" class="form-control" rows="3" placeholder="Tuliskan hambatan teknis, cuaca, logistik, atau faktor eksternal selama pelaksanaan..." required></textarea>
-            </div>
+            <!-- Baris 2: Strategi Keberhasilan (Kiri) & Usulan Tindak Lanjut (Kanan) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div class="form-group">
+                    <label class="form-label">Strategi Keberhasilan / Lessons Learned *</label>
+                    <textarea name="summary_strategi" class="form-control" rows="3" placeholder="Uraikan faktor kunci keberhasilan, adaptasi solusi di lapangan, atau pembelajaran yang didapat..." required></textarea>
+                </div>
 
-            <div class="form-group" style="margin-bottom: 14px;">
-                <label class="form-label">Strategi Keberhasilan / Lessons Learned *</label>
-                <textarea name="summary_strategi" class="form-control" rows="3" placeholder="Uraikan faktor kunci keberhasilan, adaptasi solusi di lapangan, atau pembelajaran yang didapat..." required></textarea>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 14px;">
-                <label class="form-label">Usulan Tindak Lanjut *</label>
-                <textarea name="summary_tindak_lanjut" class="form-control" rows="3" placeholder="Rekomendasikan langkah keberlanjutan, pendampingan lanjutan, atau usulan kebijakan untuk Direksi..." required></textarea>
+                <div class="form-group">
+                    <label class="form-label">Usulan Tindak Lanjut *</label>
+                    <textarea name="summary_tindak_lanjut" class="form-control" rows="3" placeholder="Rekomendasikan langkah keberlanjutan, pendampingan lanjutan, atau usulan kebijakan untuk Direksi..." required></textarea>
+                </div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
