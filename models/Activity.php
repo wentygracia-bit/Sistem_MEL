@@ -41,7 +41,9 @@ class Activity {
     public function findById(int $activityId): ?array {
         $stmt = $this->db->prepare("
             SELECT a.*, p.project_name, p.project_code,
-                   t.start_date, t.end_date, t.reminder_date, t.status as timeline_status
+                   t.start_date, t.end_date, t.reminder_date, t.status as timeline_status,
+                   COALESCE((SELECT SUM(target_value) FROM indicators WHERE activity_id = a.activity_id), 0) as total_target,
+                   COALESCE((SELECT unit FROM indicators WHERE activity_id = a.activity_id LIMIT 1), 'Satuan') as unit
             FROM activities a
             JOIN projects p ON a.project_id = p.project_id
             LEFT JOIN activity_timelines t ON a.activity_id = t.activity_id
