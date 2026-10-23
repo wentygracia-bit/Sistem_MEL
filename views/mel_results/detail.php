@@ -9,8 +9,8 @@ require_once __DIR__ . '/../layouts/header.php';
     <div>
         <?php if ($result['status'] === 'Disetujui'): ?>
             <span class="badge badge-success"><i class="fa-solid fa-stamp"></i> Resmi Disahkan Direktur</span>
-        <?php elseif ($result['status'] === 'Ditolak'): ?>
-            <span class="badge badge-danger"><i class="fa-solid fa-ban"></i> Keputusan: Ditolak</span>
+        <?php elseif ($result['status'] === 'Direvisi' || $result['status'] === 'Ditolak'): ?>
+            <span class="badge badge-danger" style="background: #fff1f2; color: #b91c1c; border: 1px solid #fecdd3;"><i class="fa-solid fa-rotate-left"></i> Keputusan: Direvisi</span>
         <?php else: ?>
             <span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Menunggu Keputusan Direktur</span>
         <?php endif; ?>
@@ -126,14 +126,14 @@ require_once __DIR__ . '/../layouts/header.php';
                         <div class="form-group">
                             <label class="form-label">Keputusan Direktur *</label>
                             <select name="decision" class="form-control" required>
-                                <option value="Disetujui" <?= ($result['approval_decision'] ?? '') === 'Disetujui' ? 'selected' : '' ?>>Disetujui (Sahkan & Publikasikan)</option>
-                                <option value="Ditolak" <?= ($result['approval_decision'] ?? '') === 'Ditolak' ? 'selected' : '' ?>>Ditolak (Kembalikan untuk evaluasi ulang)</option>
+                                <option value="Disetujui" <?= in_array($result['approval_decision'] ?? '', ['Disetujui', 'disetujui']) ? 'selected' : '' ?>>Disetujui</option>
+                                <option value="Direvisi" <?= in_array($result['approval_decision'] ?? '', ['Direvisi', 'Ditolak', 'direvisi', 'ditolak']) ? 'selected' : '' ?>>Direvisi</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Catatan Arahan Direksi *</label>
-                            <textarea name="notes" class="form-control" rows="3" placeholder="Tuliskan arahan pelaksanaan fase selanjutnya atau alasan penolakan..." required><?= htmlspecialchars($result['approval_notes'] ?? '') ?></textarea>
+                            <textarea name="notes" class="form-control" rows="3" required></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary" style="width: 100%;">

@@ -52,7 +52,7 @@ class Approval {
         if ($existing) {
             $stmt = $this->db->prepare("
                 UPDATE approvals
-                SET approved_by = ?, approval_date = ?, decision = 'Ditolak', notes = ?
+                SET approved_by = ?, approval_date = ?, decision = 'Direvisi', notes = ?
                 WHERE mel_result_id = ?
             ");
             $stmt->execute([$approvedBy, $approvalDate, $notes, $melResultId]);
@@ -60,14 +60,14 @@ class Approval {
         } else {
             $stmt = $this->db->prepare("
                 INSERT INTO approvals (mel_result_id, approved_by, approval_date, decision, notes)
-                VALUES (?, ?, ?, 'Ditolak', ?)
+                VALUES (?, ?, ?, 'Direvisi', ?)
             ");
             $stmt->execute([$melResultId, $approvedBy, $approvalDate, $notes]);
             $id = (int)$this->db->lastInsertId();
         }
 
         // Update mel_results status
-        $stmt2 = $this->db->prepare("UPDATE mel_results SET status = 'Ditolak' WHERE mel_result_id = ?");
+        $stmt2 = $this->db->prepare("UPDATE mel_results SET status = 'Direvisi' WHERE mel_result_id = ?");
         $stmt2->execute([$melResultId]);
 
         return $id;

@@ -88,7 +88,7 @@ $indModel = new Indicator();
                 </div>
                 <div style="flex: 2;">
                     <label class="form-label" style="font-size: 0.78rem;">Peran dalam Proyek</label>
-                    <input type="text" name="member_role" class="form-control" placeholder="Contoh: Field Coordinator" required>
+                    <input type="text" name="member_role" class="form-control" placeholder="Peran dalam proyek" required>
                 </div>
                 <button type="submit" class="btn btn-secondary btn-sm" style="height: 42px;">
                     <i class="fa-solid fa-user-plus"></i> Tambah
@@ -112,7 +112,7 @@ $indModel = new Indicator();
             </div>
             <div class="form-group">
                 <label class="form-label">Lokasi Pelaksanaan</label>
-                <input type="text" name="location" class="form-control" placeholder="Misal: Muara Gembong / Balai Desa">
+                <input type="text" name="location" class="form-control" placeholder="Lokasi pelaksanaan kegiatan">
             </div>
             <div class="form-group">
                 <label class="form-label">Jenis Kegiatan *</label>
@@ -362,7 +362,7 @@ $indModel = new Indicator();
 
                             <div style="margin-bottom: 8px;">
                                 <label style="font-size: 0.74rem; font-weight: 600; color: #475569; display: block; margin-bottom: 3px;">Nama Indikator *</label>
-                                <input type="text" name="indicator_name" class="form-control form-control-sm" style="padding: 6px 10px; font-size: 0.82rem; height: auto;" placeholder="Contoh: Jumlah Peserta Pelatihan / Peningkatan Mutu Pelayanan" required>
+                                <input type="text" name="indicator_name" class="form-control form-control-sm" style="padding: 6px 10px; font-size: 0.82rem; height: auto;" placeholder="Nama indikator capaian kinerja" required>
                             </div>
 
                             <!-- Bidang Pengukuran Numerik (Kuantitatif) -->
@@ -370,11 +370,11 @@ $indModel = new Indicator();
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                     <div>
                                         <label style="font-size: 0.74rem; font-weight: 600; color: #475569; display: block; margin-bottom: 3px;">Target Angka *</label>
-                                        <input type="number" step="any" name="target_value" id="add-ind-target-<?= (int)$act['activity_id'] ?>" class="form-control" style="padding: 6px 10px; font-size: 0.82rem; height: auto;" placeholder="Contoh: 100" <?= ($currentType === 'Kualitatif') ? '' : 'required' ?>>
+                                        <input type="number" step="any" name="target_value" id="add-ind-target-<?= (int)$act['activity_id'] ?>" class="form-control" style="padding: 6px 10px; font-size: 0.82rem; height: auto;" placeholder="Target angka" <?= ($currentType === 'Kualitatif') ? '' : 'required' ?>>
                                     </div>
                                     <div>
                                         <label style="font-size: 0.74rem; font-weight: 600; color: #475569; display: block; margin-bottom: 3px;">Satuan Target *</label>
-                                        <input type="text" name="unit" id="add-ind-unit-<?= (int)$act['activity_id'] ?>" class="form-control" style="padding: 6px 10px; font-size: 0.82rem; height: auto;" placeholder="Contoh: Orang, UMKM, %, Dokumen" <?= ($currentType === 'Kualitatif') ? '' : 'required' ?>>
+                                        <input type="text" name="unit" id="add-ind-unit-<?= (int)$act['activity_id'] ?>" class="form-control" style="padding: 6px 10px; font-size: 0.82rem; height: auto;" placeholder="Satuan target" <?= ($currentType === 'Kualitatif') ? '' : 'required' ?>>
                                     </div>
                                 </div>
                             </div>
@@ -504,7 +504,7 @@ $indModel = new Indicator();
 
             <div class="form-group">
                 <label class="form-label">Nama Indikator *</label>
-                <input type="text" name="indicator_name" id="edit_ind_name" class="form-control" placeholder="Contoh: Jumlah Peserta / Peningkatan Mutu Pelayanan" required>
+                <input type="text" name="indicator_name" id="edit_ind_name" class="form-control" placeholder="Nama indikator capaian kinerja" required>
             </div>
 
             <!-- Bagian Pengukuran Numerik (Kuantitatif) -->
@@ -512,11 +512,11 @@ $indModel = new Indicator();
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label">Target Nilai *</label>
-                        <input type="number" step="any" name="target_value" id="edit_ind_target" class="form-control" placeholder="Contoh: 100">
+                        <input type="number" step="any" name="target_value" id="edit_ind_target" class="form-control" placeholder="Target angka">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Satuan Target *</label>
-                        <input type="text" name="unit" id="edit_ind_unit" class="form-control" placeholder="Misal: Bibit, Orang, %">
+                        <input type="text" name="unit" id="edit_ind_unit" class="form-control" placeholder="Satuan target">
                     </div>
                 </div>
             </div>
@@ -526,7 +526,6 @@ $indModel = new Indicator();
                 <div class="form-group">
                     <label class="form-label">Target Capaian Kualitatif *</label>
                     <textarea name="target_description" id="edit_ind_target_desc" class="form-control" rows="3" placeholder="Deskripsikan kondisi, standar kualitas, atau mutu hasil yang diharapkan..."></textarea>
-                    <small style="color: var(--text-muted); font-size: 0.74rem;">Contoh: Tingkat kepuasan peserta minimal 85%, SOP tata kelola selesai divalidasi tanpa revisi mayor.</small>
                 </div>
             </div>
 

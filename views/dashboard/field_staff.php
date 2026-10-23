@@ -286,13 +286,13 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                 </div>
                 <div class="form-group">
                     <label class="form-label">Realisasi Angka Capaian</label>
-                    <input type="number" step="any" name="realization_value" id="edit_realization_value" class="form-control" placeholder="cth: 38">
+                    <input type="number" step="any" name="realization_value" id="edit_realization_value" class="form-control" placeholder="Angka capaian">
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Persentase Progres (%)</label>
-                <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="cth: 100">
+                <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="0 - 100">
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">

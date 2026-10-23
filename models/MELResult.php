@@ -87,7 +87,13 @@ class MELResult {
         return $stmt->execute([$status, $melResultId]);
     }
 
-    public function countByStatus(string $status): int {
+    public function countByStatus(string|array $status): int {
+        if (is_array($status)) {
+            $in = str_repeat('?,', count($status) - 1) . '?';
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM mel_results WHERE status IN ($in)");
+            $stmt->execute($status);
+            return (int)$stmt->fetchColumn();
+        }
         $stmt = $this->db->prepare("SELECT COUNT(*) FROM mel_results WHERE status = ?");
         $stmt->execute([$status]);
         return (int)$stmt->fetchColumn();

@@ -48,7 +48,7 @@ class DashboardController {
             $activeProjectsCount = $projectModel->countActiveProjects();
             $pendingMelCount = $melResultModel->countByStatus('Diajukan');
             $approvedMelCount = $melResultModel->countByStatus('Disetujui');
-            $needsFollowUpCount = $melResultModel->countByStatus('Ditolak');
+            $needsFollowUpCount = $melResultModel->countByStatus(['Direvisi', 'Ditolak']);
 
             $pendingMelList = $melResultModel->getPendingApproval();
             $activityStats = $activityModel->getStatusCounts();

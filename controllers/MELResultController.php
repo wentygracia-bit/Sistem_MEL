@@ -112,7 +112,7 @@ class MELResultController {
                 AuthHelper::setFlash('success', 'Hasil MEL resmi disahkan dan disetujui Direksi.');
             } else {
                 $approvalModel->rejectResult($melResultId, $user['user_id'], $date, $notes);
-                AuthHelper::setFlash('error', 'Hasil MEL ditolak dengan catatan evaluasi ulang.');
+                AuthHelper::setFlash('warning', 'Hasil MEL dikembalikan untuk direvisi dengan catatan dari Direktur.');
             }
 
             // Notifikasi ke pembuat dokumen MEL
