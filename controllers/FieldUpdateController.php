@@ -264,8 +264,15 @@ class FieldUpdateController {
             exit;
         }
 
-        // Access check: Only the reporter or MEL Staff/Admin (role 2) or PL (role 3) can edit
-        if ($existing['user_id'] != $user['user_id'] && !in_array($user['role_id'], [2, 3])) {
+        // Access check: Project Leader (role 3) tidak boleh mengedit laporan kegiatan (hanya melihat / mengevaluasi)
+        if ($user['role_id'] == 3) {
+            AuthHelper::setFlash('error', 'Project Leader hanya memiliki izin melihat dan mengevaluasi laporan, tidak dapat mengedit laporan.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        // Access check: Hanya pemilik laporan atau Staf MEL (role 2) yang dapat mengedit
+        if ($existing['user_id'] != $user['user_id'] && $user['role_id'] != 2) {
             AuthHelper::setFlash('error', 'Anda tidak memiliki hak akses untuk mengubah laporan ini.');
             header('Location: ' . BASE_URL . '/field-updates');
             exit;
@@ -348,8 +355,15 @@ class FieldUpdateController {
             exit;
         }
 
-        // Access check: only reporter or role 2/3 can delete
-        if ($existing['user_id'] != $user['user_id'] && !in_array($user['role_id'], [2, 3])) {
+        // Access check: Project Leader (role 3) tidak boleh menghapus laporan kegiatan
+        if ($user['role_id'] == 3) {
+            AuthHelper::setFlash('error', 'Project Leader hanya memiliki izin melihat dan mengevaluasi laporan, tidak dapat menghapus laporan.');
+            header('Location: ' . BASE_URL . '/field-updates');
+            exit;
+        }
+
+        // Access check: hanya pemilik laporan atau Staf MEL (role 2) yang dapat menghapus
+        if ($existing['user_id'] != $user['user_id'] && $user['role_id'] != 2) {
             AuthHelper::setFlash('error', 'Anda tidak memiliki hak akses untuk menghapus laporan ini.');
             header('Location: ' . BASE_URL . '/field-updates');
             exit;
