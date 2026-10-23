@@ -1,6 +1,25 @@
 <?php
 require_once __DIR__ . '/../layouts/header.php';
+$currentUser = $currentUser ?? AuthHelper::getUser();
 ?>
+
+<!-- Card Header Sapaan Pengguna Staf Lapangan -->
+<div style="background: linear-gradient(135deg, #ffffff 0%, #f4faeb 100%); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-dark); border-radius: var(--radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="badge badge-success" style="font-size: 0.8rem; padding: 4px 10px;">
+                <i class="fa-solid fa-person-digging"></i> Staf Lapangan
+            </span>
+            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500;">Yayasan Natural Kapital Indonesia</span>
+        </div>
+        <h1 style="font-size: 1.4rem; font-weight: 800; color: #1e330c; margin: 6px 0 2px 0;">
+            Selamat datang kembali, <?= htmlspecialchars($currentUser['name'] ?? 'Staf Lapangan') ?>!
+        </h1>
+        <p style="font-size: 0.88rem; color: #475569; margin: 0;">
+            Ringkasan tugas lapangan, pengiriman laporan, dan respons perbaikan.
+        </p>
+    </div>
+</div>
 
 <!-- 4 Kartu Ringkasan (KPI Cards) Staf Lapangan -->
 <div class="grid-cols-4" style="margin-bottom: 24px;">

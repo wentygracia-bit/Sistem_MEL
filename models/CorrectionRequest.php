@@ -64,12 +64,16 @@ class CorrectionRequest {
 
     public function getForUser(int $userId): array {
         $stmt = $this->db->prepare("
-            SELECT cr.*, req.name as requested_by_name, a.activity_name, p.project_name, fu.update_id,
+            SELECT cr.*, 
+                   req.name as requested_by_name, 
+                   assign.name as assigned_to_name,
+                   a.activity_name, p.project_name, fu.update_id,
                    fu.description as report_description, fu.realization_value, fu.progress_percentage,
                    e.notes as eval_notes, e.result as eval_result,
                    t.end_date as activity_deadline
             FROM correction_requests cr
             JOIN users req ON cr.requested_by = req.user_id
+            JOIN users assign ON cr.assigned_to = assign.user_id
             JOIN evaluations e ON cr.evaluation_id = e.evaluation_id
             JOIN field_updates fu ON e.update_id = fu.update_id
             JOIN activities a ON fu.activity_id = a.activity_id
@@ -88,6 +92,17 @@ class CorrectionRequest {
             FROM correction_requests cr
             WHERE cr.status = 'Diminta'
         ");
+        return (int)$stmt->fetchColumn();
+    }
+
+    public function countActiveForUser(int $userId): int {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) 
+            FROM correction_requests 
+            WHERE assigned_to = ? 
+              AND status = 'Diminta'
+        ");
+        $stmt->execute([$userId]);
         return (int)$stmt->fetchColumn();
     }
 

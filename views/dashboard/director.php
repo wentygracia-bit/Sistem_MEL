@@ -29,15 +29,15 @@ $offsetPerencanaan = -($lenBerjalan + $lenSelesai);
     <div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <span class="badge badge-success" style="font-size: 0.8rem; padding: 4px 10px;">
-                <i class="fa-solid fa-crown"></i> Peran Direktur
+                <i class="fa-solid fa-crown"></i> Direktur
             </span>
             <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500;">Yayasan Natural Kapital Indonesia</span>
         </div>
         <h1 style="font-size: 1.4rem; font-weight: 800; color: #1e330c; margin: 6px 0 2px 0;">
-            Selamat Datang, <?= htmlspecialchars($currentUser['name']) ?>
+            Selamat datang kembali, <?= htmlspecialchars($currentUser['name'] ?? 'Direktur') ?>!
         </h1>
         <p style="font-size: 0.88rem; color: #475569; margin: 0;">
-            Pantau status proyek aktif, pengesahan dokumen MEL, dan progres kegiatan organisasi secara terpusat.
+            Ringkasan capaian proyek organisasi dan antrean pengesahan hasil MEL.
         </p>
     </div>
     <div style="display: flex; gap: 10px;">

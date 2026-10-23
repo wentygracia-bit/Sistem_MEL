@@ -19,14 +19,6 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
             Ringkasan pemantauan proyek, laporan lapangan masuk, tindak lanjut perbaikan, dan dokumen hasil MEL YNKI.
         </p>
     </div>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <a href="<?= BASE_URL ?>/field-updates" class="btn btn-secondary btn-sm">
-            <i class="fa-solid fa-clipboard-check"></i> Laporan Lapangan
-        </a>
-        <a href="<?= BASE_URL ?>/mel-results" class="btn btn-primary btn-sm">
-            <i class="fa-solid fa-stamp"></i> Hasil MEL
-        </a>
-    </div>
 </div>
 
 <!-- 4 Card Utama Dashboard Staf MEL -->
@@ -90,10 +82,10 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
     </a>
 </div>
 
-<!-- Layout Utama 2 Kolom: Kiri Laporan Lapangan Terbaru, Kanan Permintaan Perbaikan & Hasil MEL -->
-<div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; align-items: start;">
+<!-- Baris 1: Layout Utama 2 Kolom (Kiri: Laporan Lapangan Terbaru, Kanan: Kegiatan Mendekati Tenggat) -->
+<div style="display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-bottom: 24px;">
     
-    <!-- Kolom Kiri: Laporan Lapangan Terbaru -->
+    <!-- Kolom Kiri: Laporan Lapangan untuk Diperiksa -->
     <div class="card" style="margin-bottom: 0;">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div>
@@ -101,7 +93,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                     <i class="fa-solid fa-clipboard-list" style="color: var(--primary-dark);"></i> Laporan Lapangan Terbaru
                 </h2>
                 <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
-                    Laporan masuk dari Staf Lapangan yang siap ditinjau atau dievaluasi.
+                    Laporan masuk dari Staf Lapangan yang siap diperiksa dan diverifikasi oleh Staf MEL.
                 </p>
             </div>
             <a href="<?= BASE_URL ?>/field-updates" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
@@ -125,7 +117,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                         <tr>
                             <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 36px 20px;">
                                 <i class="fa-solid fa-clipboard-check" style="font-size: 1.8rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
-                                Belum ada laporan lapangan.
+                                Belum ada laporan lapangan yang siap diperiksa.
                             </td>
                         </tr>
                     <?php else: ?>
@@ -136,10 +128,10 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                                     <div style="font-size: 0.75rem; color: var(--text-muted);"><?= date('d M Y', strtotime($up['update_date'])) ?></div>
                                 </td>
                                 <td>
-                                    <div style="font-weight: 600; color: #1e293b; font-size: 0.85rem; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($up['activity_name']) ?>">
+                                    <div style="font-weight: 600; color: #1e293b; font-size: 0.85rem; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($up['activity_name']) ?>">
                                         <?= htmlspecialchars($up['activity_name']) ?>
                                     </div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($up['project_name']) ?>">
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($up['project_name']) ?>">
                                         <?= htmlspecialchars($up['project_name']) ?>
                                     </div>
                                 </td>
@@ -156,12 +148,14 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                                         <span class="badge badge-success" style="font-size: 0.72rem;"><i class="fa-solid fa-circle-check"></i> Dievaluasi</span>
                                     <?php elseif ($up['status'] === 'Perlu Perbaikan'): ?>
                                         <span class="badge badge-danger" style="font-size: 0.72rem;"><i class="fa-solid fa-triangle-exclamation"></i> Perlu Perbaikan</span>
+                                    <?php elseif ($up['status'] === 'Draft'): ?>
+                                        <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-size: 0.72rem;"><i class="fa-solid fa-pen-ruler"></i> Draft</span>
                                     <?php else: ?>
-                                        <span class="badge badge-warning" style="font-size: 0.72rem;"><i class="fa-solid fa-clock"></i> <?= htmlspecialchars($up['status']) ?></span>
+                                        <span class="badge badge-warning" style="font-size: 0.72rem;"><i class="fa-solid fa-clock"></i> <?= htmlspecialchars($up['status'] ?: 'Menunggu Verifikasi') ?></span>
                                     <?php endif; ?>
                                 </td>
                                 <td style="text-align: center;">
-                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat Rincian Laporan">
+                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>" class="btn btn-secondary btn-sm" title="Periksa Laporan Lapangan">
                                         <i class="fa-solid fa-eye"></i>
                                     </a>
                                 </td>
@@ -173,153 +167,192 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
         </div>
     </div>
 
-    <!-- Kolom Kanan: Permintaan Perbaikan & Ringkasan Hasil MEL -->
-    <div style="display: flex; flex-direction: column; gap: 20px;">
-        
-        <!-- Bagian 1: Permintaan Perbaikan Terbaru -->
-        <div class="card" style="margin-bottom: 0;">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h2 class="card-title" style="font-size: 1.05rem;">
-                        <i class="fa-solid fa-rotate-left" style="color: var(--primary-dark);"></i> Permintaan Perbaikan Terbaru
-                    </h2>
-                    <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
-                        Catatan revisi dari Project Leader kepada Staf Lapangan.
-                    </p>
-                </div>
-                <a href="<?= BASE_URL ?>/evaluations?tab=perbaikan" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
-                    Lihat Semua <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem; margin-left: 4px;"></i>
-                </a>
+    <!-- Kolom Kanan: Panel Kegiatan Mendekati Tenggat -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 class="card-title" style="font-size: 1.05rem;">
+                    <i class="fa-solid fa-clock" style="color: #d97706;"></i> Kegiatan Mendekati Tenggat
+                </h2>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                    Kegiatan aktif dengan tanggal tenggat (deadline) terdekat untuk dipantau tepat waktu.
+                </p>
             </div>
+            <a href="<?= BASE_URL ?>/projects" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+                Proyek <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem; margin-left: 4px;"></i>
+            </a>
+        </div>
 
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Kegiatan & Tanggal</th>
-                            <th>Ditugaskan ke</th>
-                            <th>Status</th>
-                            <th style="text-align: center;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($recentCorrections)): ?>
-                            <tr>
-                                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 28px 16px;">
-                                    <i class="fa-solid fa-circle-check" style="font-size: 1.6rem; color: #cbd5e1; margin-bottom: 6px; display: block;"></i>
-                                    Tidak ada permintaan perbaikan aktif.
-                                </td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($recentCorrections as $c): ?>
-                                <tr>
-                                    <td>
-                                        <div style="font-weight: 600; color: #0f172a; font-size: 0.85rem; max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($c['activity_name']) ?>">
-                                            <?= htmlspecialchars($c['activity_name']) ?>
-                                        </div>
-                                        <div style="font-size: 0.75rem; color: var(--text-muted);"><?= date('d M Y', strtotime($c['request_date'])) ?></div>
-                                        <?php if (!empty($c['description'])): ?>
-                                            <div style="font-size: 0.74rem; color: #64748b; margin-top: 2px; max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($c['description']) ?>">
-                                                <?= htmlspecialchars($c['description']) ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <div style="font-size: 0.82rem; font-weight: 500; color: #334155;"><?= htmlspecialchars($c['assigned_to_name']) ?></div>
-                                        <div style="font-size: 0.72rem; color: var(--text-muted);">Oleh: <?= htmlspecialchars($c['requested_by_name']) ?></div>
-                                    </td>
-                                    <td>
-                                        <?php if ($c['status'] === 'Direspons'): ?>
-                                            <span class="badge badge-success" style="font-size: 0.72rem;"><i class="fa-solid fa-reply"></i> Direspons</span>
-                                        <?php else: ?>
-                                            <span class="badge badge-warning" style="font-size: 0.72rem;"><i class="fa-solid fa-clock"></i> Diminta</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td style="text-align: center;">
-                                        <a href="<?= BASE_URL ?>/corrections/detail?id=<?= $c['correction_id'] ?>" class="btn btn-secondary btn-sm" title="Rincian Permintaan">
-                                            <i class="fa-solid fa-comments"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+        <div style="padding: 16px 20px;">
+            <?php if (empty($upcomingActivities)): ?>
+                <div style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
+                    <i class="fa-solid fa-calendar-check" style="font-size: 1.8rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
+                    Tidak ada kegiatan mendekati tenggat.
+                </div>
+            <?php else: ?>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <?php foreach ($upcomingActivities as $act): ?>
+                        <?php
+                        $diffDays = (int)($act['diff_days'] ?? 0);
+                        $isOverdue = $diffDays < 0;
+                        $cardBg = $isOverdue ? '#fef2f2' : ($diffDays <= 7 ? '#fffbeb' : '#f8fafc');
+                        $cardBorder = $isOverdue ? '#fca5a5' : ($diffDays <= 7 ? '#fde68a' : 'var(--border-color)');
+                        ?>
+                        <div style="padding: 12px 14px; background: <?= $cardBg ?>; border: 1px solid <?= $cardBorder ?>; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                            <div style="min-width: 0; flex: 1;">
+                                <div style="font-weight: 700; font-size: 0.88rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($act['activity_name']) ?>">
+                                    <?= htmlspecialchars($act['activity_name']) ?>
+                                </div>
+                                <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 3px;">
+                                    <?= htmlspecialchars($act['project_name']) ?>
+                                </div>
+                                <div style="font-size: 0.75rem; color: #475569; margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span><i class="fa-regular fa-calendar" style="color: #64748b;"></i> Tenggat: <strong><?= date('d M Y', strtotime($act['end_date'])) ?></strong></span>
+                                    <span>&bull;</span>
+                                    <span>
+                                        Status: 
+                                        <span class="badge <?= $act['display_status'] === 'Terlambat' ? 'badge-danger' : ($act['display_status'] === 'Berjalan' ? 'badge-success' : 'badge-warning') ?>" style="font-size: 0.68rem; padding: 2px 6px;">
+                                            <?= htmlspecialchars($act['display_status']) ?>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="text-align: right; flex-shrink: 0;">
+                                <?php if ($diffDays < 0): ?>
+                                    <span class="badge badge-danger" style="font-size: 0.74rem;">
+                                        Lewat <?= abs($diffDays) ?> hari
+                                    </span>
+                                <?php elseif ($diffDays === 0): ?>
+                                    <span class="badge badge-warning" style="font-size: 0.74rem;">
+                                        Hari ini!
+                                    </span>
+                                <?php else: ?>
+                                    <span class="badge badge-warning" style="font-size: 0.74rem;">
+                                        <?= $diffDays ?> hari lagi
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<!-- Baris 2: Aktivitas Terbaru (Full Width / 100%) -->
+<div style="width: 100%;">
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 class="card-title" style="font-size: 1.05rem;">
+                    <i class="fa-solid fa-clock-rotate-left" style="color: var(--primary-dark);"></i> Aktivitas Terbaru
+                </h2>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                    Kronologi pelaporan lapangan, evaluasi, dan keputusan pengesahan yang tercatat di sistem.
+                </p>
             </div>
         </div>
 
-        <!-- Bagian 2: Ringkasan Hasil MEL -->
-        <div class="card" style="margin-bottom: 0;">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h2 class="card-title" style="font-size: 1.05rem;">
-                        <i class="fa-solid fa-stamp" style="color: var(--primary-dark);"></i> Ringkasan Hasil MEL
-                    </h2>
-                    <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
-                        Dokumen evaluasi MEL dan status pengesahan Direktur.
-                    </p>
+        <div style="padding: 16px 20px;">
+            <?php if (empty($recentActivities)): ?>
+                <div style="text-align: center; color: var(--text-muted); padding: 24px;">
+                    <i class="fa-solid fa-inbox" style="font-size: 1.6rem; color: #cbd5e1; margin-bottom: 6px; display: block;"></i>
+                    Belum ada aktivitas yang tercatat di sistem.
                 </div>
-                <a href="<?= BASE_URL ?>/mel-results" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
-                    Lihat Semua <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem; margin-left: 4px;"></i>
-                </a>
-            </div>
+            <?php else: ?>
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <?php foreach ($recentActivities as $act): ?>
+                        <?php
+                        $iconColor = '#0284c7';
+                        $iconBg = '#f0f9ff';
+                        $iconClass = 'fa-clipboard-check';
+                        $actionUrl = BASE_URL . '/field-updates';
 
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Kegiatan & Pengajuan</th>
-                            <th>Status Pengesahan</th>
-                            <th style="text-align: center;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($recentMelResults)): ?>
-                            <tr>
-                                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 28px 16px;">
-                                    <i class="fa-solid fa-file-contract" style="font-size: 1.6rem; color: #cbd5e1; margin-bottom: 6px; display: block;"></i>
-                                    Belum ada berkas hasil MEL yang disusun.
-                                </td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($recentMelResults as $m): ?>
-                                <tr>
-                                    <td>
-                                        <div style="font-weight: 600; color: #0f172a; font-size: 0.85rem; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($m['activity_name']) ?>">
-                                            <?= htmlspecialchars($m['activity_name']) ?>
-                                        </div>
-                                        <div style="font-size: 0.75rem; color: var(--text-muted);">
-                                            <?= date('d M Y', strtotime($m['submission_date'])) ?> &bull; <?= htmlspecialchars($m['project_name']) ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <?php if ($m['status'] === 'Disetujui'): ?>
-                                            <span class="badge badge-success" style="font-size: 0.72rem;"><i class="fa-solid fa-stamp"></i> Disetujui</span>
-                                        <?php elseif ($m['status'] === 'Ditolak'): ?>
-                                            <span class="badge badge-danger" style="font-size: 0.72rem;"><i class="fa-solid fa-ban"></i> Ditolak</span>
-                                        <?php else: ?>
-                                            <span class="badge badge-warning" style="font-size: 0.72rem;"><i class="fa-solid fa-clock"></i> Diajukan</span>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($m['approver_name'])): ?>
-                                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
-                                                Oleh: <?= htmlspecialchars($m['approver_name']) ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td style="text-align: center;">
-                                        <a href="<?= BASE_URL ?>/mel-results/detail?id=<?= $m['mel_result_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat Dokumen Hasil MEL">
-                                            <i class="fa-solid fa-file-contract"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+                        if ($act['act_type'] === 'evaluasi') {
+                            $iconColor = '#7c3aed';
+                            $iconBg = '#f5f3ff';
+                            $iconClass = 'fa-scale-balanced';
+                            $actionUrl = BASE_URL . '/evaluations';
+                        } elseif ($act['act_type'] === 'hasil_mel') {
+                            $iconColor = '#16a34a';
+                            $iconBg = '#f0fdf4';
+                            $iconClass = 'fa-file-signature';
+                            $actionUrl = BASE_URL . '/mel-results/detail?id=' . $act['ref_id'];
+                        } elseif ($act['act_type'] === 'keputusan') {
+                            $iconColor = $act['event_status'] === 'Disetujui' ? '#15803d' : '#b91c1c';
+                            $iconBg = $act['event_status'] === 'Disetujui' ? '#f0fdf4' : '#fef2f2';
+                            $iconClass = 'fa-stamp';
+                            $actionUrl = BASE_URL . '/mel-results/detail?id=' . $act['ref_id'];
+                        } elseif ($act['act_type'] === 'laporan') {
+                            $actionUrl = BASE_URL . '/field-updates/detail?id=' . $act['ref_id'];
+                        }
+                        ?>
+                        <div style="display: flex; gap: 14px; align-items: flex-start; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: <?= $iconBg ?>; color: <?= $iconColor ?>; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; margin-top: 2px;">
+                                <i class="fa-solid <?= $iconClass ?>"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap;">
+                                    <div style="font-size: 0.88rem; font-weight: 700; color: #0f172a;">
+                                        <?= htmlspecialchars($act['act_category']) ?>: <?= htmlspecialchars($act['activity_name']) ?>
+                                    </div>
+                                    <span style="font-size: 0.74rem; color: var(--text-muted); white-space: nowrap;">
+                                        <?= date('d M Y', strtotime($act['event_date'])) ?>
+                                    </span>
+                                </div>
+                                <div style="font-size: 0.78rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span>
+                                        Oleh: <strong style="color: #0f172a; font-weight: 700;"><?= htmlspecialchars($act['actor_name']) ?></strong>
+                                    </span>
+                                    <?php if (!empty($act['actor_role'])): ?>
+                                        <?php
+                                        $roleBadgeBg = '#f1f5f9';
+                                        $roleBadgeColor = '#475569';
+                                        $roleBadgeBorder = '#cbd5e1';
+                                        if ($act['actor_role'] === 'Project Leader') {
+                                            $roleBadgeBg = '#eff6ff';
+                                            $roleBadgeColor = '#1d4ed8';
+                                            $roleBadgeBorder = '#bfdbfe';
+                                        } elseif ($act['actor_role'] === 'Direktur') {
+                                            $roleBadgeBg = '#fdf4ff';
+                                            $roleBadgeColor = '#86198f';
+                                            $roleBadgeBorder = '#f5d0fe';
+                                        } elseif ($act['actor_role'] === 'Staf MEL') {
+                                            $roleBadgeBg = '#f0fdf4';
+                                            $roleBadgeColor = '#15803d';
+                                            $roleBadgeBorder = '#bbf7d0';
+                                        } elseif ($act['actor_role'] === 'Staf Lapangan') {
+                                            $roleBadgeBg = '#fffbeb';
+                                            $roleBadgeColor = '#b45309';
+                                            $roleBadgeBorder = '#fde68a';
+                                        }
+                                        ?>
+                                        <span class="badge" style="background: <?= $roleBadgeBg ?>; color: <?= $roleBadgeColor ?>; border: 1px solid <?= $roleBadgeBorder ?>; font-size: 0.68rem; padding: 2px 7px; font-weight: 600;">
+                                            <?= htmlspecialchars($act['actor_role']) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                    <span style="color: #cbd5e1;">&bull;</span>
+                                    <span>
+                                        Proyek: <strong style="color: #1e3a5f; font-weight: 700;"><?= htmlspecialchars($act['project_name']) ?></strong>
+                                    </span>
+                                </div>
+                                <?php if (!empty($act['details'])): ?>
+                                    <div style="font-size: 0.8rem; color: #475569; margin-top: 4px; background: #f8fafc; padding: 8px 12px; border-radius: 4px; border-left: 3px solid <?= $iconColor ?>; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($act['details']) ?>">
+                                        <?= htmlspecialchars($act['details']) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div>
+                                <a href="<?= $actionUrl ?>" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.75rem;" title="Lihat">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
-
     </div>
 </div>
 

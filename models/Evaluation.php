@@ -49,10 +49,18 @@ class Evaluation {
         return (int)$this->db->lastInsertId();
     }
 
-    public function getAll(int $limit = 50): array {
-        $stmt = $this->db->prepare("
+    public function getAll(int $limit = 50, ?string $resultFilter = null): array {
+        $whereClause = "";
+        $params = [];
+
+        if (!empty($resultFilter)) {
+            $whereClause = "WHERE e.result = ?";
+            $params[] = $resultFilter;
+        }
+
+        $sql = "
             SELECT e.*, i.indicator_name, i.target_value, i.unit, u.name as evaluator_name,
-                   a.activity_name, p.project_name,
+                   a.activity_name, a.activity_id, p.project_name,
                    fu.realization_value, fu.progress_percentage, fu.status as report_status, fu.evidence_file,
                    mr.mel_result_id, mr.status as mel_status,
                    ap.decision as approval_decision
@@ -64,11 +72,26 @@ class Evaluation {
             JOIN projects p ON a.project_id = p.project_id
             LEFT JOIN mel_results mr ON mr.evaluation_id = e.evaluation_id
             LEFT JOIN approvals ap ON ap.mel_result_id = mr.mel_result_id
+            {$whereClause}
             ORDER BY e.evaluation_id DESC
             LIMIT ?
-        ");
-        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $paramIndex = 1;
+        foreach ($params as $param) {
+            $stmt->bindValue($paramIndex++, $param, PDO::PARAM_STR);
+        }
+        $stmt->bindValue($paramIndex, $limit, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Mengambil evaluasi yang telah disetujui oleh Project Leader (result = 'Sesuai')
+     * untuk digunakan pada dropdown formulir Susun Hasil Akhir MEL.
+     */
+    public function getApprovedEvaluations(int $limit = 50): array {
+        return $this->getAll($limit, 'Sesuai');
     }
 }

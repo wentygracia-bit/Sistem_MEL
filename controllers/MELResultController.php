@@ -21,7 +21,8 @@ class MELResultController {
         );
 
         $evalModel = new Evaluation();
-        $evaluations = $evalModel->getAll();
+        // Dropdown evaluasi pada modal "Susun Hasil Akhir MEL" hanya menampilkan evaluasi yang sudah disetujui PL (result = 'Sesuai')
+        $evaluations = $evalModel->getApprovedEvaluations();
 
         $pageTitle = 'Hasil MEL & Pengesahan';
         $activeMenu = 'mel-results';
@@ -51,7 +52,21 @@ class MELResultController {
 
         $activityId = (int)($_POST['activity_id'] ?? 0);
         $evaluationId = (int)($_POST['evaluation_id'] ?? 0);
-        $summary = trim($_POST['result_summary'] ?? '');
+
+        // Tangkap 4 input textarea terpisah dari form
+        $summaryCapaian = trim($_POST['summary_capaian'] ?? '');
+        $summaryKendala = trim($_POST['summary_kendala'] ?? '');
+        $summaryStrategi = trim($_POST['summary_strategi'] ?? '');
+        $summaryTindakLanjut = trim($_POST['summary_tindak_lanjut'] ?? '');
+
+        // Gabungkan (concatenate) menjadi satu string komprehensif
+        if (!empty($summaryCapaian) || !empty($summaryKendala) || !empty($summaryStrategi) || !empty($summaryTindakLanjut)) {
+            $summary = "Capaian:\n" . $summaryCapaian . "\n\nKendala:\n" . $summaryKendala . "\n\nStrategi:\n" . $summaryStrategi . "\n\nTindak Lanjut:\n" . $summaryTindakLanjut;
+        } else {
+            // Fallback jika form lama atau input langsung digunakan
+            $summary = trim($_POST['result_summary'] ?? '');
+        }
+
         $submissionDate = date('Y-m-d');
 
         if ($activityId > 0 && $evaluationId > 0 && !empty($summary)) {

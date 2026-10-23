@@ -32,8 +32,8 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <div style="font-weight: 700; color: #0f172a; max-width: 200px;"><?= htmlspecialchars($c['activity_name']) ?></div>
                                 <div style="font-size: 0.78rem; color: var(--text-muted);"><?= htmlspecialchars($c['project_name']) ?></div>
                             </td>
-                            <td><?= htmlspecialchars($c['requested_by_name']) ?></td>
-                            <td><?= htmlspecialchars($c['assigned_to_name']) ?></td>
+                            <td><?= htmlspecialchars($c['requested_by_name'] ?? '-') ?></td>
+                            <td><?= htmlspecialchars($c['assigned_to_name'] ?? '-') ?></td>
                             <td><?= date('d M Y', strtotime($c['request_date'])) ?></td>
                             <td>
                                 <div style="font-size: 0.85rem; max-width: 250px;"><?= htmlspecialchars($c['description']) ?></div>

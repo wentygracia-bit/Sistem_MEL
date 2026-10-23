@@ -50,6 +50,44 @@ class FieldUpdate {
         return $stmt->fetchAll();
     }
 
+    /**
+     * Mengambil laporan lapangan yang relevan untuk diperiksa oleh Staf MEL.
+     * Mengutamakan laporan yang siap diverifikasi/ditinjau (Diajukan, Perlu Perbaikan, Menunggu Verifikasi),
+     * lalu laporan yang sudah dievaluasi, mengabaikan status Draft jika belum dikirim.
+     */
+    public function getRecentForMELVerification(int $limit = 6): array {
+        $sql = "
+            SELECT fu.*, u.name as reporter_name, a.activity_name, p.project_name,
+                   (SELECT COUNT(*) FROM evaluations e WHERE e.update_id = fu.update_id) as evaluation_count
+            FROM field_updates fu
+            JOIN users u ON fu.user_id = u.user_id
+            JOIN activities a ON fu.activity_id = a.activity_id
+            JOIN projects p ON a.project_id = p.project_id
+            WHERE fu.status != 'Draft'
+            ORDER BY 
+                CASE 
+                    WHEN fu.status = 'Diajukan' OR fu.status = 'Menunggu Verifikasi' THEN 1
+                    WHEN fu.status = 'Perlu Perbaikan' THEN 2
+                    WHEN fu.status = 'Dievaluasi' OR fu.status = 'Disetujui' THEN 3
+                    ELSE 4
+                END ASC,
+                fu.update_date DESC,
+                fu.update_id DESC
+            LIMIT ?
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        $results = $stmt->fetchAll();
+
+        // Jika tidak ada laporan non-draft, tampilkan seluruh laporan terbaru
+        if (empty($results)) {
+            return $this->getAll($limit);
+        }
+
+        return $results;
+    }
+
     public function submitUpdate(int $activityId, int $userId, string $updateDate, ?string $description, ?float $realizationValue, ?float $progressPercentage, ?string $evidenceFile, string $status = 'Diajukan'): int {
         $stmt = $this->db->prepare("
             INSERT INTO field_updates (activity_id, user_id, update_date, description, realization_value, progress_percentage, evidence_file, status)

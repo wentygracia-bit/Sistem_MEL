@@ -106,9 +106,92 @@ class DashboardController {
             $activeCorrectionsCount = $correctionModel->countActiveGlobal();
             $totalMelResultsCount = $melResultModel->countAll();
 
-            $recentUpdates = $updateModel->getAll(5);
-            $recentCorrections = $correctionModel->getRecentGlobal(5);
-            $recentMelResults = $melResultModel->getRecentWithApproval(4);
+            // 1. Laporan Lapangan Terbaru yang relevan untuk diperiksa Staf MEL
+            $recentUpdates = $updateModel->getRecentForMELVerification(6);
+
+            // 2. Kegiatan Mendekati Tenggat (Upcoming Deadlines)
+            $upcomingActivities = $activityModel->getUpcomingDeadlines(5);
+
+            // 3. Aktivitas Terbaru (Laporan, Evaluasi, Hasil MEL, dan Keputusan Direktur yang tercatat di sistem)
+            $dbConn = Database::getConnection();
+            $activitySql = "
+                (
+                    SELECT 'laporan' as act_type, 
+                           'Laporan Lapangan' as act_category,
+                           fu.description as details, 
+                           u.name as actor_name, 
+                           r.role_name as actor_role,
+                           fu.update_date as event_date, 
+                           fu.status as event_status, 
+                           a.activity_name, 
+                           p.project_name, 
+                           fu.update_id as ref_id
+                    FROM field_updates fu
+                    JOIN activities a ON fu.activity_id = a.activity_id
+                    JOIN projects p ON a.project_id = p.project_id
+                    JOIN users u ON fu.user_id = u.user_id
+                    LEFT JOIN roles r ON u.role_id = r.role_id
+                )
+                UNION ALL
+                (
+                    SELECT 'evaluasi' as act_type, 
+                           'Evaluasi Lapangan' as act_category,
+                           e.notes as details, 
+                           u.name as actor_name, 
+                           r.role_name as actor_role,
+                           e.evaluation_date as event_date, 
+                           e.result as event_status, 
+                           a.activity_name, 
+                           p.project_name, 
+                           e.evaluation_id as ref_id
+                    FROM evaluations e
+                    JOIN field_updates fu ON e.update_id = fu.update_id
+                    JOIN activities a ON fu.activity_id = a.activity_id
+                    JOIN projects p ON a.project_id = p.project_id
+                    JOIN users u ON e.evaluator_id = u.user_id
+                    LEFT JOIN roles r ON u.role_id = r.role_id
+                )
+                UNION ALL
+                (
+                    SELECT 'hasil_mel' as act_type, 
+                           'Penyusunan MEL' as act_category,
+                           m.result_summary as details, 
+                           u.name as actor_name, 
+                           r.role_name as actor_role,
+                           m.submission_date as event_date, 
+                           m.status as event_status, 
+                           a.activity_name, 
+                           p.project_name, 
+                           m.mel_result_id as ref_id
+                    FROM mel_results m
+                    JOIN activities a ON m.activity_id = a.activity_id
+                    JOIN projects p ON a.project_id = p.project_id
+                    JOIN users u ON m.submitted_by = u.user_id
+                    LEFT JOIN roles r ON u.role_id = r.role_id
+                )
+                UNION ALL
+                (
+                    SELECT 'keputusan' as act_type, 
+                           'Pengesahan Direktur' as act_category,
+                           app.notes as details, 
+                           u.name as actor_name, 
+                           r.role_name as actor_role,
+                           app.approval_date as event_date, 
+                           app.decision as event_status, 
+                           a.activity_name, 
+                           p.project_name, 
+                           app.approval_id as ref_id
+                    FROM approvals app
+                    JOIN mel_results m ON app.mel_result_id = m.mel_result_id
+                    JOIN activities a ON m.activity_id = a.activity_id
+                    JOIN projects p ON a.project_id = p.project_id
+                    JOIN users u ON app.approved_by = u.user_id
+                    LEFT JOIN roles r ON u.role_id = r.role_id
+                )
+                ORDER BY event_date DESC, ref_id DESC
+                LIMIT 6
+            ";
+            $recentActivities = $dbConn->query($activitySql)->fetchAll();
 
             $pageTitle = 'Dashboard Staf MEL';
             $activeMenu = 'dashboard';

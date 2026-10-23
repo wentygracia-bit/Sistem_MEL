@@ -210,7 +210,13 @@ $activeMenu = $activeMenu ?? 'dashboard';
             </header>
 
             <div class="content-body">
-                <?php if ($successMsg = AuthHelper::getFlash('success')): ?>
+                <?php 
+                $successMsg = AuthHelper::getFlash('success');
+                // Jika sedang di dashboard dan pesan adalah ucapan login selamat datang, jangan tampilkan alert tipis untuk menghindari duplikasi dengan card header
+                $isDashboard = isset($activeMenu) && $activeMenu === 'dashboard';
+                $isWelcomeAlert = $successMsg && stripos($successMsg, 'Selamat datang') !== false;
+                if ($successMsg && !($isDashboard && $isWelcomeAlert)): 
+                ?>
                     <div class="alert alert-success">
                         <i class="fa-solid fa-circle-check"></i>
                         <span><?= htmlspecialchars($successMsg) ?></span>

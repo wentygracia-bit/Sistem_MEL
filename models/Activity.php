@@ -224,5 +224,45 @@ class Activity {
 
         return $rows;
     }
+
+    /**
+     * Mengambil daftar kegiatan yang memiliki batas waktu (deadline) dan belum berstatus 'Selesai'
+     * Diurutkan dari tenggat waktu terdekat.
+     */
+    public function getUpcomingDeadlines(int $limit = 5): array {
+        $sql = "
+            SELECT a.activity_id, a.activity_name, a.status as activity_status,
+                   p.project_name, p.project_code,
+                   t.start_date, t.end_date, t.status as timeline_status,
+                   DATEDIFF(t.end_date, CURDATE()) as diff_days
+            FROM activities a
+            JOIN projects p ON a.project_id = p.project_id
+            JOIN activity_timelines t ON a.activity_id = t.activity_id
+            WHERE a.status != 'Selesai' 
+              AND t.end_date IS NOT NULL
+            ORDER BY t.end_date ASC, a.activity_id ASC
+            LIMIT ?
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll();
+
+        $today = date('Y-m-d');
+        foreach ($rows as &$act) {
+            if ($act['activity_status'] === 'Selesai') {
+                $act['display_status'] = 'Selesai';
+            } elseif (!empty($act['end_date']) && $act['end_date'] < $today) {
+                $act['display_status'] = 'Terlambat';
+            } elseif (!empty($act['start_date']) && $act['start_date'] > $today) {
+                $act['display_status'] = 'Belum Dimulai';
+            } else {
+                $act['display_status'] = $act['activity_status'] ?: 'Berjalan';
+            }
+        }
+        unset($act);
+
+        return $rows;
+    }
 }
 

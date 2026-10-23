@@ -2,7 +2,54 @@
 require_once __DIR__ . '/../layouts/header.php';
 $currentUser = $currentUser ?? AuthHelper::getUser();
 
+// Penentuan badge peran, ikon, dan deskripsi dinamis berdasarkan role_id
+$userRoleId = (int)($currentUser['role_id'] ?? 0);
+switch ($userRoleId) {
+    case 1:
+        $roleBadgeText = 'Staf Lapangan';
+        $roleBadgeIcon = 'fa-person-digging';
+        $roleDescription = 'Ringkasan tugas lapangan, pengiriman laporan, dan respons perbaikan.';
+        break;
+    case 2:
+        $roleBadgeText = 'Staf MEL';
+        $roleBadgeIcon = 'fa-user-check';
+        $roleDescription = 'Ringkasan pemantauan proyek, laporan lapangan masuk, tindak lanjut perbaikan, dan dokumen hasil MEL.';
+        break;
+    case 3:
+        $roleBadgeText = 'Project Leader';
+        $roleBadgeIcon = 'fa-user-tie';
+        $roleDescription = 'Ringkasan evaluasi indikator kinerja, peninjauan laporan, dan permintaan perbaikan.';
+        break;
+    case 4:
+        $roleBadgeText = 'Direktur';
+        $roleBadgeIcon = 'fa-crown';
+        $roleDescription = 'Ringkasan capaian proyek organisasi dan antrean pengesahan hasil MEL.';
+        break;
+    default:
+        $roleBadgeText = $currentUser['role_name'] ?? 'Pengguna';
+        $roleBadgeIcon = 'fa-user';
+        $roleDescription = 'Ringkasan operasional dan pemantauan program YNKI.';
+        break;
+}
 ?>
+
+<!-- Card Header Sapaan Pengguna Dinamis (Multi-Role) -->
+<div style="background: linear-gradient(135deg, #ffffff 0%, #f4faeb 100%); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-dark); border-radius: var(--radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="badge badge-success" style="font-size: 0.8rem; padding: 4px 10px;">
+                <i class="fa-solid <?= $roleBadgeIcon ?>"></i> <?= htmlspecialchars($roleBadgeText) ?>
+            </span>
+            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500;">Yayasan Natural Kapital Indonesia</span>
+        </div>
+        <h1 style="font-size: 1.4rem; font-weight: 800; color: #1e330c; margin: 6px 0 2px 0;">
+            Selamat datang kembali, <?= htmlspecialchars($currentUser['name'] ?? $roleBadgeText) ?>!
+        </h1>
+        <p style="font-size: 0.88rem; color: #475569; margin: 0;">
+            <?= htmlspecialchars($roleDescription) ?>
+        </p>
+    </div>
+</div>
 
 <?php if ((int)$currentUser['role_id'] === 3 && !empty($plStats)): ?>
 <!-- 4 KPI Cards Khusus Project Leader (Mencerminkan Tanggung Jawab PL) -->
