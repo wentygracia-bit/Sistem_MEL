@@ -148,6 +148,13 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <?php else: ?>
                                     <span class="badge badge-warning" title="Menunggu pemeriksaan pihak evaluator"><i class="fa-solid fa-clock"></i> Menunggu Verifikasi</span>
                                 <?php endif; ?>
+                                <?php if (!empty($up['director_notes'])): ?>
+                                    <div style="margin-top: 4px;">
+                                        <span class="badge" style="font-size: 0.68rem; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;" title="Catatan Direktur: <?= htmlspecialchars($up['director_notes']) ?>">
+                                            <i class="fa-solid fa-crown"></i> Catatan Direktur
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <div style="display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap;">

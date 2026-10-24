@@ -31,9 +31,10 @@ require_once __DIR__ . '/../layouts/header.php';
                 </thead>
                 <tbody>
                     <?php if (empty($evaluations)): ?>
-                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada data evaluasi capaian.</td></tr>
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada data evaluasi capaian yang memenuhi kriteria (Sesuai).</td></tr>
                     <?php else: ?>
                         <?php foreach ($evaluations as $e): 
+                            if ($e['result'] === 'Tidak Sesuai') continue;
                             $target = (float)($e['target_value'] ?? 0);
                             $realization = (float)($e['realization_value'] ?? 0);
                             $pct = ($target > 0) ? round(($realization / $target) * 100, 1) : null;
@@ -102,6 +103,13 @@ require_once __DIR__ . '/../layouts/header.php';
                                                 <span class="badge badge-secondary" style="font-size: 0.72rem; color: #64748b; background: #f1f5f9;">Belum Disusun MEL</span>
                                             <?php endif; ?>
                                         </div>
+                                        <?php if (!empty($e['director_notes'])): ?>
+                                            <div>
+                                                <span class="badge" style="font-size: 0.7rem; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;" title="Catatan Direktur: <?= htmlspecialchars($e['director_notes']) ?>">
+                                                    <i class="fa-solid fa-note-sticky"></i> Ada Catatan Direktur
+                                                </span>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                                 <td>

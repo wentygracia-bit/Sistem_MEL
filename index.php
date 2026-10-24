@@ -100,6 +100,10 @@ switch ($path) {
         (new FieldUpdateController())->detail();
         break;
 
+    case '/field-updates/save-director-note':
+        (new FieldUpdateController())->saveDirectorNote();
+        break;
+
     case '/field-updates/submit':
         (new FieldUpdateController())->submit();
         break;

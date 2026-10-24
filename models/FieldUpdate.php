@@ -182,6 +182,15 @@ class FieldUpdate {
         return $stmt->execute([$status, $updateId]);
     }
 
+    public function updateDirectorNotes(int $updateId, ?string $notes): bool {
+        $stmt = $this->db->prepare("
+            UPDATE field_updates 
+            SET director_notes = ?, director_notes_updated_at = NOW() 
+            WHERE update_id = ?
+        ");
+        return $stmt->execute([$notes, $updateId]);
+    }
+
     public function delete(int $updateId): bool {
         $stmt = $this->db->prepare("DELETE FROM field_updates WHERE update_id = ?");
         return $stmt->execute([$updateId]);

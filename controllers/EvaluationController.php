@@ -12,7 +12,13 @@ class EvaluationController {
         $user = AuthHelper::getUser();
 
         $evalModel = new Evaluation();
-        $evaluations = $evalModel->getAll(100);
+        // Khusus Direktur (role_id = 4): Hanya tampilkan evaluasi yang berstatus 'Sesuai'
+        // agar capaian yang belum memenuhi persyaratan (Tidak Sesuai) tidak tercampur
+        if ((int)$user['role_id'] === 4) {
+            $evaluations = $evalModel->getAll(100, 'Sesuai');
+        } else {
+            $evaluations = $evalModel->getAll(100);
+        }
 
         // Ambil data koreksi untuk tab Permintaan Perbaikan pada Staf MEL
         $corrections = [];

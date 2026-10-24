@@ -62,6 +62,7 @@ class Evaluation {
             SELECT e.*, i.indicator_name, i.target_value, i.unit, u.name as evaluator_name,
                    a.activity_name, a.activity_id, p.project_name,
                    fu.realization_value, fu.progress_percentage, fu.status as report_status, fu.evidence_file,
+                   fu.director_notes, fu.director_notes_updated_at,
                    mr.mel_result_id, mr.status as mel_status,
                    ap.decision as approval_decision
             FROM evaluations e

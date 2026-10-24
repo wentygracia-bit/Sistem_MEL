@@ -398,6 +398,87 @@ class FieldUpdateController {
         exit;
     }
 
+    public function saveDirectorNote(): void {
+        AuthHelper::requireRole([4]); // Hanya Direktur
+        $user = AuthHelper::getUser();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/evaluations');
+            exit;
+        }
+
+        $updateId = (int)($_POST['update_id'] ?? 0);
+        $directorNotes = trim($_POST['director_notes'] ?? '');
+
+        $updateModel = new FieldUpdate();
+        $update = $updateModel->findById($updateId);
+
+        if (!$update) {
+            AuthHelper::setFlash('error', 'Laporan lapangan tidak ditemukan.');
+            header('Location: ' . BASE_URL . '/evaluations');
+            exit;
+        }
+
+        // Simpan catatan direktur (bisa null jika dikosongkan)
+        $notesValue = !empty($directorNotes) ? $directorNotes : null;
+        $updateModel->updateDirectorNotes($updateId, $notesValue);
+
+        // Jika ada catatan yang diisi/diperbarui, kirimkan notifikasi ke aktor-aktor terkait
+        if (!empty($notesValue)) {
+            $notifModel = new Notification();
+            $db = Database::getConnection();
+
+            $activityId = (int)$update['activity_id'];
+            $activityName = $update['activity_name'];
+            $notifMsg = "Direktur memberikan catatan atensi pada Laporan Lapangan #{$updateId} (Kegiatan: {$activityName}): \"" . mb_strimwidth($notesValue, 0, 75, '...') . "\"";
+
+            // 1. Notifikasi ke Pelapor / Staf Lapangan
+            $reporterId = (int)$update['user_id'];
+            if ($reporterId > 0 && $reporterId !== (int)$user['user_id']) {
+                $notifModel->sendNotification($reporterId, $activityId, 'DirectorNote', $notifMsg);
+            }
+
+            // 2. Notifikasi ke Staf MEL (Role 2)
+            $melUsers = $db->query("SELECT user_id FROM users WHERE role_id = 2 AND is_active = 1")->fetchAll();
+            foreach ($melUsers as $mu) {
+                if ((int)$mu['user_id'] !== (int)$user['user_id']) {
+                    $notifModel->sendNotification((int)$mu['user_id'], $activityId, 'DirectorNote', $notifMsg);
+                }
+            }
+
+            // 3. Notifikasi ke Project Leader (Role 3) yang terkait dengan proyek ini
+            $projectId = (int)$update['project_id'];
+            $plStmt = $db->prepare("
+                SELECT DISTINCT u.user_id 
+                FROM users u
+                JOIN project_members pm ON u.user_id = pm.user_id
+                WHERE pm.project_id = ? AND u.role_id = 3 AND u.is_active = 1
+            ");
+            $plStmt->execute([$projectId]);
+            $plUsers = $plStmt->fetchAll();
+
+            // Jika tidak ditemukan di project_members, cari creator proyek jika role 3
+            if (empty($plUsers)) {
+                $creatorStmt = $db->prepare("SELECT user_id FROM users WHERE user_id = (SELECT created_by FROM projects WHERE project_id = ?) AND role_id = 3 AND is_active = 1");
+                $creatorStmt->execute([$projectId]);
+                $plUsers = $creatorStmt->fetchAll();
+            }
+
+            foreach ($plUsers as $pu) {
+                if ((int)$pu['user_id'] !== (int)$user['user_id']) {
+                    $notifModel->sendNotification((int)$pu['user_id'], $activityId, 'DirectorNote', $notifMsg);
+                }
+            }
+
+            AuthHelper::setFlash('success', 'Catatan Direktur berhasil disimpan dan telah dinotifikasikan kepada tim pelaksana.');
+        } else {
+            AuthHelper::setFlash('success', 'Catatan Direktur berhasil diperbarui.');
+        }
+
+        header('Location: ' . BASE_URL . '/field-updates/detail?id=' . $updateId);
+        exit;
+    }
+
     private function handleEvidenceUpload(): ?string {
         $uploadDir = __DIR__ . '/../public/uploads/';
         if (!is_dir($uploadDir)) {
