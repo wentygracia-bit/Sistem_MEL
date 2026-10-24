@@ -268,7 +268,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             Realisasi Angka Capaian * 
                             <span id="submit_unit_badge" style="font-weight: 500; font-size: 0.78rem; color: var(--text-muted);">(Satuan)</span>
                         </label>
-                        <input type="number" step="any" min="0" name="realization_value" id="submit_realization_value" class="form-control" placeholder="Masukkan capaian (cth: 50)" required>
+                        <input type="number" step="any" min="0" name="realization_value" id="submit_realization_value" class="form-control" placeholder="Masukkan angka capaian" required>
                         <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 4px;">
                             Cukup inputkan angka capaian lapangan Anda.
                         </small>
@@ -341,13 +341,13 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
                 <div class="form-group">
                     <label class="form-label">Realisasi Angka Capaian</label>
-                    <input type="number" step="any" name="realization_value" id="edit_realization_value" class="form-control" placeholder="cth: 38">
+                    <input type="number" step="any" name="realization_value" id="edit_realization_value" class="form-control" placeholder="Angka capaian">
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Persentase Progres (%)</label>
-                <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="cth: 100">
+                <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="0 - 100">
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">

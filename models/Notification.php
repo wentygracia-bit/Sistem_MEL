@@ -8,6 +8,19 @@ class Notification {
         $this->db = Database::getConnection();
     }
 
+    public function findById(int $notificationId, int $userId): ?array {
+        $stmt = $this->db->prepare("
+            SELECT n.*, a.activity_name
+            FROM notifications n
+            LEFT JOIN activities a ON n.activity_id = a.activity_id
+            WHERE n.notification_id = ? AND n.user_id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$notificationId, $userId]);
+        $res = $stmt->fetch();
+        return $res ?: null;
+    }
+
     public function reminderExists(int $userId, int $activityId, string $phase): bool {
         $stmt = $this->db->prepare("
             SELECT 1 FROM notifications 
@@ -32,7 +45,30 @@ class Notification {
 
     public function getForUser(int $userId, int $limit = 20): array {
         $stmt = $this->db->prepare("
-            SELECT n.*, a.activity_name
+            SELECT n.*, a.activity_name,
+                   (
+                       SELECT mr.mel_result_id 
+                       FROM mel_results mr 
+                       WHERE mr.activity_id = n.activity_id 
+                       ORDER BY mr.mel_result_id DESC 
+                       LIMIT 1
+                   ) AS mel_result_id,
+                   (
+                       SELECT cr.correction_id 
+                       FROM correction_requests cr 
+                       JOIN evaluations e ON cr.evaluation_id = e.evaluation_id
+                       JOIN field_updates fu ON e.update_id = fu.update_id
+                       WHERE fu.activity_id = n.activity_id 
+                       ORDER BY cr.correction_id DESC 
+                       LIMIT 1
+                   ) AS correction_id,
+                   (
+                       SELECT fu.update_id 
+                       FROM field_updates fu 
+                       WHERE fu.activity_id = n.activity_id 
+                       ORDER BY fu.update_id DESC 
+                       LIMIT 1
+                   ) AS update_id
             FROM notifications n
             LEFT JOIN activities a ON n.activity_id = a.activity_id
             WHERE n.user_id = ?

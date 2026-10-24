@@ -17,7 +17,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     <option value="">Semua Status</option>
                     <option value="Diajukan" <?= (isset($_GET['status']) && $_GET['status'] === 'Diajukan') ? 'selected' : '' ?>>Diajukan</option>
                     <option value="Disetujui" <?= (isset($_GET['status']) && $_GET['status'] === 'Disetujui') ? 'selected' : '' ?>>Disetujui</option>
-                    <option value="Ditolak" <?= (isset($_GET['status']) && $_GET['status'] === 'Ditolak') ? 'selected' : '' ?>>Ditolak</option>
+                    <option value="Direvisi" <?= (isset($_GET['status']) && ($_GET['status'] === 'Direvisi' || $_GET['status'] === 'Ditolak')) ? 'selected' : '' ?>>Direvisi</option>
                 </select>
 
                 <button type="submit" class="btn btn-secondary btn-sm" style="height: 38px;" title="Cari data">
@@ -92,8 +92,8 @@ require_once __DIR__ . '/../layouts/header.php';
                             <td>
                                 <?php if ($res['status'] === 'Disetujui'): ?>
                                     <span class="badge badge-success"><i class="fa-solid fa-stamp"></i> Disetujui</span>
-                                <?php elseif ($res['status'] === 'Ditolak'): ?>
-                                    <span class="badge badge-danger"><i class="fa-solid fa-ban"></i> Ditolak</span>
+                                <?php elseif ($res['status'] === 'Direvisi' || $res['status'] === 'Ditolak'): ?>
+                                    <span class="badge badge-danger" style="background: #fff1f2; color: #b91c1c; border: 1px solid #fecdd3;"><i class="fa-solid fa-rotate-left"></i> Direvisi</span>
                                 <?php else: ?>
                                     <span class="badge badge-warning"><i class="fa-solid fa-hourglass-half"></i> Diajukan</span>
                                 <?php endif; ?>
@@ -151,12 +151,12 @@ require_once __DIR__ . '/../layouts/header.php';
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px;">
                 <div class="form-group">
                     <label class="form-label">Ringkasan Capaian Indikator *</label>
-                    <textarea name="summary_capaian" class="form-control" rows="3" placeholder="Jelaskan perbandingan realisasi fisik/capaian lapangan terhadap target indikator kegiatan..." required></textarea>
+                    <textarea name="summary_capaian" class="form-control" rows="3" required></textarea>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Kendala di Lapangan *</label>
-                    <textarea name="summary_kendala" class="form-control" rows="3" placeholder="Tuliskan hambatan teknis, cuaca, logistik, atau faktor eksternal selama pelaksanaan..." required></textarea>
+                    <textarea name="summary_kendala" class="form-control" rows="3" required></textarea>
                 </div>
             </div>
 
@@ -164,12 +164,12 @@ require_once __DIR__ . '/../layouts/header.php';
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px;">
                 <div class="form-group">
                     <label class="form-label">Strategi Keberhasilan / Lessons Learned *</label>
-                    <textarea name="summary_strategi" class="form-control" rows="3" placeholder="Uraikan faktor kunci keberhasilan, adaptasi solusi di lapangan, atau pembelajaran yang didapat..." required></textarea>
+                    <textarea name="summary_strategi" class="form-control" rows="3" required></textarea>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Usulan Tindak Lanjut *</label>
-                    <textarea name="summary_tindak_lanjut" class="form-control" rows="3" placeholder="Rekomendasikan langkah keberlanjutan, pendampingan lanjutan, atau usulan kebijakan untuk Direksi..." required></textarea>
+                    <textarea name="summary_tindak_lanjut" class="form-control" rows="3" required></textarea>
                 </div>
             </div>
 
