@@ -127,12 +127,12 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
         <form action="<?= BASE_URL ?>/users/create" method="POST">
             <div class="form-group">
                 <label class="form-label">Nama Lengkap *</label>
-                <input type="text" name="name" class="form-control" placeholder="cth: Budi Santoso" required>
+                <input type="text" name="name" class="form-control" placeholder="Nama lengkap pengguna" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Email Pengguna *</label>
-                <input type="email" name="email" class="form-control" placeholder="cth: budi@ynki.org" required>
+                <input type="email" name="email" class="form-control" placeholder="alamat@email.com" required>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">

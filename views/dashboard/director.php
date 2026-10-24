@@ -102,7 +102,7 @@ $offsetPerencanaan = -($lenBerjalan + $lenSelesai);
                 <?= number_format($needsFollowUpCount, 0, ',', '.') ?>
             </div>
             <div class="stat-label" style="font-weight: 600; color: #1e293b;">Hasil MEL Perlu Tindak Lanjut</div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Berkas Dikembalikan / Ditolak</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Berkas Dikembalikan / Direvisi</div>
         </div>
     </div>
 </div>
