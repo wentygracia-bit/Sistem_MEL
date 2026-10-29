@@ -83,7 +83,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
 </div>
 
 <!-- Baris 1: Layout Utama 2 Kolom (Kiri: Laporan Lapangan Terbaru, Kanan: Kegiatan Mendekati Tenggat) -->
-<div style="display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-bottom: 24px;">
+<div style="display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: stretch; margin-bottom: 24px;">
     
     <!-- Kolom Kiri: Laporan Lapangan untuk Diperiksa -->
     <div class="card" style="margin-bottom: 0;">
@@ -167,51 +167,51 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
         </div>
     </div>
 
-    <!-- Kolom Kanan: Panel Kegiatan Mendekati Tenggat -->
-    <div class="card" style="margin-bottom: 0;">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <!-- Kolom Kanan: Panel Kegiatan Mendekati Tenggat (Tinggi presisi sejajar dengan Card Kiri) -->
+    <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; padding: 14px 18px;">
             <div>
-                <h2 class="card-title" style="font-size: 1.05rem;">
+                <h2 class="card-title" style="font-size: 1rem; margin-bottom: 2px;">
                     <i class="fa-solid fa-clock" style="color: #d97706;"></i> Kegiatan Mendekati Tenggat
                 </h2>
-                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
-                    Kegiatan aktif dengan tanggal tenggat (deadline) terdekat untuk dipantau tepat waktu.
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">
+                    Kegiatan aktif dengan batas waktu terdekat.
                 </p>
             </div>
-            <a href="<?= BASE_URL ?>/projects" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
-                Proyek <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem; margin-left: 4px;"></i>
+            <a href="<?= BASE_URL ?>/projects" class="btn btn-secondary btn-sm" style="white-space: nowrap; padding: 4px 10px; font-size: 0.75rem;">
+                Proyek <i class="fa-solid fa-arrow-right" style="font-size: 0.7rem; margin-left: 3px;"></i>
             </a>
         </div>
 
-        <div style="padding: 16px 20px;">
+        <!-- Container Daftar Kegiatan dengan Scroll Vertikal (Mengikuti Tinggi Penuh Card) -->
+        <div style="padding: 12px 16px; overflow-y: auto; flex: 1; height: 0; min-height: 0;">
             <?php if (empty($upcomingActivities)): ?>
                 <div style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
-                    <i class="fa-solid fa-calendar-check" style="font-size: 1.8rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
-                    Tidak ada kegiatan mendekati tenggat.
+                    <i class="fa-solid fa-calendar-check" style="font-size: 1.6rem; color: #cbd5e1; margin-bottom: 6px; display: block;"></i>
+                    <span style="font-size: 0.85rem;">Tidak ada kegiatan mendekati tenggat.</span>
                 </div>
             <?php else: ?>
-                <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
                     <?php foreach ($upcomingActivities as $act): ?>
                         <?php
                         $diffDays = (int)($act['diff_days'] ?? 0);
                         $isOverdue = $diffDays < 0;
                         $cardBg = $isOverdue ? '#fef2f2' : ($diffDays <= 7 ? '#fffbeb' : '#f8fafc');
-                        $cardBorder = $isOverdue ? '#fca5a5' : ($diffDays <= 7 ? '#fde68a' : 'var(--border-color)');
+                        $cardBorder = $isOverdue ? '#fca5a5' : ($diffDays <= 7 ? '#fde68a' : '#e2e8f0');
                         ?>
-                        <div style="padding: 12px 14px; background: <?= $cardBg ?>; border: 1px solid <?= $cardBorder ?>; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                        <div style="padding: 8px 12px; background: <?= $cardBg ?>; border: 1px solid <?= $cardBorder ?>; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                             <div style="min-width: 0; flex: 1;">
-                                <div style="font-weight: 700; font-size: 0.88rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($act['activity_name']) ?>">
+                                <div style="font-weight: 600; font-size: 0.84rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;" title="<?= htmlspecialchars($act['activity_name']) ?>">
                                     <?= htmlspecialchars($act['activity_name']) ?>
                                 </div>
-                                <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 3px;">
+                                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($act['project_name']) ?>">
                                     <?= htmlspecialchars($act['project_name']) ?>
                                 </div>
-                                <div style="font-size: 0.75rem; color: #475569; margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                    <span><i class="fa-regular fa-calendar" style="color: #64748b;"></i> Tenggat: <strong><?= date('d M Y', strtotime($act['end_date'])) ?></strong></span>
-                                    <span>&bull;</span>
+                                <div style="font-size: 0.72rem; color: #475569; margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; line-height: 1.2;">
+                                    <span><i class="fa-regular fa-calendar" style="color: #64748b; font-size: 0.68rem;"></i> <?= date('d M Y', strtotime($act['end_date'])) ?></span>
+                                    <span style="color: #cbd5e1;">&bull;</span>
                                     <span>
-                                        Status: 
-                                        <span class="badge <?= $act['display_status'] === 'Terlambat' ? 'badge-danger' : ($act['display_status'] === 'Berjalan' ? 'badge-success' : 'badge-warning') ?>" style="font-size: 0.68rem; padding: 2px 6px;">
+                                        <span class="badge <?= $act['display_status'] === 'Terlambat' ? 'badge-danger' : ($act['display_status'] === 'Berjalan' ? 'badge-success' : 'badge-warning') ?>" style="font-size: 0.65rem; padding: 1px 5px; font-weight: 500;">
                                             <?= htmlspecialchars($act['display_status']) ?>
                                         </span>
                                     </span>
@@ -219,15 +219,15 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                             </div>
                             <div style="text-align: right; flex-shrink: 0;">
                                 <?php if ($diffDays < 0): ?>
-                                    <span class="badge badge-danger" style="font-size: 0.74rem;">
+                                    <span class="badge badge-danger" style="font-size: 0.7rem; padding: 3px 6px;">
                                         Lewat <?= abs($diffDays) ?> hari
                                     </span>
                                 <?php elseif ($diffDays === 0): ?>
-                                    <span class="badge badge-warning" style="font-size: 0.74rem;">
+                                    <span class="badge badge-warning" style="font-size: 0.7rem; padding: 3px 6px;">
                                         Hari ini!
                                     </span>
                                 <?php else: ?>
-                                    <span class="badge badge-warning" style="font-size: 0.74rem;">
+                                    <span class="badge badge-warning" style="font-size: 0.7rem; padding: 3px 6px;">
                                         <?= $diffDays ?> hari lagi
                                     </span>
                                 <?php endif; ?>
