@@ -53,6 +53,18 @@ class ProjectController {
             exit;
         }
 
+        $currentUser = AuthHelper::getUser();
+        // Validasi akses: Staf Lapangan (1) & PL (3) hanya boleh mengakses proyek jika ditugaskan sebagai anggota / pembuat
+        if (in_array((int)$currentUser['role_id'], [1, 3], true)) {
+            $isCreator = ((int)$project['created_by'] === (int)$currentUser['user_id']);
+            $isMember = $projectModel->isMember($projectId, (int)$currentUser['user_id']);
+            if (!$isCreator && !$isMember) {
+                AuthHelper::setFlash('error', 'Akses ditolak: Anda tidak terdaftar sebagai anggota atau penanggung jawab pada proyek ini.');
+                header('Location: ' . BASE_URL . '/projects');
+                exit;
+            }
+        }
+
         $searchActivity = trim($_GET['q'] ?? '');
         $statusActivity = trim($_GET['status_act'] ?? '');
 
@@ -76,6 +88,7 @@ class ProjectController {
         AuthHelper::requireRole([2]); // Hanya Staf MEL (Direktur hanya memantau)
         $user = AuthHelper::getUser();
         $projectModel = new Project();
+        $userModel = new User();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $name = trim($_POST['project_name'] ?? '');
@@ -85,49 +98,89 @@ class ProjectController {
             $status = $_POST['status'] ?? 'Aktif';
             $publicStatus = $_POST['public_status'] ?? 'Draft';
 
+            $projectLeaders = isset($_POST['project_leaders']) && is_array($_POST['project_leaders']) 
+                ? array_map('intval', $_POST['project_leaders']) 
+                : [];
+            $fieldStaffs = isset($_POST['field_staffs']) && is_array($_POST['field_staffs']) 
+                ? array_map('intval', $_POST['field_staffs']) 
+                : [];
+
             if (empty($name)) {
                 AuthHelper::setFlash('error', 'Nama Proyek wajib diisi.');
                 header('Location: ' . BASE_URL . '/projects/create');
                 exit;
             }
 
+            $inputCode = trim($_POST['project_code'] ?? '');
+
             // Tentukan tahun berdasarkan tanggal mulai proyek jika ada, atau tahun sekarang
             $targetYear = !empty($startDate) ? (int)date('Y', strtotime($startDate)) : (int)date('Y');
             
-            // Generate kode di sisi server dengan penanganan konkurensi (retry loop)
             $newId = null;
-            $maxRetries = 5;
-            $attempt = 0;
 
-            while ($attempt < $maxRetries) {
-                $attempt++;
-                $code = $projectModel->generateNextProjectCode($targetYear);
+            // Jika staf MEL memasukkan kode proyek kustom
+            if (!empty($inputCode)) {
+                $code = strtoupper($inputCode);
+                // Validasi duplikasi kode
+                if ($projectModel->codeExists($code)) {
+                    AuthHelper::setFlash('error', "Kode Proyek '{$code}' sudah digunakan. Harap gunakan kode atau kata kunci yang berbeda.");
+                    header('Location: ' . BASE_URL . '/projects/create');
+                    exit;
+                }
                 try {
                     $newId = $projectModel->create($code, $name, $desc, $startDate, $endDate, $status, $publicStatus, $user['user_id']);
-                    break;
-                } catch (PDOException $e) {
-                    // Kode 23000 adalah integrity constraint violation (e.g. duplicate key)
-                    if ($e->getCode() == '23000' || str_contains($e->getMessage(), 'Duplicate entry')) {
-                        if ($attempt >= $maxRetries) {
-                            AuthHelper::setFlash('error', 'Gagal membuat kode proyek unik. Silakan coba lagi.');
-                            header('Location: ' . BASE_URL . '/projects/create');
-                            exit;
-                        }
-                        // Lanjutkan iterasi berikutnya untuk mengambil kode urutan berikutnya
-                        usleep(50000); // 50ms pause
-                        continue;
-                    }
-                    throw $e;
                 } catch (Exception $e) {
-                    throw $e;
+                    AuthHelper::setFlash('error', 'Gagal membuat proyek: ' . $e->getMessage());
+                    header('Location: ' . BASE_URL . '/projects/create');
+                    exit;
+                }
+            } else {
+                // Fallback: Generate kode otomatis di sisi server dengan penanganan konkurensi (retry loop)
+                $maxRetries = 5;
+                $attempt = 0;
+
+                while ($attempt < $maxRetries) {
+                    $attempt++;
+                    $code = $projectModel->generateNextProjectCode($targetYear);
+                    try {
+                        $newId = $projectModel->create($code, $name, $desc, $startDate, $endDate, $status, $publicStatus, $user['user_id']);
+                        break;
+                    } catch (PDOException $e) {
+                        if ($e->getCode() == '23000' || str_contains($e->getMessage(), 'Duplicate entry')) {
+                            if ($attempt >= $maxRetries) {
+                                AuthHelper::setFlash('error', 'Gagal membuat kode proyek unik. Silakan coba lagi.');
+                                header('Location: ' . BASE_URL . '/projects/create');
+                                exit;
+                            }
+                            usleep(50000); // 50ms pause
+                            continue;
+                        }
+                        throw $e;
+                    } catch (Exception $e) {
+                        throw $e;
+                    }
                 }
             }
 
             try {
-                // Automatically add creator as member
-                $projectModel->addMember($newId, $user['user_id'], $user['role_name']);
+                // 1. Tambahkan pembuat proyek (Staf MEL) otomatis sebagai anggota
+                $projectModel->addMember($newId, (int)$user['user_id'], $user['role_name'] ?? 'Staf MEL');
 
-                AuthHelper::setFlash('success', 'Proyek berhasil dibuat dengan kode ' . htmlspecialchars($code) . '.');
+                // 2. Tambahkan Project Leader yang dipilih
+                foreach ($projectLeaders as $plId) {
+                    if ($plId > 0) {
+                        $projectModel->addMember($newId, $plId, 'Project Leader');
+                    }
+                }
+
+                // 3. Tambahkan Staf Lapangan yang dipilih
+                foreach ($fieldStaffs as $fsId) {
+                    if ($fsId > 0) {
+                        $projectModel->addMember($newId, $fsId, 'Staf Lapangan');
+                    }
+                }
+
+                AuthHelper::setFlash('success', 'Proyek berhasil dibuat dengan kode ' . htmlspecialchars($code) . ' dan tim anggota telah ditugaskan.');
                 header('Location: ' . BASE_URL . '/projects/detail?id=' . $newId);
                 exit;
             } catch (Exception $e) {
@@ -136,6 +189,10 @@ class ProjectController {
                 exit;
             }
         }
+
+        // Ambil daftar Staf Lapangan (Role 1) dan Project Leader (Role 3) yang aktif
+        $projectLeaders = $userModel->getByRole(3);
+        $fieldStaffs = $userModel->getByRole(1);
 
         $autoProjectCode = $projectModel->generateNextProjectCode();
         $pageTitle = 'Tambah Proyek Baru';

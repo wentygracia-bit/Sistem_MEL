@@ -71,10 +71,10 @@ class Project {
 
         $maxNumber = 0;
         foreach ($codes as $code) {
-            // Ambil bagian nomor setelah prefix PRJ-YNKI-YYYY-
-            $suffix = substr($code, strlen($prefix));
-            if (is_numeric($suffix)) {
-                $num = (int)$suffix;
+            // Ambil nomor urut setelah prefix PRJ-YNKI-YYYY- (bisa diikuti suffix/kata kunci seperti PRJ-YNKI-2026-001-MGR)
+            $afterPrefix = substr($code, strlen($prefix));
+            if (preg_match('/^(\d+)/', $afterPrefix, $matches)) {
+                $num = (int)$matches[1];
                 if ($num > $maxNumber) {
                     $maxNumber = $num;
                 }
@@ -137,6 +137,16 @@ class Project {
     public function removeMember(int $projectMemberId): bool {
         $stmt = $this->db->prepare("DELETE FROM project_members WHERE project_member_id = ?");
         return $stmt->execute([$projectMemberId]);
+    }
+
+    public function isMember(int $projectId, int $userId): bool {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) 
+            FROM project_members 
+            WHERE project_id = ? AND user_id = ?
+        ");
+        $stmt->execute([$projectId, $userId]);
+        return (int)$stmt->fetchColumn() > 0;
     }
 
     public function getProjectsForUser(int $userId, int $roleId, ?string $search = null, ?string $statusFilter = null): array {
