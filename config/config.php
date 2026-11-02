@@ -1,7 +1,7 @@
 <?php
 // Configuration File
 define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3310'); // Default port for current MariaDB instance
+define('DB_PORT', '3306'); // Default port for current MariaDB instance
 define('DB_NAME', 'sistem_mel');
 define('DB_USER', 'root');
 define('DB_PASS', '');

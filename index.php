@@ -1,4 +1,5 @@
 <?php
+$GLOBALS['app_start_time'] = microtime(true);
 // Main Application Router & Bootstrap
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/Database.php';
@@ -190,3 +191,4 @@ switch ($path) {
         echo "<p style='text-align:center;'><a href='" . BASE_URL . "/dashboard'>Kembali ke Dashboard</a></p>";
         break;
 }
+

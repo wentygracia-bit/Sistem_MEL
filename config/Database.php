@@ -6,6 +6,7 @@ class Database {
     private static ?PDO $instance = null;
 
     public static function getConnection(): PDO {
+        $tDb = microtime(true);
         if (self::$instance === null) {
             $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
             $options = [
@@ -25,6 +26,8 @@ class Database {
                 }
             }
         }
+        $GLOBALS['db_connect_time'] = (microtime(true) - $tDb);
         return self::$instance;
     }
 }
+
