@@ -162,8 +162,8 @@ require_once __DIR__ . '/../layouts/header.php';
                                         <i class="fa-solid fa-eye"></i>
                                     </a>
 
-                                    <?php if ($up['status'] === 'Draft' && ($currentUser['user_id'] == $up['user_id'] || in_array($currentUser['role_id'], [2, 3]))): ?>
-                                        <!-- Tombol Kirim Draft untuk Verifikasi -->
+                                    <?php if ($up['status'] === 'Draft' && (int)$currentUser['role_id'] === 1 && (int)$currentUser['user_id'] === (int)$up['user_id']): ?>
+                                        <!-- Tombol Kirim Draft untuk Verifikasi (Hanya Staf Lapangan Pemilik) -->
                                         <form action="<?= BASE_URL ?>/field-updates/publish" method="POST" style="display: inline;" onsubmit="return confirm('Kirim laporan #<?= $up['update_id'] ?> untuk proses verifikasi?');">
                                             <input type="hidden" name="update_id" value="<?= $up['update_id'] ?>">
                                             <button type="submit" class="btn btn-primary btn-sm" style="background: #274312; padding: 4px 8px; font-size: 0.78rem;" title="Kirim untuk Verifikasi">
@@ -173,11 +173,12 @@ require_once __DIR__ . '/../layouts/header.php';
                                     <?php endif; ?>
 
                                     <?php 
-                                    // Project Leader (role 3) hanya bisa melihat laporan, tidak bisa mengedit atau menghapus
-                                    $canManage = ((int)$currentUser['user_id'] === (int)$up['user_id'] && (int)$currentUser['role_id'] !== 3) || (int)$currentUser['role_id'] === 2;
+                                    // Tombol Edit dan Hapus HANYA untuk Staf Lapangan (role_id == 1) pada laporan miliknya sendiri
+                                    // Staf MEL (role_id == 2) hanya memiliki hak baca (read-only) via tombol Detail
+                                    $canManage = ((int)$currentUser['role_id'] === 1 && (int)$currentUser['user_id'] === (int)$up['user_id']);
                                     if ($canManage): 
                                     ?>
-                                        <?php if ($up['status'] !== 'Dievaluasi' || (int)$currentUser['role_id'] === 2): ?>
+                                        <?php if ($up['status'] !== 'Dievaluasi'): ?>
                                             <button type="button" class="btn btn-secondary btn-sm" title="Edit Laporan" onclick='openEditModal(<?= json_encode($up, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
                                                 <i class="fa-solid fa-pen-to-square" style="color: #0284c7;"></i>
                                             </button>

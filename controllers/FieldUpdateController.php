@@ -264,16 +264,9 @@ class FieldUpdateController {
             exit;
         }
 
-        // Access check: Project Leader (role 3) tidak boleh mengedit laporan kegiatan (hanya melihat / mengevaluasi)
-        if ($user['role_id'] == 3) {
-            AuthHelper::setFlash('error', 'Project Leader hanya memiliki izin melihat dan mengevaluasi laporan, tidak dapat mengedit laporan.');
-            header('Location: ' . BASE_URL . '/field-updates');
-            exit;
-        }
-
-        // Access check: Hanya pemilik laporan atau Staf MEL (role 2) yang dapat mengedit
-        if ($existing['user_id'] != $user['user_id'] && $user['role_id'] != 2) {
-            AuthHelper::setFlash('error', 'Anda tidak memiliki hak akses untuk mengubah laporan ini.');
+        // Access check: Hanya Staf Lapangan (role 1) pemilik laporan yang dapat mengedit
+        if ((int)$user['role_id'] !== 1 || (int)$existing['user_id'] !== (int)$user['user_id']) {
+            AuthHelper::setFlash('error', 'Akses ditolak: Anda tidak memiliki hak akses untuk mengubah laporan ini.');
             header('Location: ' . BASE_URL . '/field-updates');
             exit;
         }
@@ -355,16 +348,9 @@ class FieldUpdateController {
             exit;
         }
 
-        // Access check: Project Leader (role 3) tidak boleh menghapus laporan kegiatan
-        if ($user['role_id'] == 3) {
-            AuthHelper::setFlash('error', 'Project Leader hanya memiliki izin melihat dan mengevaluasi laporan, tidak dapat menghapus laporan.');
-            header('Location: ' . BASE_URL . '/field-updates');
-            exit;
-        }
-
-        // Access check: hanya pemilik laporan atau Staf MEL (role 2) yang dapat menghapus
-        if ($existing['user_id'] != $user['user_id'] && $user['role_id'] != 2) {
-            AuthHelper::setFlash('error', 'Anda tidak memiliki hak akses untuk menghapus laporan ini.');
+        // Access check: Hanya Staf Lapangan (role 1) pemilik laporan yang dapat menghapus
+        if ((int)$user['role_id'] !== 1 || (int)$existing['user_id'] !== (int)$user['user_id']) {
+            AuthHelper::setFlash('error', 'Akses ditolak: Anda tidak memiliki hak akses untuk menghapus laporan ini.');
             header('Location: ' . BASE_URL . '/field-updates');
             exit;
         }
