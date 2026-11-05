@@ -34,7 +34,7 @@ switch ($userRoleId) {
 ?>
 
 <!-- Card Header Sapaan Pengguna Dinamis (Multi-Role) -->
-<div style="background: linear-gradient(135deg, #ffffff 0%, #f4faeb 100%); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-dark); border-radius: var(--radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+<div class="dashboard-banner" style="background: linear-gradient(135deg, #ffffff 0%, #f4faeb 100%); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-dark); border-radius: var(--radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
     <div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <span class="badge badge-success" style="font-size: 0.8rem; padding: 4px 10px;">
@@ -50,7 +50,7 @@ switch ($userRoleId) {
         </p>
     </div>
     <?php if ((int)$currentUser['role_id'] === 3): ?>
-        <div>
+        <div class="banner-actions">
             <a href="<?= BASE_URL ?>/users" class="btn btn-primary" style="height: 38px; display: inline-flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-users-gear"></i> Manajemen Pengguna
             </a>

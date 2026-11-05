@@ -4,7 +4,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
 ?>
 
 <!-- Banner Sapaan Pengguna Staf MEL -->
-<div style="background: linear-gradient(135deg, #ffffff 0%, #f4faeb 100%); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-dark); border-radius: var(--radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+<div class="dashboard-banner" style="background: linear-gradient(135deg, #ffffff 0%, #f4faeb 100%); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-dark); border-radius: var(--radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
     <div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <span class="badge badge-success" style="font-size: 0.8rem; padding: 4px 10px;">
@@ -83,7 +83,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
 </div>
 
 <!-- Baris 1: Layout Utama 2 Kolom (Kiri: Laporan Lapangan Terbaru, Kanan: Kegiatan Mendekati Tenggat) -->
-<div style="display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: stretch; margin-bottom: 24px;">
+<div class="mel-dashboard-grid" style="display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: stretch; margin-bottom: 24px;">
     
     <!-- Kolom Kiri: Laporan Lapangan untuk Diperiksa -->
     <div class="card" style="margin-bottom: 0;">

@@ -4,7 +4,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
 ?>
 
 <!-- Card Header Sapaan Pengguna Staf Lapangan -->
-<div style="background: linear-gradient(135deg, #ffffff 0%, #f4faeb 100%); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-dark); border-radius: var(--radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+<div class="dashboard-banner" style="background: linear-gradient(135deg, #ffffff 0%, #f4faeb 100%); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-dark); border-radius: var(--radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
     <div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <span class="badge badge-success" style="font-size: 0.8rem; padding: 4px 10px;">
@@ -150,7 +150,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                         </div>
 
                         <!-- Action Link -->
-                        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-color);">
+                        <div class="activity-actions" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-color);">
                             <a href="<?= BASE_URL ?>/field-updates?search=<?= urlencode($act['activity_name']) ?>" class="btn btn-secondary btn-sm" style="font-size: 0.78rem;">
                                 <i class="fa-solid fa-list"></i> Lihat Laporan (<?= $act['total_reports'] ?>)
                             </a>
@@ -279,7 +279,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                 </select>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="modal-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                 <div class="form-group">
                     <label class="form-label">Tanggal Lapor *</label>
                     <input type="date" name="update_date" id="edit_update_date" class="form-control" required>
@@ -295,7 +295,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                 <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="0 - 100">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+            <div class="modal-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label"><i class="fa-solid fa-image"></i> Ganti Gambar <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
                     <input type="file" name="evidence_image" accept="image/*" class="form-control">

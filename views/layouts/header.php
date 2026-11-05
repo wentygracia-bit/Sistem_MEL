@@ -193,7 +193,12 @@ $activeMenu = $activeMenu ?? 'dashboard';
         <!-- Main Content Wrapper -->
         <main class="main-content" id="mainContent">
             <header class="navbar">
-                <div class="page-title"><?= htmlspecialchars($pageTitle) ?></div>
+                <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                    <button type="button" class="navbar-toggle-btn" id="navbarToggleBtn" title="Buka Menu" aria-label="Buka Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="page-title"><?= htmlspecialchars($pageTitle) ?></div>
+                </div>
                 <div class="navbar-actions">
                     <a href="<?= BASE_URL ?>/notifications" class="btn btn-secondary btn-sm" style="position: relative;">
                         <i class="fa-solid fa-bell"></i>
@@ -208,8 +213,8 @@ $activeMenu = $activeMenu ?? 'dashboard';
                         </span>
                         <?php endif; ?>
                     </a>
-                    <span class="badge badge-success">
-                        <i class="fa-solid fa-circle-check"></i> <?= htmlspecialchars($currentUser['organization'] ?? 'YNKI') ?>
+                    <span class="badge badge-success navbar-org-badge">
+                        <i class="fa-solid fa-circle-check"></i> <span class="org-text"><?= htmlspecialchars($currentUser['organization'] ?? 'YNKI') ?></span>
                     </span>
                 </div>
             </header>

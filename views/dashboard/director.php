@@ -25,7 +25,7 @@ $offsetPerencanaan = -($lenBerjalan + $lenSelesai);
 ?>
 
 <!-- Banner Sambutan Eksekutif Direktur -->
-<div style="background: linear-gradient(135deg, #ffffff 0%, #f4faeb 100%); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-dark); border-radius: var(--radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+<div class="dashboard-banner" style="background: linear-gradient(135deg, #ffffff 0%, #f4faeb 100%); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-dark); border-radius: var(--radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
     <div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <span class="badge badge-success" style="font-size: 0.8rem; padding: 4px 10px;">
@@ -40,7 +40,7 @@ $offsetPerencanaan = -($lenBerjalan + $lenSelesai);
             Ringkasan capaian proyek organisasi dan antrean pengesahan hasil MEL.
         </p>
     </div>
-    <div style="display: flex; gap: 10px;">
+    <div class="banner-actions" style="display: flex; gap: 10px;">
         <a href="<?= BASE_URL ?>/mel-results" class="btn btn-secondary btn-sm">
             <i class="fa-solid fa-stamp"></i> Verifikasi MEL
         </a>
