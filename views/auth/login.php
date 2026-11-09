@@ -113,16 +113,6 @@ $flashSuccess = AuthHelper::getFlash('success');
                 </button>
             </form>
 
-            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;">AKUN CONTOH (Klik untuk mengisi):</div>
-                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                    <span class="quick-role-badge" onclick="fillLogin('lapangan@ynki.org', 'password123')">Staf Lapangan (Budi)</span>
-                    <span class="quick-role-badge" onclick="fillLogin('mel@ynki.org', 'password123')">Staf MEL (Siti)</span>
-                    <span class="quick-role-badge" onclick="fillLogin('leader@ynki.org', 'password123')">Project Leader (Rahmat)</span>
-                    <span class="quick-role-badge" onclick="fillLogin('direktur@ynki.org', 'password123')">Direktur (Hendra)</span>
-                </div>
-            </div>
-
             <div style="text-align: center; margin-top: 24px;">
                 <a href="<?= BASE_URL ?>/public-dashboard" style="font-size: 0.85rem; color: #2563eb; font-weight: 500;">
                     <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard Publik
@@ -132,11 +122,6 @@ $flashSuccess = AuthHelper::getFlash('success');
     </div>
 
     <script>
-        function fillLogin(email, password) {
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = password;
-        }
-
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password');
             const toggleIcon = document.getElementById('passwordToggleIcon');
