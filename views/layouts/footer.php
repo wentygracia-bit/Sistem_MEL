@@ -86,14 +86,6 @@
             });
         })();
     </script>
-    <?php if (isset($GLOBALS['app_start_time'])): 
-        $execTime = round((microtime(true) - $GLOBALS['app_start_time']) * 1000, 2);
-        $dbTime = isset($GLOBALS['db_connect_time']) ? round($GLOBALS['db_connect_time'] * 1000, 2) : 0;
-    ?>
-    <div style="position:fixed; bottom:12px; right:12px; background:rgba(15,23,42,0.9); color:#38bdf8; font-family:monospace; font-size:12px; padding:6px 12px; border-radius:6px; z-index:99999; box-shadow:0 4px 6px -1px rgba(0,0,0,0.2); border:1px solid #334155; pointer-events:none;">
-        ? Total: <strong><?= $execTime ?> ms</strong> | DB: <strong><?= $dbTime ?> ms</strong>
-    </div>
-    <?php endif; ?>
 </body>
 </html>
 
