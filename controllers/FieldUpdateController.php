@@ -89,7 +89,7 @@ class FieldUpdateController {
         $evalModel = new Evaluation();
         $evaluations = $evalModel->getByUpdateId($updateId);
 
-        $pageTitle = 'Detail Laporan Lapangan #' . $update['update_id'];
+        $pageTitle = 'Detail Laporan Lapangan';
         $activeMenu = 'field-updates';
         require_once __DIR__ . '/../views/field_updates/detail.php';
     }

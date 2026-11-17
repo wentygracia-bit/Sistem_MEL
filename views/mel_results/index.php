@@ -148,7 +148,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     <?php if (!empty($evaluations)): ?>
                         <?php foreach ($evaluations as $ev): ?>
                             <option value="<?= $ev['evaluation_id'] ?? '' ?>" data-activity="<?= $ev['activity_id'] ?? '' ?>">
-                                #<?= $ev['evaluation_id'] ?? '' ?>: <?= htmlspecialchars($ev['activity_name'] ?? '') ?> (<?= htmlspecialchars($ev['result'] ?? '') ?>)
+                                <?= htmlspecialchars($ev['activity_name'] ?? '') ?> (Evaluasi PL: <?= htmlspecialchars($ev['result'] ?? '') ?>)
                             </option>
                         <?php endforeach; ?>
                     <?php endif; ?>

@@ -12,7 +12,7 @@ require_once __DIR__ . '/../layouts/header.php';
     <!-- Correction Request Card -->
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title"><i class="fa-solid fa-circle-question" style="color: var(--primary-dark);"></i> Detail Permintaan Perbaikan #<?= $correction['correction_id'] ?></h2>
+            <h2 class="card-title"><i class="fa-solid fa-circle-question" style="color: var(--primary-dark);"></i> Detail Permintaan Perbaikan</h2>
             <span class="badge <?= $correction['status'] === 'Direspons' ? 'badge-success' : 'badge-warning' ?>">
                 <?= htmlspecialchars($correction['status']) ?>
             </span>

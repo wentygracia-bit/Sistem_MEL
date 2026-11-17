@@ -41,7 +41,7 @@ class MELResultController {
             exit;
         }
 
-        $pageTitle = 'Dokumen Hasil MEL #' . $result['mel_result_id'];
+        $pageTitle = 'Dokumen Hasil MEL';
         $activeMenu = 'mel-results';
         require_once __DIR__ . '/../views/mel_results/detail.php';
     }

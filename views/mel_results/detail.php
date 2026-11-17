@@ -21,7 +21,7 @@ require_once __DIR__ . '/../layouts/header.php';
     <!-- Dokumen Hasil MEL -->
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title"><i class="fa-solid fa-file-contract" style="color: var(--primary-dark);"></i> Dokumen Hasil MEL #<?= $result['mel_result_id'] ?></h2>
+            <h2 class="card-title"><i class="fa-solid fa-file-contract" style="color: var(--primary-dark);"></i> Dokumen Hasil MEL</h2>
         </div>
 
         <div style="margin-bottom: 14px;">
@@ -189,7 +189,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     <i class="fa-solid fa-pen-to-square"></i> Perbaiki Dokumen & Ajukan Ulang Hasil MEL
                 </h3>
                 <span style="font-size: 0.85rem; color: var(--text-muted);">
-                    Dokumen #<?= $result['mel_result_id'] ?>: <?= htmlspecialchars($result['activity_name']) ?>
+                    Kegiatan: <?= htmlspecialchars($result['activity_name']) ?>
                 </span>
             </div>
             <button onclick="toggleModal('modalResubmitMEL')" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>

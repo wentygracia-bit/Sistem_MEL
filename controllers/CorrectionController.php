@@ -46,7 +46,7 @@ class CorrectionController {
             exit;
         }
 
-        $pageTitle = 'Detail Klarifikasi Perbaikan #' . $correction['correction_id'];
+        $pageTitle = 'Detail Klarifikasi Perbaikan';
         $activeMenu = 'corrections';
         require_once __DIR__ . '/../views/corrections/detail.php';
     }

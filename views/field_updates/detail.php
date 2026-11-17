@@ -29,7 +29,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <!-- Card 1: Laporan Lapangan -->
         <div class="card" style="width: 100%;">
             <div class="card-header">
-                <h2 class="card-title"><i class="fa-solid fa-file-invoice" style="color: var(--primary-dark);"></i> Laporan Lapangan #<?= $update['update_id'] ?></h2>
+                <h2 class="card-title"><i class="fa-solid fa-file-invoice" style="color: var(--primary-dark);"></i> Laporan Lapangan</h2>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px;">
@@ -200,7 +200,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <!-- Report Details -->
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title"><i class="fa-solid fa-file-invoice" style="color: var(--primary-dark);"></i> Laporan Lapangan #<?= $update['update_id'] ?></h2>
+                <h2 class="card-title"><i class="fa-solid fa-file-invoice" style="color: var(--primary-dark);"></i> Laporan Lapangan</h2>
             </div>
 
             <div style="margin-bottom: 16px;">
