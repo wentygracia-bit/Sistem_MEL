@@ -501,6 +501,31 @@ class ProjectController {
         header('Location: ' . BASE_URL . '/projects/detail?id=' . $projectId . '#act-' . $activityId);
         exit;
     }
+
+    public function delete(): void {
+        AuthHelper::requireRole([2]); // Khusus Staf MEL
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $projectId = (int)($_POST['project_id'] ?? 0);
+            if ($projectId > 0) {
+                $projectModel = new Project();
+                $project = $projectModel->findById($projectId);
+                if ($project) {
+                    $deleted = $projectModel->delete($projectId);
+                    if ($deleted) {
+                        AuthHelper::setFlash('success', 'Proyek "' . htmlspecialchars($project['project_name']) . '" berhasil dihapus.');
+                    } else {
+                        AuthHelper::setFlash('error', 'Gagal menghapus proyek.');
+                    }
+                } else {
+                    AuthHelper::setFlash('error', 'Proyek tidak ditemukan.');
+                }
+            } else {
+                AuthHelper::setFlash('error', 'ID Proyek tidak valid.');
+            }
+        }
+        header('Location: ' . BASE_URL . '/projects');
+        exit;
+    }
 }
 
 

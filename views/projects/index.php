@@ -216,7 +216,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     <th class="text-center">Kegiatan</th>
                     <th>Status Proyek</th>
                     <th>Visibilitas Publik</th>
-                    <th>Aksi</th>
+                    <th style="min-width: 130px;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -262,15 +262,24 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?php if ((int)$currentUser['role_id'] === 4): // Khusus Direktur: Memantau rincian kegiatan ?>
-                                    <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat rincian kegiatan proyek ini">
-                                        <i class="fa-solid fa-circle-info"></i> Detail
-                                    </a>
-                                <?php else: ?>
-                                    <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm">
-                                        <i class="fa-solid fa-arrow-right"></i> Kelola
-                                    </a>
-                                <?php endif; ?>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <?php if ((int)$currentUser['role_id'] === 4): // Khusus Direktur: Memantau rincian kegiatan ?>
+                                        <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat rincian kegiatan proyek ini">
+                                            <i class="fa-solid fa-circle-info"></i> Detail
+                                        </a>
+                                    <?php elseif ((int)$currentUser['role_id'] === 2): // Khusus Staf MEL ?>
+                                        <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm" title="Kelola Proyek & Kegiatan">
+                                            <i class="fa-solid fa-arrow-right"></i> Kelola
+                                        </a>
+                                        <button type="button" class="btn btn-secondary btn-sm" title="Hapus Proyek" onclick="openDeleteModal(<?= $p['project_id'] ?>, '<?= htmlspecialchars(addslashes($p['project_name'])) ?>')" style="color: #dc2626;">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    <?php else: ?>
+                                        <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm">
+                                            <i class="fa-solid fa-arrow-right"></i> Kelola
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -280,11 +289,61 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
+<<<<<<< HEAD
 <?php if ($currentUser['role_id'] == 1): ?>
     <?php
     $activities = $fieldActivities;
     include __DIR__ . '/../field_updates/_modal_submit.php';
     ?>
+=======
+<?php if ((int)$currentUser['role_id'] === 2): // Modal Hapus Proyek Khusus Staf MEL ?>
+<!-- Modal Konfirmasi Hapus Proyek -->
+<div id="modalDeleteProject" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 440px;">
+        <div style="text-align: center; padding: 10px 0 20px 0;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 16px auto;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Konfirmasi Hapus Proyek</h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 4px;">Apakah Anda yakin ingin menghapus proyek:</p>
+            <p id="delete_project_name_preview" style="font-weight: 700; color: #1e293b; font-size: 1rem;"></p>
+            <p style="color: #dc2626; font-size: 0.8rem; margin-top: 6px;">
+                <i class="fa-solid fa-circle-exclamation"></i> Seluruh data kegiatan, indikator, dan laporan terkait proyek ini akan ikut terhapus.
+            </p>
+        </div>
+
+        <form action="<?= BASE_URL ?>/projects/delete" method="POST">
+            <input type="hidden" name="project_id" id="delete_project_id">
+            <div style="display: flex; justify-content: center; gap: 12px;">
+                <button type="button" onclick="toggleModal('modalDeleteProject')" class="btn btn-secondary" style="min-width: 100px;">Batal</button>
+                <button type="submit" class="btn btn-danger" style="min-width: 100px;"><i class="fa-solid fa-trash"></i> Hapus</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    const isOpening = (modal.style.display === 'none' || modal.style.display === '');
+    modal.style.display = isOpening ? 'flex' : 'none';
+}
+
+function openDeleteModal(projectId, projectName) {
+    document.getElementById('delete_project_id').value = projectId;
+    document.getElementById('delete_project_name_preview').textContent = projectName;
+    toggleModal('modalDeleteProject');
+}
+
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('modalDeleteProject');
+    if (modal && event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+</script>
+>>>>>>> 5dac0d274c1c75fcd5ef1743db3debe0d03d7f23
 <?php endif; ?>
 
 <?php
