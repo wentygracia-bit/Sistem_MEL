@@ -37,8 +37,9 @@ require_once __DIR__ . '/../layouts/header.php';
                             if ($e['result'] === 'Tidak Sesuai') continue;
                             $target = (float)($e['target_value'] ?? 0);
                             $realization = (float)($e['realization_value'] ?? 0);
-                            $pct = ($target > 0) ? round(($realization / $target) * 100, 1) : null;
-                            $progressFisik = (float)($e['progress_percentage'] ?? 0);
+                            $rawPct = ($target > 0) ? round(($realization / $target) * 100, 1) : null;
+                            $pct = ($rawPct !== null) ? min(100, $rawPct) : null;
+                            $progressFisik = min(100, (float)($e['progress_percentage'] ?? 0));
                         ?>
                             <tr>
                                 <td>
