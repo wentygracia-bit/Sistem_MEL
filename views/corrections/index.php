@@ -11,7 +11,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <table class="table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th style="width: 50px; text-align: center;">No</th>
                     <th>Kegiatan & Proyek</th>
                     <th>Pemohon (PL)</th>
                     <th>Ditugaskan ke (Staf)</th>
@@ -25,9 +25,12 @@ require_once __DIR__ . '/../layouts/header.php';
                 <?php if (empty($corrections)): ?>
                     <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Tidak ada permintaan perbaikan aktif.</td></tr>
                 <?php else: ?>
-                    <?php foreach ($corrections as $c): ?>
+                    <?php 
+                    $no = 1;
+                    foreach ($corrections as $c): 
+                    ?>
                         <tr>
-                            <td><strong>#<?= $c['correction_id'] ?></strong></td>
+                            <td style="text-align: center; font-weight: 600; color: #475569;"><?= $no++ ?></td>
                             <td>
                                 <div style="font-weight: 700; color: #0f172a; max-width: 200px;"><?= htmlspecialchars($c['activity_name']) ?></div>
                                 <div style="font-size: 0.78rem; color: var(--text-muted);"><?= htmlspecialchars($c['project_name']) ?></div>

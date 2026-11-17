@@ -78,7 +78,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <table class="table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th style="width: 50px; text-align: center;">No</th>
                     <th>Kegiatan & Proyek</th>
                     <th>Pelapor (Staf)</th>
                     <th>Tanggal Lapor</th>
@@ -105,9 +105,12 @@ require_once __DIR__ . '/../layouts/header.php';
                         </td>
                     </tr>
                 <?php else: ?>
-                    <?php foreach ($updates as $up): ?>
+                    <?php 
+                    $no = 1;
+                    foreach ($updates as $up): 
+                    ?>
                         <tr>
-                            <td><strong>#<?= $up['update_id'] ?></strong></td>
+                            <td style="text-align: center; font-weight: 600; color: #475569;"><?= $no++ ?></td>
                             <td>
                                 <div style="font-weight: 700; color: #0f172a; max-width: 250px;"><?= htmlspecialchars($up['activity_name']) ?></div>
                                 <div style="font-size: 0.78rem; color: var(--text-muted);"><?= htmlspecialchars($up['project_name']) ?></div>

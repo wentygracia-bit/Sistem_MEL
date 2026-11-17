@@ -132,7 +132,7 @@ $offsetPerencanaan = -($lenBerjalan + $lenSelesai);
             <table class="table">
                 <thead>
                     <tr>
-                        <th style="width: 70px;">ID</th>
+                        <th style="width: 50px; text-align: center;">No</th>
                         <th>Kegiatan & Proyek</th>
                         <th>Diajukan Oleh</th>
                         <th>Tanggal</th>
@@ -161,10 +161,13 @@ $offsetPerencanaan = -($lenBerjalan + $lenSelesai);
                             </td>
                         </tr>
                     <?php else: ?>
-                        <?php foreach ($pendingMelList as $item): ?>
+                        <?php 
+                        $noDir = 1;
+                        foreach ($pendingMelList as $item): 
+                        ?>
                             <tr>
-                                <td>
-                                    <span style="font-family: monospace; font-weight: 700; color: #334155;">#<?= $item['mel_result_id'] ?></span>
+                                <td style="text-align: center; font-weight: 600; color: #475569;">
+                                    <?= $noDir++ ?>
                                 </td>
                                 <td>
                                     <div style="font-weight: 600; color: #0f172a; line-height: 1.3;">

@@ -164,7 +164,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th style="width: 50px; text-align: center;">No</th>
                             <th>Kegiatan & Proyek</th>
                             <th>Pemohon (PL)</th>
                             <th>Ditugaskan ke (Staf)</th>
@@ -178,9 +178,12 @@ require_once __DIR__ . '/../layouts/header.php';
                         <?php if (empty($corrections)): ?>
                             <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Tidak ada permintaan perbaikan aktif.</td></tr>
                         <?php else: ?>
-                            <?php foreach ($corrections as $c): ?>
+                            <?php 
+                            $noC = 1;
+                            foreach ($corrections as $c): 
+                            ?>
                                 <tr>
-                                    <td><strong>#<?= $c['correction_id'] ?></strong></td>
+                                    <td style="text-align: center; font-weight: 600; color: #475569;"><?= $noC++ ?></td>
                                     <td>
                                         <div style="font-weight: 700; color: #0f172a; max-width: 200px;"><?= htmlspecialchars($c['activity_name']) ?></div>
                                         <div style="font-size: 0.78rem; color: var(--text-muted);"><?= htmlspecialchars($c['project_name']) ?></div>
@@ -224,7 +227,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>ID Eval</th>
+                            <th style="width: 50px; text-align: center;">No</th>
                             <th>Kegiatan & Proyek</th>
                             <th>Indikator Target</th>
                             <th>Evaluator (PL)</th>
@@ -238,9 +241,12 @@ require_once __DIR__ . '/../layouts/header.php';
                         <?php if (empty($evaluations)): ?>
                             <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada data evaluasi.</td></tr>
                         <?php else: ?>
-                            <?php foreach ($evaluations as $e): ?>
+                            <?php 
+                            $noE = 1;
+                            foreach ($evaluations as $e): 
+                            ?>
                                 <tr>
-                                    <td><strong>#<?= $e['evaluation_id'] ?></strong></td>
+                                    <td style="text-align: center; font-weight: 600; color: #475569;"><?= $noE++ ?></td>
                                     <td>
                                         <div style="font-weight: 700; color: #0f172a; max-width: 220px;"><?= htmlspecialchars($e['activity_name']) ?></div>
                                         <div style="font-size: 0.78rem; color: var(--text-muted);"><?= htmlspecialchars($e['project_name']) ?></div>
@@ -422,7 +428,7 @@ require_once __DIR__ . '/../layouts/header.php';
             <table class="table">
                 <thead>
                     <tr>
-                        <th>ID Eval</th>
+                        <th style="width: 50px; text-align: center;">No</th>
                         <th>Kegiatan & Proyek</th>
                         <th>Indikator Target</th>
                         <th>Evaluator (PL)</th>
@@ -436,9 +442,12 @@ require_once __DIR__ . '/../layouts/header.php';
                     <?php if (empty($evaluations)): ?>
                         <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada data evaluasi.</td></tr>
                     <?php else: ?>
-                        <?php foreach ($evaluations as $e): ?>
+                        <?php 
+                        $noPl = 1;
+                        foreach ($evaluations as $e): 
+                        ?>
                             <tr>
-                                <td><strong>#<?= $e['evaluation_id'] ?></strong></td>
+                                <td style="text-align: center; font-weight: 600; color: #475569;"><?= $noPl++ ?></td>
                                 <td>
                                     <div style="font-weight: 700; color: #0f172a; max-width: 220px;"><?= htmlspecialchars($e['activity_name']) ?></div>
                                     <div style="font-size: 0.78rem; color: var(--text-muted);"><?= htmlspecialchars($e['project_name']) ?></div>
