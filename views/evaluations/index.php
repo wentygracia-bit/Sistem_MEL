@@ -5,36 +5,57 @@ require_once __DIR__ . '/../layouts/header.php';
 <?php if ($currentUser['role_id'] == 4): ?>
     <!-- Tabel Ringkasan Capaian Direktur -->
     <div class="card">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div>
                 <h2 class="card-title"><i class="fa-solid fa-chart-line" style="color: var(--primary-dark);"></i> Ringkasan Capaian Indikator & Proyek</h2>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Pemantauan capaian realisasi kegiatan, hasil evaluasi Project Leader, dan status pengesahan MEL.</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Pemantauan capaian realisasi kegiatan dan hasil evaluasi Project Leader.</p>
             </div>
-            <div>
-                <span class="badge badge-info"><i class="fa-solid fa-eye"></i> Mode Pemantauan Direktur</span>
-            </div>
+            
+            <!-- Filter & Pencarian -->
+            <form method="GET" action="<?= BASE_URL ?>/evaluations" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <div style="position: relative;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+                    <input type="text" name="search" class="form-control" style="padding-left: 34px; width: 220px; height: 38px;" placeholder="Cari kegiatan/proyek..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+                </div>
+
+                <select name="result" class="form-control" style="width: 190px; height: 38px;" onchange="this.form.submit()">
+                    <option value="">-- Semua Evaluasi --</option>
+                    <option value="Sesuai" <?= (isset($_GET['result']) && $_GET['result'] === 'Sesuai') ? 'selected' : '' ?>>Sesuai</option>
+                    <option value="Perlu Perbaikan" <?= (isset($_GET['result']) && ($_GET['result'] === 'Perlu Perbaikan' || $_GET['result'] === 'Tidak Sesuai')) ? 'selected' : '' ?>>Perlu Perbaikan</option>
+                </select>
+
+                <button type="submit" class="btn btn-secondary btn-sm" style="height: 38px; padding: 0 14px;" title="Cari">
+                    <i class="fa-solid fa-filter"></i> Filter
+                </button>
+                <?php if (!empty($_GET['search']) || !empty($_GET['result'])): ?>
+                    <a href="<?= BASE_URL ?>/evaluations" class="btn btn-secondary btn-sm" style="height: 38px; padding: 0 12px; display: inline-flex; align-items: center;" title="Reset Filter">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </a>
+                <?php endif; ?>
+            </form>
         </div>
 
         <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
+                        <th style="width: 50px; text-align: center;">No</th>
                         <th>Kegiatan & Proyek</th>
                         <th>Indikator & Target</th>
                         <th>Realisasi Lapangan</th>
                         <th>% Capaian</th>
                         <th>Evaluator & Tanggal</th>
-                        <th>Hasil Evaluasi (PL)</th>
-                        <th>Status Laporan & MEL</th>
-                        <th>Aksi</th>
+                        <th style="text-align: center;">Hasil Evaluasi PL</th>
+                        <th style="text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($evaluations)): ?>
-                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada data evaluasi capaian yang memenuhi kriteria (Sesuai).</td></tr>
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada data evaluasi capaian yang ditemukan.</td></tr>
                     <?php else: ?>
-                        <?php foreach ($evaluations as $e): 
-                            if ($e['result'] === 'Tidak Sesuai') continue;
+                        <?php 
+                        $no = 1;
+                        foreach ($evaluations as $e): 
                             $target = (float)($e['target_value'] ?? 0);
                             $realization = (float)($e['realization_value'] ?? 0);
                             $rawPct = ($target > 0) ? round(($realization / $target) * 100, 1) : null;
@@ -42,6 +63,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             $progressFisik = min(100, (float)($e['progress_percentage'] ?? 0));
                         ?>
                             <tr>
+                                <td style="text-align: center; font-weight: 600; color: #64748b;"><?= $no++ ?></td>
                                 <td>
                                     <div style="font-weight: 700; color: #0f172a; max-width: 220px;"><?= htmlspecialchars($e['activity_name']) ?></div>
                                     <div style="font-size: 0.78rem; color: var(--text-muted);"><?= htmlspecialchars($e['project_name']) ?></div>
@@ -74,56 +96,21 @@ require_once __DIR__ . '/../layouts/header.php';
                                     <div style="font-weight: 600; font-size: 0.85rem;"><?= htmlspecialchars($e['evaluator_name']) ?></div>
                                     <div style="font-size: 0.78rem; color: var(--text-muted);"><?= date('d M Y', strtotime($e['evaluation_date'])) ?></div>
                                 </td>
-                                <td>
+                                <td style="text-align: center;">
                                     <?php if ($e['result'] === 'Sesuai'): ?>
-                                        <span class="badge badge-success"><i class="fa-solid fa-check"></i> Sesuai</span>
+                                        <span class="badge badge-success" title="<?= !empty($e['notes']) ? htmlspecialchars($e['notes']) : 'Hasil Evaluasi: Sesuai' ?>">
+                                            <i class="fa-solid fa-check"></i> Sesuai
+                                        </span>
                                     <?php else: ?>
-                                        <span class="badge badge-danger"><i class="fa-solid fa-xmark"></i> Tidak Sesuai</span>
-                                    <?php endif; ?>
-                                    <?php if (!empty($e['notes'])): ?>
-                                        <div style="font-size: 0.78rem; color: #475569; margin-top: 4px; max-width: 200px; line-height: 1.3;" title="<?= htmlspecialchars($e['notes']) ?>">
-                                            <?= htmlspecialchars(mb_strimwidth($e['notes'], 0, 60, '...')) ?>
-                                        </div>
+                                        <span class="badge badge-danger" title="<?= !empty($e['notes']) ? htmlspecialchars($e['notes']) : 'Hasil Evaluasi: Perlu Perbaikan' ?>">
+                                            <i class="fa-solid fa-xmark"></i> Perlu Perbaikan
+                                        </span>
                                     <?php endif; ?>
                                 </td>
-                                <td>
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <div>
-                                            <span class="badge <?= $e['report_status'] === 'Dievaluasi' ? 'badge-success' : ($e['report_status'] === 'Perlu Perbaikan' ? 'badge-danger' : 'badge-warning') ?>" style="font-size: 0.72rem;">
-                                                Laporan: <?= htmlspecialchars($e['report_status'] ?? 'Diajukan') ?>
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <?php if ($e['approval_decision'] === 'Disetujui'): ?>
-                                                <span class="badge badge-success" style="font-size: 0.72rem;"><i class="fa-solid fa-stamp"></i> MEL Disetujui</span>
-                                            <?php elseif ($e['approval_decision'] === 'Ditolak'): ?>
-                                                <span class="badge badge-danger" style="font-size: 0.72rem;"><i class="fa-solid fa-rotate-left"></i> MEL Dikembalikan</span>
-                                            <?php elseif (!empty($e['mel_result_id'])): ?>
-                                                <span class="badge badge-warning" style="font-size: 0.72rem;"><i class="fa-solid fa-clock"></i> Menunggu Verifikasi MEL</span>
-                                            <?php else: ?>
-                                                <span class="badge badge-secondary" style="font-size: 0.72rem; color: #64748b; background: #f1f5f9;">Belum Disusun MEL</span>
-                                            <?php endif; ?>
-                                        </div>
-                                        <?php if (!empty($e['director_notes'])): ?>
-                                            <div>
-                                                <span class="badge" style="font-size: 0.7rem; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;" title="Catatan Direktur: <?= htmlspecialchars($e['director_notes']) ?>">
-                                                    <i class="fa-solid fa-note-sticky"></i> Ada Catatan Direktur
-                                                </span>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                                        <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
-                                            <i class="fa-solid fa-eye"></i> Detail Laporan
-                                        </a>
-                                        <?php if (!empty($e['mel_result_id'])): ?>
-                                            <a href="<?= BASE_URL ?>/mel-results/detail?id=<?= $e['mel_result_id'] ?>" class="btn btn-primary btn-sm" style="white-space: nowrap;">
-                                                <i class="fa-solid fa-stamp"></i> Verifikasi MEL
-                                            </a>
-                                        <?php endif; ?>
-                                    </div>
+                                <td style="text-align: center;">
+                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+                                        <i class="fa-solid fa-eye"></i> Detail Laporan
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

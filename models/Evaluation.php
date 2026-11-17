@@ -49,13 +49,34 @@ class Evaluation {
         return (int)$this->db->lastInsertId();
     }
 
-    public function getAll(int $limit = 50, ?string $resultFilter = null): array {
-        $whereClause = "";
+    public function getAll(int $limit = 50, ?string $resultFilter = null, ?string $reportStatusFilter = null, ?string $search = null): array {
+        $whereConditions = [];
         $params = [];
 
         if (!empty($resultFilter)) {
-            $whereClause = "WHERE e.result = ?";
-            $params[] = $resultFilter;
+            if ($resultFilter === 'Perlu Perbaikan' || $resultFilter === 'Tidak Sesuai') {
+                $whereConditions[] = "(e.result = 'Tidak Sesuai' OR e.result = 'Perlu Perbaikan')";
+            } else {
+                $whereConditions[] = "e.result = ?";
+                $params[] = $resultFilter;
+            }
+        }
+
+        if (!empty($reportStatusFilter)) {
+            $whereConditions[] = "fu.status = ?";
+            $params[] = $reportStatusFilter;
+        }
+
+        if (!empty($search)) {
+            $whereConditions[] = "(a.activity_name LIKE ? OR p.project_name LIKE ? OR i.indicator_name LIKE ?)";
+            $params[] = "%{$search}%";
+            $params[] = "%{$search}%";
+            $params[] = "%{$search}%";
+        }
+
+        $whereClause = "";
+        if (!empty($whereConditions)) {
+            $whereClause = "WHERE " . implode(" AND ", $whereConditions);
         }
 
         $sql = "

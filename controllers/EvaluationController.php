@@ -12,10 +12,18 @@ class EvaluationController {
         $user = AuthHelper::getUser();
 
         $evalModel = new Evaluation();
-        // Khusus Direktur (role_id = 4): Hanya tampilkan evaluasi yang berstatus 'Sesuai'
-        // agar capaian yang belum memenuhi persyaratan (Tidak Sesuai) tidak tercampur
+        $searchKeyword = trim($_GET['search'] ?? '');
+        $resultFilter = trim($_GET['result'] ?? $_GET['status'] ?? '');
+
+        // Khusus Direktur (role_id = 4):
+        // Ringkasan Capaian Indikator seluruh kegiatan yang sudah dievaluasi PL (bisa difilter Sesuai / Perlu Perbaikan)
         if ((int)$user['role_id'] === 4) {
-            $evaluations = $evalModel->getAll(100, 'Sesuai');
+            $evaluations = $evalModel->getAll(
+                100,
+                $resultFilter !== '' ? $resultFilter : null,
+                null,
+                $searchKeyword !== '' ? $searchKeyword : null
+            );
         } else {
             $evaluations = $evalModel->getAll(100);
         }
