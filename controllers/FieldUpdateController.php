@@ -73,6 +73,7 @@ class FieldUpdateController {
 
     public function detail(): void {
         AuthHelper::requireLogin();
+        $user = AuthHelper::getUser();
         $updateId = (int)($_GET['id'] ?? 0);
         $updateModel = new FieldUpdate();
         $update = $updateModel->findById($updateId);
@@ -90,7 +91,8 @@ class FieldUpdateController {
         $evaluations = $evalModel->getByUpdateId($updateId);
 
         $pageTitle = 'Detail Laporan Lapangan';
-        $activeMenu = 'field-updates';
+        $isFromEvaluations = (isset($_GET['from']) && $_GET['from'] === 'evaluations') || ((int)$user['role_id'] === 4);
+        $activeMenu = $isFromEvaluations ? 'evaluations' : 'field-updates';
         require_once __DIR__ . '/../views/field_updates/detail.php';
     }
 

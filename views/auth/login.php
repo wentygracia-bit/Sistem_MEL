@@ -2,6 +2,8 @@
 require_once __DIR__ . '/../../helpers/AuthHelper.php';
 $flashError = AuthHelper::getFlash('error');
 $flashSuccess = AuthHelper::getFlash('success');
+$isBlocked = $isBlocked ?? false;
+$remainingSeconds = $remainingSeconds ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -79,7 +81,17 @@ $flashSuccess = AuthHelper::getFlash('success');
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Monitoring, Evaluasi, dan Pembelajaran Terpadu</p>
             </div>
 
-            <?php if ($flashError): ?>
+            <?php if ($isBlocked): ?>
+                <div class="alert alert-error" id="blockAlert" style="background-color: #fef2f2; border: 1px solid #f87171; color: #991b1b; padding: 14px 16px; border-radius: var(--radius-md); margin-bottom: 20px; display: flex; align-items: flex-start; gap: 12px;">
+                    <i class="fa-solid fa-ban" style="font-size: 1.25rem; margin-top: 2px; color: #dc2626;"></i>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; margin-bottom: 2px;">Akses Login Diblokir Sementara</div>
+                        <div style="font-size: 0.85rem; line-height: 1.45;">
+                            Anda telah 3 kali salah memasukkan email atau kata sandi. Silakan tunggu <strong id="countdownTimer" style="color: #b91c1c; font-family: monospace; font-size: 0.95rem;">--:--</strong> sebelum mencoba lagi.
+                        </div>
+                    </div>
+                </div>
+            <?php elseif ($flashError): ?>
                 <div class="alert alert-error">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                     <span><?= htmlspecialchars($flashError) ?></span>
@@ -96,19 +108,19 @@ $flashSuccess = AuthHelper::getFlash('success');
             <form action="<?= BASE_URL ?>/login" method="POST">
                 <div class="form-group">
                     <label class="form-label" for="email">Alamat Email</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="nama@ynki.org" required>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="nama@ynki.org" <?= $isBlocked ? 'disabled' : '' ?> required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="password">Kata Sandi</label>
                     <div style="position: relative;">
-                        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" style="padding-right: 42px;" required>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" style="padding-right: 42px;" <?= $isBlocked ? 'disabled' : '' ?> required>
                         <button type="button" id="togglePasswordBtn" onclick="togglePasswordVisibility()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.95rem; display: flex; align-items: center; justify-content: center; padding: 4px;" title="Tampilkan / Sembunyikan Kata Sandi">
                             <i id="passwordToggleIcon" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px;">
+                <button type="submit" id="submitLoginBtn" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px;" <?= $isBlocked ? 'disabled' : '' ?>>
                     <i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem
                 </button>
             </form>
@@ -135,6 +147,46 @@ $flashSuccess = AuthHelper::getFlash('success');
                 toggleIcon.classList.add('fa-eye');
             }
         }
+
+        <?php if ($isBlocked && $remainingSeconds > 0): ?>
+        (function() {
+            let remaining = <?= (int)$remainingSeconds ?>;
+            const countdownEl = document.getElementById('countdownTimer');
+            const emailInput = document.getElementById('email');
+            const passInput = document.getElementById('password');
+            const submitBtn = document.getElementById('submitLoginBtn');
+            const blockAlert = document.getElementById('blockAlert');
+
+            function formatTime(sec) {
+                const m = Math.floor(sec / 60);
+                const s = sec % 60;
+                return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            }
+
+            if (countdownEl) {
+                countdownEl.textContent = formatTime(remaining);
+            }
+
+            const timer = setInterval(function() {
+                remaining--;
+                if (remaining <= 0) {
+                    clearInterval(timer);
+                    if (countdownEl) countdownEl.textContent = '00:00';
+                    if (emailInput) emailInput.removeAttribute('disabled');
+                    if (passInput) passInput.removeAttribute('disabled');
+                    if (submitBtn) submitBtn.removeAttribute('disabled');
+                    if (blockAlert) {
+                        blockAlert.style.backgroundColor = '#f0fdf4';
+                        blockAlert.style.borderColor = '#86efac';
+                        blockAlert.style.color = '#166534';
+                        blockAlert.innerHTML = '<i class="fa-solid fa-circle-check" style="font-size: 1.25rem; color: #16a34a; margin-top: 2px;"></i> <div><strong style="display:block; margin-bottom:2px;">Waktu blokir telah selesai</strong><span style="font-size:0.85rem;">Silakan masukkan kembali email dan kata sandi Anda.</span></div>';
+                    }
+                } else {
+                    if (countdownEl) countdownEl.textContent = formatTime(remaining);
+                }
+            }, 1000);
+        })();
+        <?php endif; ?>
     </script>
 </body>
 </html>

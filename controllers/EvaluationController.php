@@ -174,7 +174,8 @@ class EvaluationController {
             AuthHelper::setFlash('error', 'Data evaluasi tidak lengkap.');
         }
 
-        header('Location: ' . BASE_URL . '/field-updates/detail?id=' . $updateId);
+        $redirectFrom = (isset($_POST['from']) && $_POST['from'] === 'evaluations') ? '&from=evaluations' : '';
+        header('Location: ' . BASE_URL . '/field-updates/detail?id=' . $updateId . $redirectFrom);
         exit;
     }
 }

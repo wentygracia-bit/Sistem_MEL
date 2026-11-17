@@ -147,7 +147,12 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                 </div>
                 <div class="form-group">
                     <label class="form-label">Kata Sandi Awal *</label>
-                    <input type="password" name="password" class="form-control" placeholder="Minimal 5 karakter" minlength="5" required>
+                    <div style="position: relative;">
+                        <input type="password" id="create_password" name="password" class="form-control" placeholder="Minimal 5 karakter" minlength="5" style="padding-right: 40px;" required>
+                        <button type="button" onclick="togglePasswordVisibility('create_password', 'create_password_icon')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.9rem; padding: 4px; display: flex; align-items: center; justify-content: center;" title="Lihat / Sembunyikan Kata Sandi">
+                            <i id="create_password_icon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -232,7 +237,12 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
 
             <div class="form-group">
                 <label class="form-label">Kata Sandi Baru *</label>
-                <input type="password" name="new_password" class="form-control" placeholder="Minimal 5 karakter" minlength="5" required>
+                <div style="position: relative;">
+                    <input type="password" id="reset_password" name="new_password" class="form-control" placeholder="Minimal 5 karakter" minlength="5" style="padding-right: 40px;" required>
+                    <button type="button" onclick="togglePasswordVisibility('reset_password', 'reset_password_icon')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.9rem; padding: 4px; display: flex; align-items: center; justify-content: center;" title="Lihat / Sembunyikan Kata Sandi">
+                        <i id="reset_password_icon" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
@@ -296,6 +306,22 @@ function openDeleteModal(userId, userName) {
     document.getElementById('delete_user_id').value = userId;
     document.getElementById('delete_user_name_preview').textContent = userName;
     toggleModal('modalDeleteUser');
+}
+
+function togglePasswordVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
 }
 </script>
 
