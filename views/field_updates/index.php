@@ -161,8 +161,8 @@ require_once __DIR__ . '/../layouts/header.php';
                             </td>
                             <td>
                                 <div style="display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap;">
-                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat Rincian Laporan">
-                                        <i class="fa-solid fa-eye"></i>
+                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat Detail Laporan">
+                                        <i class="fa-solid fa-eye"></i> Lihat Detail
                                     </a>
 
                                     <?php if ($up['status'] === 'Draft' && (int)$currentUser['role_id'] === 1 && (int)$currentUser['user_id'] === (int)$up['user_id']): ?>

@@ -114,7 +114,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                 </td>
                                 <td>
                                     <div style="display: flex; flex-direction: column; gap: 6px;">
-                                        <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+                                        <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>&from=evaluations" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
                                             <i class="fa-solid fa-eye"></i> Detail Laporan
                                         </a>
                                         <?php if (!empty($e['mel_result_id'])): ?>
@@ -272,7 +272,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                         <div style="font-size: 0.85rem; max-width: 260px;"><?= htmlspecialchars($e['notes']) ?></div>
                                     </td>
                                     <td>
-                                        <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>" class="btn btn-secondary btn-sm">
+                                        <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>&from=evaluations" class="btn btn-secondary btn-sm">
                                             <i class="fa-solid fa-eye"></i> Laporan
                                         </a>
                                     </td>
@@ -401,7 +401,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                 </td>
                                 <td style="text-align: center;">
                                     <div style="display: inline-flex; gap: 6px;">
-                                        <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $fu['update_id'] ?>" class="btn <?= $fu['status'] === 'Diajukan' ? 'btn-primary' : 'btn-secondary' ?> btn-sm" style="white-space: nowrap;">
+                                        <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $fu['update_id'] ?>&from=evaluations" class="btn <?= $fu['status'] === 'Diajukan' ? 'btn-primary' : 'btn-secondary' ?> btn-sm" style="white-space: nowrap;">
                                             <i class="fa-solid <?= $fu['status'] === 'Diajukan' ? 'fa-scale-balanced' : 'fa-eye' ?>"></i>
                                             <?= $fu['status'] === 'Diajukan' ? 'Evaluasi' : 'Detail' ?>
                                         </a>
@@ -473,7 +473,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                     <div style="font-size: 0.85rem; max-width: 260px;"><?= htmlspecialchars($e['notes']) ?></div>
                                 </td>
                                 <td>
-                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>" class="btn btn-secondary btn-sm">
+                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>&from=evaluations" class="btn btn-secondary btn-sm">
                                         <i class="fa-solid fa-eye"></i> Laporan
                                     </a>
                                 </td>

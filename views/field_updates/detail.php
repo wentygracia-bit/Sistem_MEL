@@ -3,7 +3,11 @@ require_once __DIR__ . '/../layouts/header.php';
 ?>
 
 <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-    <?php if ($currentUser['role_id'] == 4): ?>
+    <?php if (isset($_GET['from']) && $_GET['from'] === 'evaluations'): ?>
+        <a href="<?= BASE_URL ?>/evaluations" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Kembali ke Evaluasi Kinerja
+        </a>
+    <?php elseif ($currentUser['role_id'] == 4): ?>
         <a href="<?= BASE_URL ?>/evaluations" class="btn btn-secondary btn-sm">
             <i class="fa-solid fa-arrow-left"></i> Kembali ke Ringkasan Capaian
         </a>
@@ -258,49 +262,56 @@ require_once __DIR__ . '/../layouts/header.php';
 
         <!-- Evaluation Section & Loop -->
         <div>
-            <!-- Evaluasi Form for Project Leader (PRD 3.3 & 4.5) -->
-            <?php if ($currentUser['role_id'] == 3): // Only Project Leader ?>
-            <div class="card" style="border: 2px solid var(--primary);">
-                <div class="card-header">
-                    <h2 class="card-title"><i class="fa-solid fa-scale-balanced" style="color: var(--primary-dark);"></i> Formulir Evaluasi (Project Leader)</h2>
+            <!-- Formulir Evaluasi (HANYA MUNCUL JIKA DIAKSES DARI MENU EVALUASI KINERJA) -->
+            <?php if ($currentUser['role_id'] == 3 && isset($_GET['from']) && $_GET['from'] === 'evaluations'): ?>
+            <div class="card" style="border: 2px solid var(--primary); margin-bottom: 20px;">
+                <div class="card-header" style="background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border-bottom: 2px solid #bbf7d0;">
+                    <div>
+                        <h2 class="card-title" style="color: #1e330c;"><i class="fa-solid fa-scale-balanced" style="color: var(--primary-dark);"></i> Formulir Evaluasi Kinerja</h2>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin: 3px 0 0 0;">Lakukan penilaian kesesuaian capaian lapangan ini terhadap indikator kinerja.</p>
+                    </div>
+                    <span class="badge badge-warning" style="font-size: 0.75rem;"><i class="fa-solid fa-pen-ruler"></i> Evaluator: Project Leader</span>
                 </div>
 
-                <form action="<?= BASE_URL ?>/evaluations/submit" method="POST">
-                    <input type="hidden" name="update_id" value="<?= $update['update_id'] ?>">
-                    
-                    <div class="form-group">
-                        <label class="form-label">Bandingkan dengan Indikator Kinerja *</label>
-                        <select name="indicator_id" class="form-control" required>
-                            <?php foreach ($indicators as $ind): ?>
-                                <option value="<?= $ind['indicator_id'] ?>">
-                                    <?= htmlspecialchars($ind['indicator_name']) ?> 
-                                    <?php if (($ind['activity_type'] ?? 'Kuantitatif') === 'Kualitatif'): ?>
-                                        [Kualitatif: <?= htmlspecialchars(mb_strimwidth($ind['target_description'] ?: ($ind['description'] ?: 'Deskriptif'), 0, 45, '...')) ?>]
-                                    <?php else: ?>
-                                        (Target: <?= number_format($ind['target_value'] ?? 0, 0, ',', '.') ?> <?= htmlspecialchars($ind['unit'] ?? '') ?>)
-                                    <?php endif; ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                <div style="padding: 18px 20px;">
+                    <form action="<?= BASE_URL ?>/evaluations/submit" method="POST">
+                        <input type="hidden" name="update_id" value="<?= $update['update_id'] ?>">
+                        <input type="hidden" name="from" value="evaluations">
+                        
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 700;">Bandingkan dengan Indikator Kinerja *</label>
+                            <select name="indicator_id" class="form-control" required>
+                                <?php foreach ($indicators as $ind): ?>
+                                    <option value="<?= $ind['indicator_id'] ?>">
+                                        <?= htmlspecialchars($ind['indicator_name']) ?> 
+                                        <?php if (($ind['activity_type'] ?? 'Kuantitatif') === 'Kualitatif'): ?>
+                                            [Kualitatif: <?= htmlspecialchars(mb_strimwidth($ind['target_description'] ?: ($ind['description'] ?: 'Deskriptif'), 0, 45, '...')) ?>]
+                                        <?php else: ?>
+                                            (Target: <?= number_format($ind['target_value'] ?? 0, 0, ',', '.') ?> <?= htmlspecialchars($ind['unit'] ?? '') ?>)
+                                        <?php endif; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Hasil Kesesuaian Kinerja *</label>
-                        <select name="result" class="form-control" required>
-                            <option value="Sesuai">Sesuai (Target tercapai & data valid)</option>
-                            <option value="Tidak Sesuai">Tidak Sesuai (Picu Permintaan Perbaikan / Klarifikasi)</option>
-                        </select>
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 700;">Hasil Kesesuaian Kinerja *</label>
+                            <select name="result" class="form-control" required>
+                                <option value="Sesuai">Sesuai (Target tercapai & data valid)</option>
+                                <option value="Tidak Sesuai">Tidak Sesuai (Picu Permintaan Perbaikan / Klarifikasi)</option>
+                            </select>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Catatan Evaluasi / Instruksi Perbaikan *</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Berikan catatan rinci mengenai capaian atau bagian yang wajib diperbaiki oleh Staf Lapangan" required></textarea>
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 700;">Catatan Evaluasi / Instruksi Perbaikan *</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Berikan catatan rinci mengenai capaian atau bagian yang wajib diperbaiki oleh Staf Lapangan..." required></textarea>
+                        </div>
 
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <i class="fa-solid fa-check-double"></i> Simpan & Kirim Evaluasi
-                    </button>
-                </form>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">
+                            <i class="fa-solid fa-check-double"></i> Simpan & Kirim Hasil Evaluasi
+                        </button>
+                    </form>
+                </div>
             </div>
             <?php endif; ?>
 
