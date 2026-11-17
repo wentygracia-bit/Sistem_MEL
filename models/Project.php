@@ -112,6 +112,11 @@ class Project {
         return $stmt->execute([$projectCode, $projectName, $description, $startDate, $endDate, $status, $publicStatus, $projectId]);
     }
 
+    public function delete(int $projectId): bool {
+        $stmt = $this->db->prepare("DELETE FROM projects WHERE project_id = ?");
+        return $stmt->execute([$projectId]);
+    }
+
     public function getMembers(int $projectId): array {
         $stmt = $this->db->prepare("
             SELECT pm.*, u.name, u.email, u.organization, r.role_name

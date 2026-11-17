@@ -69,6 +69,10 @@ switch ($path) {
         (new ProjectController())->create();
         break;
 
+    case '/projects/delete':
+        (new ProjectController())->delete();
+        break;
+
     case '/projects/add-member':
         (new ProjectController())->addMember();
         break;
