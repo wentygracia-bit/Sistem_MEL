@@ -4,7 +4,7 @@ require_once __DIR__ . '/../layouts/header.php';
 
 <div class="card">
     <div class="card-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
-        <h2 class="card-title"><i class="fa-solid fa-clipboard-list" style="color: var(--primary-dark);"></i> Laporan Lapangan (Field Updates)</h2>
+        <h2 class="card-title"><i class="fa-solid fa-clipboard-list" style="color: var(--primary-dark);"></i> Laporan Lapangan</h2>
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
             <!-- Form Pencarian & Filter Status -->
             <form action="<?= BASE_URL ?>/field-updates" method="GET" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">

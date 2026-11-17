@@ -153,6 +153,10 @@ switch ($path) {
         (new MELResultController())->create();
         break;
 
+    case '/mel-results/resubmit':
+        (new MELResultController())->resubmit();
+        break;
+
     case '/mel-results/approve':
         (new MELResultController())->approve();
         break;

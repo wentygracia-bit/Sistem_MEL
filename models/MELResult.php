@@ -87,6 +87,15 @@ class MELResult {
         return $stmt->execute([$status, $melResultId]);
     }
 
+    public function updateResultSummary(int $melResultId, string $resultSummary, string $status = 'Diajukan'): bool {
+        $stmt = $this->db->prepare("
+            UPDATE mel_results 
+            SET result_summary = ?, status = ?, submission_date = CURDATE() 
+            WHERE mel_result_id = ?
+        ");
+        return $stmt->execute([$resultSummary, $status, $melResultId]);
+    }
+
     public function countByStatus(string|array $status): int {
         if (is_array($status)) {
             $in = str_repeat('?,', count($status) - 1) . '?';

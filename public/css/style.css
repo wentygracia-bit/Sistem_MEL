@@ -935,6 +935,7 @@ html, body {
 
     .grid-cols-2,
     .mel-dashboard-grid {
+        grid-template-columns: 1fr !important;
         gap: 16px;
     }
 

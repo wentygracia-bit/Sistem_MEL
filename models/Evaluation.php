@@ -90,9 +90,32 @@ class Evaluation {
 
     /**
      * Mengambil evaluasi yang telah disetujui oleh Project Leader (result = 'Sesuai')
-     * untuk digunakan pada dropdown formulir Susun Hasil Akhir MEL.
+     * dan mengecualikan yang hasil MEL-nya sudah disetujui Direktur (status != 'Disetujui').
+     * Untuk evaluasi yang belum ada hasil MEL atau yang hasil MEL-nya direvisi, tetap ditampilkan.
      */
     public function getApprovedEvaluations(int $limit = 50): array {
-        return $this->getAll($limit, 'Sesuai');
+        $sql = "
+            SELECT e.*, i.indicator_name, i.target_value, i.unit, u.name as evaluator_name,
+                   a.activity_name, a.activity_id, p.project_name,
+                   fu.realization_value, fu.progress_percentage, fu.status as report_status, fu.evidence_file,
+                   fu.director_notes, fu.director_notes_updated_at,
+                   mr.mel_result_id, mr.status as mel_status
+            FROM evaluations e
+            JOIN indicators i ON e.indicator_id = i.indicator_id
+            JOIN users u ON e.evaluator_id = u.user_id
+            JOIN field_updates fu ON e.update_id = fu.update_id
+            JOIN activities a ON fu.activity_id = a.activity_id
+            JOIN projects p ON a.project_id = p.project_id
+            LEFT JOIN mel_results mr ON mr.evaluation_id = e.evaluation_id
+            WHERE e.result = 'Sesuai'
+              AND (mr.mel_result_id IS NULL OR mr.status != 'Disetujui')
+            ORDER BY e.evaluation_id DESC
+            LIMIT ?
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 }

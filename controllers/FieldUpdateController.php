@@ -66,7 +66,7 @@ class FieldUpdateController {
 
         $pageTitle = $filteredActivity 
             ? 'Riwayat Laporan: ' . $filteredActivity['activity_name']
-            : 'Pelaporan Lapangan (Field Updates)';
+            : 'Pelaporan Lapangan';
         $activeMenu = 'field-updates';
         require_once __DIR__ . '/../views/field_updates/index.php';
     }

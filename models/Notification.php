@@ -10,7 +10,7 @@ class Notification {
 
     public function findById(int $notificationId, int $userId): ?array {
         $stmt = $this->db->prepare("
-            SELECT n.*, a.activity_name
+            SELECT n.*, a.activity_name, a.project_id
             FROM notifications n
             LEFT JOIN activities a ON n.activity_id = a.activity_id
             WHERE n.notification_id = ? AND n.user_id = ?
@@ -45,7 +45,7 @@ class Notification {
 
     public function getForUser(int $userId, int $limit = 20): array {
         $stmt = $this->db->prepare("
-            SELECT n.*, a.activity_name,
+            SELECT n.*, a.activity_name, a.project_id,
                    (
                        SELECT mr.mel_result_id 
                        FROM mel_results mr 

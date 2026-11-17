@@ -96,6 +96,54 @@ class MELResultController {
         exit;
     }
 
+    public function resubmit(): void {
+        AuthHelper::requireRole([2]); // Staf MEL
+        $user = AuthHelper::getUser();
+
+        $melResultId = (int)($_POST['mel_result_id'] ?? 0);
+        $summaryCapaian = trim($_POST['summary_capaian'] ?? '');
+        $summaryKendala = trim($_POST['summary_kendala'] ?? '');
+        $summaryStrategi = trim($_POST['summary_strategi'] ?? '');
+        $summaryTindakLanjut = trim($_POST['summary_tindak_lanjut'] ?? '');
+
+        if (!empty($summaryCapaian) || !empty($summaryKendala) || !empty($summaryStrategi) || !empty($summaryTindakLanjut)) {
+            $summary = "Capaian:\n" . $summaryCapaian . "\n\nKendala:\n" . $summaryKendala . "\n\nStrategi:\n" . $summaryStrategi . "\n\nTindak Lanjut:\n" . $summaryTindakLanjut;
+        } else {
+            $summary = trim($_POST['result_summary'] ?? '');
+        }
+
+        if ($melResultId > 0 && !empty($summary)) {
+            $melModel = new MELResult();
+            $existing = $melModel->findById($melResultId);
+
+            if ($existing) {
+                // Update dokumen kembali menjadi status 'Diajukan'
+                $melModel->updateResultSummary($melResultId, $summary, 'Diajukan');
+
+                // Notifikasi ke Direktur (Role ID 4)
+                $userModel = new User();
+                $directors = $userModel->getByRole(4);
+                $notifModel = new Notification();
+                foreach ($directors as $dir) {
+                    $notifModel->sendNotification(
+                        $dir['user_id'],
+                        $existing['activity_id'],
+                        'Revisi Hasil MEL Diajukan Ulang',
+                        'Dokumen Hasil MEL #' . $melResultId . ' telah direvisi oleh Staf MEL dan diajukan ulang untuk pengesahan Direktur.'
+                    );
+                }
+
+                AuthHelper::setFlash('success', 'Dokumen Hasil MEL #' . $melResultId . ' berhasil diperbaiki dan diajukan kembali ke Direktur.');
+                header('Location: ' . BASE_URL . '/mel-results/detail?id=' . $melResultId);
+                exit;
+            }
+        }
+
+        AuthHelper::setFlash('error', 'Gagal memperbarui hasil MEL. Pastikan seluruh bagian terisi.');
+        header('Location: ' . BASE_URL . ($melResultId > 0 ? '/mel-results/detail?id=' . $melResultId : '/mel-results'));
+        exit;
+    }
+
     public function approve(): void {
         AuthHelper::requireRole([4]); // Khusus Direktur (PRD 3.4 & 4.6)
         $user = AuthHelper::getUser();

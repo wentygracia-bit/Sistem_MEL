@@ -106,6 +106,14 @@ require_once __DIR__ . '/../layouts/header.php';
                     <div style="font-size: 0.95rem; color: #1e293b; background: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
                         <?= nl2br(htmlspecialchars($result['approval_notes'] ?? 'Tidak ada catatan tambahan.')) ?>
                     </div>
+
+                    <?php if ($currentUser['role_id'] == 2 && ($result['status'] === 'Direvisi' || $result['status'] === 'Ditolak')): ?>
+                        <div style="margin-top: 14px; text-align: right;">
+                            <button type="button" onclick="toggleModal('modalResubmitMEL')" class="btn btn-primary" style="background: #b45309; border-color: #b45309; color: #fff; width: 100%;">
+                                <i class="fa-solid fa-pen-to-square"></i> Ajukan Ulang
+                            </button>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div style="padding: 16px; background: #fefce8; border: 1px solid #fef08a; border-radius: var(--radius-sm); margin-bottom: 20px;">
@@ -145,6 +153,112 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     </div>
 </div>
+
+<?php if ($currentUser['role_id'] == 2 && ($result['status'] === 'Direvisi' || $result['status'] === 'Ditolak')): 
+    // Parse result_summary jika berformat Capaian / Kendala / Strategi / Tindak Lanjut
+    $rawSummary = $result['result_summary'] ?? '';
+    $parsedCapaian = '';
+    $parsedKendala = '';
+    $parsedStrategi = '';
+    $parsedTindakLanjut = '';
+
+    if (preg_match('/Capaian:\s*(.*?)(?=\n\s*Kendala:|$)/is', $rawSummary, $m)) {
+        $parsedCapaian = trim($m[1]);
+    }
+    if (preg_match('/Kendala:\s*(.*?)(?=\n\s*Strategi:|$)/is', $rawSummary, $m)) {
+        $parsedKendala = trim($m[1]);
+    }
+    if (preg_match('/Strategi:\s*(.*?)(?=\n\s*Tindak Lanjut:|$)/is', $rawSummary, $m)) {
+        $parsedStrategi = trim($m[1]);
+    }
+    if (preg_match('/Tindak Lanjut:\s*(.*)/is', $rawSummary, $m)) {
+        $parsedTindakLanjut = trim($m[1]);
+    }
+
+    // Jika format narasi bebas / belum terbagi 4 bagian, masukkan ke capaian sebagai default
+    if (empty($parsedCapaian) && empty($parsedKendala) && empty($parsedStrategi) && empty($parsedTindakLanjut)) {
+        $parsedCapaian = $rawSummary;
+    }
+?>
+<!-- Modal Edit & Ajukan Ulang Hasil MEL -->
+<div id="modalResubmitMEL" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 80%; width: 80%; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e330c;">
+                    <i class="fa-solid fa-pen-to-square"></i> Perbaiki Dokumen & Ajukan Ulang Hasil MEL
+                </h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                    Dokumen #<?= $result['mel_result_id'] ?>: <?= htmlspecialchars($result['activity_name']) ?>
+                </span>
+            </div>
+            <button onclick="toggleModal('modalResubmitMEL')" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
+
+        <!-- Info Arahan Direktur -->
+        <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px;">
+            <div style="font-size: 0.82rem; font-weight: 700; color: #991b1b; margin-bottom: 4px;">
+                <i class="fa-solid fa-circle-exclamation"></i> Catatan & Arahan Revisi dari Direktur:
+            </div>
+            <div style="font-size: 0.88rem; color: #1e293b;">
+                <?= nl2br(htmlspecialchars($result['approval_notes'] ?? 'Silakan lakukan penyesuaian pada dokumen MEL.')) ?>
+            </div>
+        </div>
+
+        <form action="<?= BASE_URL ?>/mel-results/resubmit" method="POST">
+            <input type="hidden" name="mel_result_id" value="<?= $result['mel_result_id'] ?>">
+
+            <!-- Baris 1: Capaian Indikator (Kiri) & Kendala (Kanan) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div class="form-group">
+                    <label class="form-label">Ringkasan Capaian Indikator *</label>
+                    <textarea name="summary_capaian" class="form-control" rows="4" required><?= htmlspecialchars($parsedCapaian) ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Kendala di Lapangan *</label>
+                    <textarea name="summary_kendala" class="form-control" rows="4" required><?= htmlspecialchars($parsedKendala) ?></textarea>
+                </div>
+            </div>
+
+            <!-- Baris 2: Strategi Keberhasilan (Kiri) & Usulan Tindak Lanjut (Kanan) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div class="form-group">
+                    <label class="form-label">Strategi Keberhasilan / Solusi *</label>
+                    <textarea name="summary_strategi" class="form-control" rows="4" required><?= htmlspecialchars($parsedStrategi) ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Usulan Tindak Lanjut *</label>
+                    <textarea name="summary_tindak_lanjut" class="form-control" rows="4" required><?= htmlspecialchars($parsedTindakLanjut) ?></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button type="button" onclick="toggleModal('modalResubmitMEL')" class="btn btn-secondary">Batal</button>
+                <button type="submit" class="btn btn-primary" style="background: #b45309; border-color: #b45309;">
+                    <i class="fa-solid fa-paper-plane"></i> Kirim Ulang ke Direktur
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'edit') {
+        toggleModal('modalResubmitMEL');
+    }
+});
+</script>
+<?php endif; ?>
 
 <?php
 require_once __DIR__ . '/../layouts/footer.php';

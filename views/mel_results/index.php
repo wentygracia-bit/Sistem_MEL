@@ -109,9 +109,16 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="<?= BASE_URL ?>/mel-results/detail?id=<?= $res['mel_result_id'] ?>" class="btn btn-secondary btn-sm">
-                                    <i class="fa-solid fa-file-contract"></i> Dokumen
-                                </a>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <a href="<?= BASE_URL ?>/mel-results/detail?id=<?= $res['mel_result_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat Dokumen">
+                                        <i class="fa-solid fa-file-contract"></i> Dokumen
+                                    </a>
+                                    <?php if ($currentUser['role_id'] == 2 && ($res['status'] === 'Direvisi' || $res['status'] === 'Ditolak')): ?>
+                                        <a href="<?= BASE_URL ?>/mel-results/detail?id=<?= $res['mel_result_id'] ?>&action=edit" class="btn btn-primary btn-sm" style="background: #b45309; border-color: #b45309; color: #fff;" title="Edit & Ajukan Ulang">
+                                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>

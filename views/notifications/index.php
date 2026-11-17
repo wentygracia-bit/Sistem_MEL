@@ -80,6 +80,12 @@ require_once __DIR__ . '/../layouts/header.php';
                     } else {
                         $redirectUrl = '/corrections';
                     }
+                } elseif ($n['notification_type'] === 'DirectorNote') {
+                    if (!empty($n['update_id'])) {
+                        $redirectUrl = '/field-updates/detail?id=' . $n['update_id'];
+                    } else {
+                        $redirectUrl = '/field-updates';
+                    }
                 } elseif ($n['notification_type'] === 'Laporan Baru') {
                     if (!empty($n['update_id'])) {
                         $redirectUrl = '/field-updates/detail?id=' . $n['update_id'];
@@ -87,7 +93,26 @@ require_once __DIR__ . '/../layouts/header.php';
                         $redirectUrl = '/field-updates';
                     }
                 } elseif ($n['notification_type'] === 'Reminder') {
-                    $redirectUrl = ($currentUser['role_id'] == 4) ? '/evaluations' : (($currentUser['role_id'] == 1) ? '/field-updates' : '/projects');
+                    if (!empty($n['project_id'])) {
+                        $redirectUrl = '/projects/detail?id=' . $n['project_id'] . (!empty($n['activity_id']) ? '#act-' . $n['activity_id'] : '');
+                    } elseif ($currentUser['role_id'] == 4) {
+                        $redirectUrl = '/evaluations';
+                    } elseif ($currentUser['role_id'] == 1) {
+                        $redirectUrl = '/field-updates';
+                    } else {
+                        $redirectUrl = '/projects';
+                    }
+                } else {
+                    // Fallback umum jika ada tipe lain yang membawa update_id, correction_id, mel_result_id, atau project_id
+                    if (!empty($n['update_id'])) {
+                        $redirectUrl = '/field-updates/detail?id=' . $n['update_id'];
+                    } elseif (!empty($n['correction_id'])) {
+                        $redirectUrl = '/corrections/detail?id=' . $n['correction_id'];
+                    } elseif (!empty($n['mel_result_id'])) {
+                        $redirectUrl = '/mel-results/detail?id=' . $n['mel_result_id'];
+                    } elseif (!empty($n['project_id'])) {
+                        $redirectUrl = '/projects/detail?id=' . $n['project_id'];
+                    }
                 }
 
                 // Rute klik selalu melalui /notifications/read agar status di database langsung terupdate menjadi sudah dibaca
@@ -104,6 +129,8 @@ require_once __DIR__ . '/../layouts/header.php';
                                     <i class="fa-solid fa-clock" style="color: #d97706;"></i>
                                 <?php elseif ($n['notification_type'] === 'Permintaan Perbaikan'): ?>
                                     <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i>
+                                <?php elseif ($n['notification_type'] === 'DirectorNote'): ?>
+                                    <i class="fa-solid fa-crown" style="color: #9333ea;"></i>
                                 <?php elseif ($n['notification_type'] === 'Pengesahan MEL'): ?>
                                     <i class="fa-solid fa-stamp" style="color: #1e3a8a;"></i>
                                 <?php else: ?>
@@ -126,8 +153,8 @@ require_once __DIR__ . '/../layouts/header.php';
                                     </span>
                                 <?php endif; ?>
 
-                                <span class="badge <?= $n['notification_type'] === 'Reminder' ? 'badge-warning' : ($n['notification_type'] === 'Permintaan Perbaikan' ? 'badge-danger' : ($n['notification_type'] === 'Pengesahan MEL' ? 'badge-primary' : 'badge-info')) ?>">
-                                    <?= htmlspecialchars($n['notification_type']) ?>
+                                <span class="badge <?= $n['notification_type'] === 'Reminder' ? 'badge-warning' : ($n['notification_type'] === 'Permintaan Perbaikan' ? 'badge-danger' : ($n['notification_type'] === 'DirectorNote' ? 'badge-info' : ($n['notification_type'] === 'Pengesahan MEL' ? 'badge-primary' : 'badge-info'))) ?>">
+                                    <?= $n['notification_type'] === 'DirectorNote' ? 'Catatan Direktur' : htmlspecialchars($n['notification_type']) ?>
                                 </span>
 
                                 <?php if (!empty($n['activity_name'])): ?>

@@ -83,12 +83,12 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
 </div>
 
 <!-- Baris 1: Layout Utama 2 Kolom (Kiri: Laporan Lapangan Terbaru, Kanan: Kegiatan Mendekati Tenggat) -->
-<div class="mel-dashboard-grid" style="display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: stretch; margin-bottom: 24px;">
+<div class="grid-cols-2" style="margin-bottom: 24px; align-items: stretch;">
     
     <!-- Kolom Kiri: Laporan Lapangan untuk Diperiksa -->
-    <div class="card" style="margin-bottom: 0;">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
+    <div class="card" style="margin-bottom: 0; min-width: 0; overflow: hidden;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div style="min-width: 0;">
                 <h2 class="card-title" style="font-size: 1.05rem;">
                     <i class="fa-solid fa-clipboard-list" style="color: var(--primary-dark);"></i> Laporan Lapangan Terbaru
                 </h2>
@@ -101,15 +101,15 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
             </a>
         </div>
 
-        <div class="table-responsive">
-            <table class="table">
+        <div class="table-responsive" style="width: 100%; overflow-x: auto;">
+            <table class="table" style="width: 100%; table-layout: fixed;">
                 <thead>
                     <tr>
-                        <th>Pelapor & Tanggal</th>
-                        <th>Kegiatan & Proyek</th>
-                        <th>Capaian</th>
-                        <th>Status</th>
-                        <th style="text-align: center;">Aksi</th>
+                        <th style="width: 25%;">Pelapor & Tanggal</th>
+                        <th style="width: 35%;">Kegiatan & Proyek</th>
+                        <th style="width: 15%;">Capaian</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="text-align: center; width: 10%;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -123,15 +123,15 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                     <?php else: ?>
                         <?php foreach ($recentUpdates as $up): ?>
                             <tr>
-                                <td>
-                                    <div style="font-weight: 600; color: #0f172a; font-size: 0.88rem;"><?= htmlspecialchars($up['reporter_name']) ?></div>
+                                <td style="overflow: hidden;">
+                                    <div style="font-weight: 600; color: #0f172a; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?= htmlspecialchars($up['reporter_name']) ?></div>
                                     <div style="font-size: 0.75rem; color: var(--text-muted);"><?= date('d M Y', strtotime($up['update_date'])) ?></div>
                                 </td>
-                                <td>
-                                    <div style="font-weight: 600; color: #1e293b; font-size: 0.85rem; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($up['activity_name']) ?>">
+                                <td style="overflow: hidden;">
+                                    <div style="font-weight: 600; color: #1e293b; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($up['activity_name']) ?>">
                                         <?= htmlspecialchars($up['activity_name']) ?>
                                     </div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($up['project_name']) ?>">
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($up['project_name']) ?>">
                                         <?= htmlspecialchars($up['project_name']) ?>
                                     </div>
                                 </td>
@@ -168,9 +168,9 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
     </div>
 
     <!-- Kolom Kanan: Panel Kegiatan Mendekati Tenggat (Tinggi presisi sejajar dengan Card Kiri) -->
-    <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; padding: 14px 18px;">
-            <div>
+    <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; min-width: 0; overflow: hidden;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; padding: 14px 18px; gap: 12px; flex-wrap: wrap;">
+            <div style="min-width: 0;">
                 <h2 class="card-title" style="font-size: 1rem; margin-bottom: 2px;">
                     <i class="fa-solid fa-clock" style="color: #d97706;"></i> Kegiatan Mendekati Tenggat
                 </h2>
@@ -333,12 +333,12 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                                         </span>
                                     <?php endif; ?>
                                     <span style="color: #cbd5e1;">&bull;</span>
-                                    <span>
+                                    <span style="max-width: 100%; white-space: normal; word-break: break-word;">
                                         Proyek: <strong style="color: #1e3a5f; font-weight: 700;"><?= htmlspecialchars($act['project_name']) ?></strong>
                                     </span>
                                 </div>
                                 <?php if (!empty($act['details'])): ?>
-                                    <div style="font-size: 0.8rem; color: #475569; margin-top: 4px; background: #f8fafc; padding: 8px 12px; border-radius: 4px; border-left: 3px solid <?= $iconColor ?>; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($act['details']) ?>">
+                                    <div style="font-size: 0.8rem; color: #475569; margin-top: 4px; background: #f8fafc; padding: 8px 12px; border-radius: 4px; border-left: 3px solid <?= $iconColor ?>; white-space: normal; word-break: break-word;" title="<?= htmlspecialchars($act['details']) ?>">
                                         <?= htmlspecialchars($act['details']) ?>
                                     </div>
                                 <?php endif; ?>

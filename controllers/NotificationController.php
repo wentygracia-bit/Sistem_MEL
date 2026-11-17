@@ -101,7 +101,7 @@ class NotificationController {
                         } else {
                             $redirect = '/corrections';
                         }
-                    } elseif ($notif['notification_type'] === 'Laporan Baru') {
+                    } elseif ($notif['notification_type'] === 'Laporan Baru' || $notif['notification_type'] === 'DirectorNote') {
                         $stmt = $db->prepare("
                             SELECT update_id FROM field_updates 
                             WHERE activity_id = ? 
@@ -116,8 +116,9 @@ class NotificationController {
                             $redirect = '/field-updates';
                         }
                     } elseif ($notif['notification_type'] === 'Reminder') {
-                        // Untuk Pengingat Jadwal, arahkan sesuai peran aktor
-                        if ($user['role_id'] == 4) {
+                        if (!empty($notif['project_id'])) {
+                            $redirect = '/projects/detail?id=' . $notif['project_id'] . (!empty($notif['activity_id']) ? '#act-' . $notif['activity_id'] : '');
+                        } elseif ($user['role_id'] == 4) {
                             // Direktur: ringkasan capaian atau detail proyek
                             $redirect = '/evaluations';
                         } elseif ($user['role_id'] == 1) {
