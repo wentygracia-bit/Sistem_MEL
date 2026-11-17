@@ -107,51 +107,10 @@ require_once __DIR__ . '/../layouts/header.php';
                                         </span>
                                     <?php endif; ?>
                                 </td>
-<<<<<<< HEAD
                                 <td style="text-align: center;">
-                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+                                    <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>&from=evaluations" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
                                         <i class="fa-solid fa-eye"></i> Detail Laporan
                                     </a>
-=======
-                                <td>
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <div>
-                                            <span class="badge <?= $e['report_status'] === 'Dievaluasi' ? 'badge-success' : ($e['report_status'] === 'Perlu Perbaikan' ? 'badge-danger' : 'badge-warning') ?>" style="font-size: 0.72rem;">
-                                                Laporan: <?= htmlspecialchars($e['report_status'] ?? 'Diajukan') ?>
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <?php if ($e['approval_decision'] === 'Disetujui'): ?>
-                                                <span class="badge badge-success" style="font-size: 0.72rem;"><i class="fa-solid fa-stamp"></i> MEL Disetujui</span>
-                                            <?php elseif ($e['approval_decision'] === 'Ditolak'): ?>
-                                                <span class="badge badge-danger" style="font-size: 0.72rem;"><i class="fa-solid fa-rotate-left"></i> MEL Dikembalikan</span>
-                                            <?php elseif (!empty($e['mel_result_id'])): ?>
-                                                <span class="badge badge-warning" style="font-size: 0.72rem;"><i class="fa-solid fa-clock"></i> Menunggu Verifikasi MEL</span>
-                                            <?php else: ?>
-                                                <span class="badge badge-secondary" style="font-size: 0.72rem; color: #64748b; background: #f1f5f9;">Belum Disusun MEL</span>
-                                            <?php endif; ?>
-                                        </div>
-                                        <?php if (!empty($e['director_notes'])): ?>
-                                            <div>
-                                                <span class="badge" style="font-size: 0.7rem; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;" title="Catatan Direktur: <?= htmlspecialchars($e['director_notes']) ?>">
-                                                    <i class="fa-solid fa-note-sticky"></i> Ada Catatan Direktur
-                                                </span>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                                        <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $e['update_id'] ?>&from=evaluations" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
-                                            <i class="fa-solid fa-eye"></i> Detail Laporan
-                                        </a>
-                                        <?php if (!empty($e['mel_result_id'])): ?>
-                                            <a href="<?= BASE_URL ?>/mel-results/detail?id=<?= $e['mel_result_id'] ?>" class="btn btn-primary btn-sm" style="white-space: nowrap;">
-                                                <i class="fa-solid fa-stamp"></i> Verifikasi MEL
-                                            </a>
-                                        <?php endif; ?>
-                                    </div>
->>>>>>> b05c6aff4e8804e3e0c53d6d98ff8d5001b32734
                                 </td>
                             </tr>
                         <?php endforeach; ?>

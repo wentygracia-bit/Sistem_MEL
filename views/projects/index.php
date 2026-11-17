@@ -289,13 +289,13 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
-<<<<<<< HEAD
 <?php if ($currentUser['role_id'] == 1): ?>
     <?php
     $activities = $fieldActivities;
     include __DIR__ . '/../field_updates/_modal_submit.php';
     ?>
-=======
+<?php endif; ?>
+
 <?php if ((int)$currentUser['role_id'] === 2): // Modal Hapus Proyek Khusus Staf MEL ?>
 <!-- Modal Konfirmasi Hapus Proyek -->
 <div id="modalDeleteProject" class="modal" style="display: none;">
@@ -343,7 +343,6 @@ window.addEventListener('click', function(event) {
     }
 });
 </script>
->>>>>>> 5dac0d274c1c75fcd5ef1743db3debe0d03d7f23
 <?php endif; ?>
 
 <?php
