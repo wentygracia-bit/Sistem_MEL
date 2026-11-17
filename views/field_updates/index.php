@@ -84,7 +84,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     <th>Tanggal Lapor</th>
                     <th>Realisasi Lapangan</th>
                     <th>Progres Fisik</th>
-                    <th>Bukti</th>
+                    <th style="text-align: center; min-width: 100px;">Bukti</th>
                     <th>Status Laporan</th>
                     <th style="min-width: 170px; text-align: center;">Aksi</th>
                 </tr>
@@ -132,13 +132,27 @@ require_once __DIR__ . '/../layouts/header.php';
                                     <div class="progress-bar-fill" style="width: <?= min(100, $up['progress_percentage'] ?? 0) ?>%;"></div>
                                 </div>
                             </td>
-                            <td>
-                                <?php if (!empty($up['evidence_file'])): ?>
-                                    <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($up['evidence_file']) ?>" target="_blank" class="badge badge-info" title="Lihat Dokumen / Foto Bukti">
-                                        <i class="fa-solid fa-paperclip"></i> Bukti
-                                    </a>
+                            <td style="text-align: center; vertical-align: middle;">
+                                <?php 
+                                $evCat = FileHelper::categorizeFiles($up['evidence_file']);
+                                if ($evCat['total'] > 0): 
+                                ?>
+                                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center;">
+                                        <?php if (count($evCat['images']) > 0): ?>
+                                            <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>#evidence-section" class="badge" style="background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; text-decoration: none; font-size: 0.72rem; padding: 4px 8px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap;" title="<?= count($evCat['images']) ?> gambar bukti terlampir">
+                                                <i class="fa-solid fa-images"></i>
+                                                <span><?= count($evCat['images']) ?> Gambar</span>
+                                            </a>
+                                        <?php endif; ?>
+                                        <?php if (count($evCat['docs']) > 0): ?>
+                                            <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>#evidence-section" class="badge" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; text-decoration: none; font-size: 0.72rem; padding: 4px 8px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap;" title="<?= count($evCat['docs']) ?> dokumen pendukung terlampir">
+                                                <i class="fa-solid fa-file-lines"></i>
+                                                <span><?= count($evCat['docs']) ?> Dokumen</span>
+                                            </a>
+                                        <?php endif; ?>
+                                    </div>
                                 <?php else: ?>
-                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Tidak ada</span>
+                                    <span style="font-size: 0.85rem; color: var(--text-muted); display: inline-block; text-align: center;">-</span>
                                 <?php endif; ?>
                             </td>
                             <td>
@@ -160,9 +174,9 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <div style="display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                                <div style="display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: nowrap;">
                                     <a href="<?= BASE_URL ?>/field-updates/detail?id=<?= $up['update_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat Detail Laporan">
-                                        <i class="fa-solid fa-eye"></i> Lihat Detail
+                                        <i class="fa-solid fa-eye" style="color: #2e4a16;"></i>
                                     </a>
 
                                     <?php if ($up['status'] === 'Draft' && (int)$currentUser['role_id'] === 1 && (int)$currentUser['user_id'] === (int)$up['user_id']): ?>
@@ -204,130 +218,31 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
-<!-- Modal Input Laporan Lapangan Baru (Tambah) -->
-<div id="modalSubmitReport" class="modal" style="display: none;">
-    <div class="modal-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="font-size: 1.15rem; font-weight: 700;"><i class="fa-solid fa-plus-circle" style="color: var(--primary-dark);"></i> Input Laporan Lapangan Baru</h3>
-            <button onclick="toggleModal('modalSubmitReport')" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
-        </div>
-
-        <form action="<?= BASE_URL ?>/field-updates/submit" method="POST" enctype="multipart/form-data">
-            <div class="form-group" style="position: relative;">
-                <label class="form-label">Kegiatan Proyek *</label>
-                <!-- Hidden input untuk menyimpan activity_id yang dipilih secara valid -->
-                <input type="hidden" name="activity_id" id="submit_activity_id" value="" required>
-
-                <div style="position: relative;">
-                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem; pointer-events: none;"></i>
-                    <input type="text" id="submit_activity_search" class="form-control" 
-                           placeholder="Ketik untuk mencari kegiatan proyek..." 
-                           autocomplete="off" 
-                           style="padding-left: 38px; padding-right: 36px; cursor: pointer;"
-                           required>
-                    <button type="button" id="submit_activity_clear_btn" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; font-size: 0.95rem; cursor: pointer; padding: 4px;" title="Hapus pilihan">
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    </button>
-                </div>
-
-                <!-- Petunjuk & Indikator Validasi Terpilih -->
-                <div id="submit_activity_selected_badge" style="display: none; margin-top: 6px; font-size: 0.82rem; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 6px 10px; border-radius: var(--radius-sm); align-items: center; justify-content: space-between;">
-                    <div>
-                        <i class="fa-solid fa-circle-check"></i> Kegiatan Terpilih: <strong id="submit_activity_selected_text"></strong>
-                    </div>
-                </div>
-
-                <small id="submit_activity_help_text" style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">
-                    <i class="fa-solid fa-circle-info"></i> Ketik nama kegiatan yang ingin dilaporkan lalu pilih dari daftar saran.
-                </small>
-
-                <!-- Dropdown Saran Hasil Pencarian Autocomplete -->
-                <div id="submit_activity_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1050; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); max-height: 230px; overflow-y: auto; margin-top: 4px;">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Tanggal Lapor *</label>
-                <input type="date" name="update_date" value="<?= date('Y-m-d') ?>" class="form-control" required>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label"><i class="fa-solid fa-image"></i> Gambar Bukti <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
-                    <input type="file" name="evidence_image" accept="image/*" class="form-control">
-                    <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 3px;">JPG, PNG, WEBP (dikompresi)</small>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label"><i class="fa-solid fa-file-lines"></i> Dokumen Pendukung <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
-                    <input type="file" name="evidence_doc" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" class="form-control">
-                    <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 3px;">PDF, DOC, XLS, ZIP</small>
-                </div>
-            </div>
-
-            <!-- Input Angka Capaian & Akumulasi Persentase Otomatis Sistem -->
-            <div class="form-group" style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center;">
-                    <div>
-                        <label class="form-label" style="margin-bottom: 4px;">
-                            Realisasi Angka Capaian * 
-                            <span id="submit_unit_badge" style="font-weight: 500; font-size: 0.78rem; color: var(--text-muted);">(Satuan)</span>
-                        </label>
-                        <input type="number" step="any" min="0" name="realization_value" id="submit_realization_value" class="form-control" placeholder="Masukkan angka capaian" required>
-                        <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 4px;">
-                            Cukup inputkan angka capaian lapangan Anda.
-                        </small>
-                    </div>
-
-                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 10px 14px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.78rem; font-weight: 600; color: #475569;">
-                                <i class="fa-solid fa-chart-pie" style="color: #2e4a16;"></i> Persentase Capaian:
-                            </span>
-                            <span id="submit_calc_percent_text" style="font-size: 1.1rem; font-weight: 800; color: #1e330c;">
-                                0%
-                            </span>
-                        </div>
-                        <div class="progress-bar-bg" style="height: 6px; margin-top: 6px; background-color: #f1f5f9;">
-                            <div id="submit_calc_percent_bar" class="progress-bar-fill" style="width: 0%; transition: width 0.3s ease;"></div>
-                        </div>
-                        <div id="submit_target_info_text" style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">
-                            Target kegiatan: -
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Deskripsi & Narasi Lapangan *</label>
-                <textarea name="description" class="form-control" rows="3" placeholder="Jelaskan pelaksanaan kegiatan, kehadiran peserta, kendala, atau capaian" required></textarea>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
-                <button type="button" onclick="toggleModal('modalSubmitReport')" class="btn btn-secondary">Batal</button>
-                <button type="submit" name="action_type" value="save_draft" class="btn btn-secondary" style="border: 1px solid #cbd5e1; background: #f8fafc; color: #475569;">
-                    <i class="fa-solid fa-floppy-disk"></i> Simpan Draft
-                </button>
-                <button type="submit" name="action_type" value="submit_verification" class="btn btn-primary">
-                    <i class="fa-solid fa-paper-plane"></i> Kirim untuk Verifikasi
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+<!-- Modal Input Laporan Lapangan Baru (Modular Component) -->
+<?php include __DIR__ . '/_modal_submit.php'; ?>
 
 <!-- Modal Edit Laporan Lapangan -->
 <div id="modalEditReport" class="modal" style="display: none;">
-    <div class="modal-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="font-size: 1.15rem; font-weight: 700;"><i class="fa-solid fa-pen-to-square" style="color: #0284c7;"></i> Edit Laporan Lapangan</h3>
-            <button onclick="toggleModal('modalEditReport')" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+    <div class="modal-content" style="max-width: 680px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: #0284c7; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Laporan Lapangan
+            </h3>
+            <button type="button" onclick="toggleModal('modalEditReport')" style="background: none; border: none; font-size: 1.4rem; color: #64748b; cursor: pointer; line-height: 1; padding: 4px;" title="Tutup">&times;</button>
         </div>
 
-        <form action="<?= BASE_URL ?>/field-updates/edit" method="POST" enctype="multipart/form-data">
+        <form action="<?= BASE_URL ?>/field-updates/edit" method="POST" enctype="multipart/form-data" id="formEditReport">
             <input type="hidden" name="update_id" id="edit_update_id">
+            <?php
+            $editRedirectUri = $_SERVER['REQUEST_URI'] ?? '/field-updates';
+            if (!empty(BASE_URL) && strpos($editRedirectUri, BASE_URL) === 0) {
+                $editRedirectUri = substr($editRedirectUri, strlen(BASE_URL));
+            }
+            ?>
+            <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($editRedirectUri) ?>">
 
             <div class="form-group">
-                <label class="form-label">Kegiatan Proyek *</label>
+                <label class="form-label" style="font-weight: 600;">Kegiatan Proyek *</label>
                 <select name="activity_id" id="edit_activity_id" class="form-control" required>
                     <option value="">-- Pilih Kegiatan Proyek --</option>
                     <?php foreach ($activities as $act): ?>
@@ -340,41 +255,104 @@ require_once __DIR__ . '/../layouts/header.php';
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                 <div class="form-group">
-                    <label class="form-label">Tanggal Lapor *</label>
+                    <label class="form-label" style="font-weight: 600;">Tanggal Lapor *</label>
                     <input type="date" name="update_date" id="edit_update_date" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Realisasi Angka Capaian</label>
+                    <label class="form-label" style="font-weight: 600;">Realisasi Angka Capaian</label>
                     <input type="number" step="any" name="realization_value" id="edit_realization_value" class="form-control" placeholder="Angka capaian">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Persentase Progres (%)</label>
+                <label class="form-label" style="font-weight: 600;">Persentase Progres (%)</label>
                 <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="0 - 100">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label"><i class="fa-solid fa-image"></i> Ganti Gambar <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
-                    <input type="file" name="evidence_image" accept="image/*" class="form-control">
+            <!-- BAGIAN BUKTI & DOKUMEN PENDUKUNG SAAT EDIT -->
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="font-size: 0.9rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-paperclip" style="color: #0284c7;"></i> Kelola Gambar Bukti & Dokumen Pendukung
+                    </div>
+                    <span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.72rem; border: 1px solid #e2e8f0;">
+                        <i class="fa-regular fa-circle-question"></i> Opsional
+                    </span>
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label"><i class="fa-solid fa-file-lines"></i> Ganti Dokumen <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
-                    <input type="file" name="evidence_doc" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" class="form-control">
+
+                <!-- List Berkas yang Sedang Terlampir Sebelumnya -->
+                <div id="edit_existing_files_section" style="margin-bottom: 14px;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
+                        Berkas yang Sedang Terlampir:
+                    </div>
+                    <div id="edit_existing_files_list" style="display: flex; flex-direction: column; gap: 6px;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Tidak ada berkas terlampir.</span>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.78rem; color: #64748b; margin-bottom: 10px;">
+                    Tambah berkas baru (bisa pilih lebih dari satu berkas):
+                </div>
+
+                <!-- Grid 2 Kolom untuk Upload Tambahan -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <!-- Area Upload Gambar Tambahan -->
+                    <div style="border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 12px; background: #fafafa; text-align: center;">
+                        <div style="font-size: 0.82rem; font-weight: 600; color: #334155; margin-bottom: 2px;">
+                            <i class="fa-solid fa-images" style="color: #7c3aed;"></i> Tambah Gambar
+                        </div>
+                        <div style="font-size: 0.72rem; color: #64748b; margin-bottom: 8px;">
+                            Pilih >1 foto (JPG, PNG, WEBP)
+                        </div>
+                        <input type="file" name="evidence_images[]" id="edit_evidence_images" accept="image/jpeg,image/png,image/webp,image/jpg" multiple style="display: none;" onchange="handleEvidenceSelect(this, 'edit', 'images')">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('edit_evidence_images').click()" style="width: 100%; font-size: 0.78rem; padding: 6px 10px; background: #ffffff;">
+                            <i class="fa-solid fa-plus" style="color: #7c3aed;"></i> Pilih Gambar...
+                        </button>
+                    </div>
+
+                    <!-- Area Upload Dokumen Tambahan -->
+                    <div style="border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 12px; background: #fafafa; text-align: center;">
+                        <div style="font-size: 0.82rem; font-weight: 600; color: #334155; margin-bottom: 2px;">
+                            <i class="fa-solid fa-file-lines" style="color: #2563eb;"></i> Tambah Dokumen
+                        </div>
+                        <div style="font-size: 0.72rem; color: #64748b; margin-bottom: 8px;">
+                            Pilih >1 berkas (PDF, DOC, XLS, ZIP)
+                        </div>
+                        <input type="file" name="evidence_docs[]" id="edit_evidence_docs" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.zip,.rar,.7z,.ppt,.pptx,.txt" multiple style="display: none;" onchange="handleEvidenceSelect(this, 'edit', 'docs')">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('edit_evidence_docs').click()" style="width: 100%; font-size: 0.78rem; padding: 6px 10px; background: #ffffff;">
+                            <i class="fa-solid fa-plus" style="color: #2563eb;"></i> Pilih Dokumen...
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Preview List Gambar Tambahan -->
+                <div id="edit_images_preview_container" style="display: none; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e2e8f0;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fa-solid fa-images" style="color: #7c3aed; margin-right: 4px;"></i> List Gambar Baru (<span id="edit_images_count">0</span>):</span>
+                        <button type="button" onclick="clearEvidenceSelection('edit', 'images')" style="background: none; border: none; font-size: 0.72rem; color: #dc2626; cursor: pointer; text-decoration: underline;">Hapus Semua</button>
+                    </div>
+                    <div id="edit_images_preview_grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px;"></div>
+                </div>
+
+                <!-- Live Preview List Dokumen Tambahan -->
+                <div id="edit_docs_preview_container" style="display: none; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e2e8f0;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fa-solid fa-file-lines" style="color: #2563eb; margin-right: 4px;"></i> List Dokumen Baru (<span id="edit_docs_count">0</span>):</span>
+                        <button type="button" onclick="clearEvidenceSelection('edit', 'docs')" style="background: none; border: none; font-size: 0.72rem; color: #dc2626; cursor: pointer; text-decoration: underline;">Hapus Semua</button>
+                    </div>
+                    <div id="edit_docs_preview_list" style="display: flex; flex-direction: column; gap: 6px;"></div>
                 </div>
             </div>
-            <small id="edit_evidence_info" style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: -8px; margin-bottom: 14px;"></small>
 
             <div class="form-group">
-                <label class="form-label">Deskripsi & Narasi Lapangan *</label>
+                <label class="form-label" style="font-weight: 600;">Deskripsi & Narasi Lapangan *</label>
                 <textarea name="description" id="edit_description" class="form-control" rows="3" required></textarea>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
                 <button type="button" onclick="toggleModal('modalEditReport')" class="btn btn-secondary">Batal</button>
                 <button type="submit" name="action_type" value="save_only" class="btn btn-secondary" style="border: 1px solid #cbd5e1; background: #f8fafc; color: #475569;">
-                    <i class="fa-solid fa-save"></i> Simpan Saja
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan Saja
                 </button>
                 <button type="submit" name="action_type" value="submit_verification" class="btn btn-primary" id="btn_edit_resubmit">
                     <i class="fa-solid fa-paper-plane"></i> Simpan & Kirim Verifikasi
@@ -413,10 +391,6 @@ function toggleModal(modalId) {
     if (!modal) return;
     const isOpening = (modal.style.display === 'none' || modal.style.display === '');
     modal.style.display = isOpening ? 'flex' : 'none';
-
-    if (modalId === 'modalSubmitReport' && isOpening && typeof window.resetSubmitActivityAutocomplete === 'function') {
-        window.resetSubmitActivityAutocomplete();
-    }
 }
 
 function openEditModal(data) {
@@ -431,13 +405,59 @@ function openEditModal(data) {
     document.getElementById('edit_realization_value').value = data.realization_value || '';
     document.getElementById('edit_progress_percentage').value = data.progress_percentage || '';
     document.getElementById('edit_description').value = data.description || '';
-    
-    const infoEl = document.getElementById('edit_evidence_info');
-    if (data.evidence_file) {
-        infoEl.textContent = 'File saat ini: ' + data.evidence_file;
-    } else {
-        infoEl.textContent = 'Belum ada bukti yang diunggah.';
+
+    // Render list existing files
+    const existingListEl = document.getElementById('edit_existing_files_list');
+    if (existingListEl) {
+        existingListEl.innerHTML = '';
+        let existingFiles = [];
+        if (data.evidence_file) {
+            try {
+                if (typeof data.evidence_file === 'string' && data.evidence_file.trim().startsWith('[')) {
+                    existingFiles = JSON.parse(data.evidence_file);
+                } else if (typeof data.evidence_file === 'string') {
+                    existingFiles = [data.evidence_file];
+                } else if (Array.isArray(data.evidence_file)) {
+                    existingFiles = data.evidence_file;
+                }
+            } catch(e) {
+                existingFiles = [data.evidence_file];
+            }
+        }
+
+        if (!existingFiles || existingFiles.length === 0) {
+            existingListEl.innerHTML = '<span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Tidak ada berkas terlampir sebelumnya.</span>';
+        } else {
+            existingFiles.forEach(function(fn) {
+                if (!fn) return;
+                const iconInfo = getFileIconClassJS(fn);
+                const item = document.createElement('div');
+                item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.8rem;';
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                        <input type="hidden" name="existing_files[]" value="${fn}">
+                        <i class="${iconInfo.icon}" style="font-size: 1rem; color: ${iconInfo.color}; flex-shrink: 0;"></i>
+                        <span style="font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.8rem;" title="${fn}">
+                            ${fn}
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <a href="<?= BASE_URL ?>/public/uploads/${encodeURIComponent(fn)}" target="_blank" style="font-size: 0.75rem; color: #0284c7; text-decoration: none;" title="Buka berkas">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                        <button type="button" onclick="this.closest('div[style]').remove(); if(document.querySelectorAll('#edit_existing_files_list > div').length===0){document.getElementById('edit_existing_files_list').innerHTML='<span style=\\'font-size: 0.75rem; color: var(--text-muted); font-style: italic;\\'>Semua berkas lama dihapus.</span>';}" style="background: none; border: none; color: #ef4444; font-size: 0.85rem; cursor: pointer; padding: 2px 4px;" title="Hapus berkas ini">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+                existingListEl.appendChild(item);
+            });
+        }
     }
+
+    // Reset newly selected files for edit modal
+    clearEvidenceSelection('edit', 'images');
+    clearEvidenceSelection('edit', 'docs');
 
     toggleModal('modalEditReport');
 }
@@ -448,269 +468,24 @@ function openDeleteModal(id, activityName) {
     toggleModal('modalDeleteReport');
 }
 
-// Data kegiatan yang diizinkan untuk pengguna saat ini (dari PHP)
-const availableActivities = <?= json_encode(array_map(function($a) {
-    return [
-        'id' => (int)$a['activity_id'],
-        'name' => (string)$a['activity_name'],
-        'project_name' => (string)($a['project_name'] ?? ''),
-        'project_code' => (string)($a['project_code'] ?? ''),
-        'location' => (string)($a['location'] ?? ''),
-        'total_target' => (float)($a['total_target'] ?? 0),
-        'unit' => (string)($a['unit'] ?? 'Satuan')
-    ];
-}, $activities), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-
+// Auto open submit modal jika terdapat query parameter ?action=new atau ?activity_id=...
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('submit_activity_search');
-    const hiddenIdInput = document.getElementById('submit_activity_id');
-    const dropdown = document.getElementById('submit_activity_dropdown');
-    const clearBtn = document.getElementById('submit_activity_clear_btn');
-    const selectedBadge = document.getElementById('submit_activity_selected_badge');
-    const selectedText = document.getElementById('submit_activity_selected_text');
-    const helpText = document.getElementById('submit_activity_help_text');
-    const submitForm = searchInput ? searchInput.closest('form') : null;
-
-    if (!searchInput || !dropdown) return;
-
-    function renderSuggestions(query) {
-        const cleanQuery = (query || '').trim().toLowerCase();
-
-        // Ketentuan: Jangan menampilkan seluruh daftar kegiatan sekaligus, hanya tampil saat mengetik / membuka
-        if (cleanQuery.length === 0) {
-            dropdown.innerHTML = `
-                <div style="padding: 12px 14px; font-size: 0.85rem; color: #64748b; text-align: center;">
-                    <i class="fa-solid fa-keyboard" style="margin-right: 6px; color: #94a3b8;"></i>
-                    Ketik nama kegiatan yang ingin dilaporkan
-                </div>
-            `;
-            dropdown.style.display = 'block';
-            return;
-        }
-
-        const filtered = availableActivities.filter(function(item) {
-            const actName = (item.name || '').toLowerCase();
-            const prjName = (item.project_name || '').toLowerCase();
-            const prjCode = (item.project_code || '').toLowerCase();
-            return actName.includes(cleanQuery) || prjName.includes(cleanQuery) || prjCode.includes(cleanQuery);
-        });
-
-        if (filtered.length === 0) {
-            dropdown.innerHTML = `
-                <div style="padding: 14px; font-size: 0.85rem; color: #dc2626; text-align: center; background: #fffaf0;">
-                    <i class="fa-solid fa-circle-exclamation" style="margin-right: 6px;"></i>
-                    Kegiatan tidak ditemukan
-                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">Pastikan Anda ditugaskan pada proyek kegiatan tersebut.</div>
-                </div>
-            `;
-            dropdown.style.display = 'block';
-            return;
-        }
-
-        let html = '';
-        filtered.forEach(function(item) {
-            // Highlight matching text on activity name
-            const escapedName = escapeHtml(item.name);
-            const escapedProject = escapeHtml(item.project_name);
-            const escapedCode = escapeHtml(item.project_code);
-
-            html += `
-                <div class="autocomplete-item" data-id="${item.id}" data-name="${escapedName}" data-project="${escapedProject}" style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s ease;">
-                    <div style="font-weight: 600; color: #0f172a; font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between;">
-                        <span>${escapedName}</span>
-                        ${item.location ? `<span style="font-size: 0.72rem; color: #64748b; font-weight: 400;"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(item.location)}</span>` : ''}
-                    </div>
-                    ${item.project_name ? `
-                        <div style="font-size: 0.75rem; color: #475569; margin-top: 2px;">
-                            <span style="font-family: monospace; font-weight: 600; color: #2e4a16;">${escapedCode}</span> &bull; ${escapedProject}
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        });
-
-        dropdown.innerHTML = html;
-        dropdown.style.display = 'block';
-
-        // Add event listeners to rendered items
-        dropdown.querySelectorAll('.autocomplete-item').forEach(function(el) {
-            el.addEventListener('mouseenter', function() {
-                this.style.backgroundColor = '#f4faeb';
-            });
-            el.addEventListener('mouseleave', function() {
-                this.style.backgroundColor = '#ffffff';
-            });
-            el.addEventListener('click', function(e) {
-                e.stopPropagation();
-                selectActivity(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-project'));
-            });
-        });
-    }
-
-    const realizationInput = document.getElementById('submit_realization_value');
-    const percentText = document.getElementById('submit_calc_percent_text');
-    const percentBar = document.getElementById('submit_calc_percent_bar');
-    const targetInfoText = document.getElementById('submit_target_info_text');
-    const unitBadge = document.getElementById('submit_unit_badge');
-    let currentSelectedActivity = null;
-
-    function recalculateProgress() {
-        if (!currentSelectedActivity) {
-            if (percentText) percentText.textContent = '0%';
-            if (percentBar) percentBar.style.width = '0%';
-            if (targetInfoText) targetInfoText.textContent = 'Pilih kegiatan terlebih dahulu';
-            if (unitBadge) unitBadge.textContent = '(Satuan)';
-            return;
-        }
-
-        const target = parseFloat(currentSelectedActivity.total_target) || 0;
-        const val = parseFloat(realizationInput ? realizationInput.value : 0) || 0;
-        const unit = currentSelectedActivity.unit || 'Satuan';
-
-        if (unitBadge) unitBadge.textContent = '(' + unit + ')';
-
-        if (target > 0) {
-            let percentage = (val / target) * 100;
-            let displayPercent = Math.min(100, Math.max(0, percentage)).toFixed(1);
-            // Hilangkan .0 jika bilangan bulat
-            if (displayPercent.endsWith('.0')) {
-                displayPercent = parseInt(displayPercent);
-            }
-            if (percentText) {
-                percentText.textContent = displayPercent + '%';
-                if (percentage >= 100) {
-                    percentText.style.color = '#15803d'; // hijau sukses
-                } else {
-                    percentText.style.color = '#1e330c';
-                }
-            }
-            if (percentBar) {
-                percentBar.style.width = Math.min(100, Math.max(0, percentage)) + '%';
-            }
-            if (targetInfoText) {
-                targetInfoText.innerHTML = `Target: <strong>${target.toLocaleString('id-ID')} ${escapeHtml(unit)}</strong> (Realisasi: ${val.toLocaleString('id-ID')} ${escapeHtml(unit)})`;
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'new' || urlParams.get('new_report') === '1') {
+        const actId = urlParams.get('activity_id');
+        if (actId && window.availableActivitiesData) {
+            const foundAct = window.availableActivitiesData.find(function(a) { return a.id === parseInt(actId); });
+            if (foundAct) {
+                window.openSubmitReportModalForActivity(foundAct);
+            } else {
+                toggleModal('modalSubmitReport');
             }
         } else {
-            // Jika kegiatan belum ada target KPI
-            const percentage = val > 0 ? 100 : 0;
-            if (percentText) percentText.textContent = percentage + '%';
-            if (percentBar) percentBar.style.width = percentage + '%';
-            if (targetInfoText) targetInfoText.textContent = 'Target kegiatan belum ditentukan (KPI fleksibel)';
+            toggleModal('modalSubmitReport');
         }
     }
-
-    if (realizationInput) {
-        realizationInput.addEventListener('input', recalculateProgress);
-    }
-
-    function selectActivity(id, name, projectName) {
-        hiddenIdInput.value = id;
-        searchInput.value = name;
-        searchInput.setCustomValidity(''); // clear validity error
-
-        // Ambil objek kegiatan terpilih
-        currentSelectedActivity = availableActivities.find(function(a) { return a.id === parseInt(id); }) || null;
-
-        // Display selected badge
-        selectedText.textContent = name + (projectName ? ' (' + projectName + ')' : '');
-        selectedBadge.style.display = 'flex';
-        clearBtn.style.display = 'block';
-        dropdown.style.display = 'none';
-
-        if (helpText) {
-            helpText.style.display = 'none';
-        }
-
-        // Hitung ulang persentase progres capaian
-        recalculateProgress();
-    }
-
-    function clearSelection() {
-        hiddenIdInput.value = '';
-        searchInput.value = '';
-        currentSelectedActivity = null;
-        selectedBadge.style.display = 'none';
-        clearBtn.style.display = 'none';
-        dropdown.style.display = 'none';
-        if (helpText) {
-            helpText.style.display = 'block';
-        }
-        recalculateProgress();
-        searchInput.focus();
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        const map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-    }
-
-    // Input typing event
-    searchInput.addEventListener('input', function() {
-        // Jika pengguna mengetik ulang, batalkan id yang terpilih sebelumnya sampai memilih kembali
-        if (hiddenIdInput.value !== '') {
-            hiddenIdInput.value = '';
-            selectedBadge.style.display = 'none';
-            if (helpText) helpText.style.display = 'block';
-        }
-
-        if (this.value.trim() !== '') {
-            clearBtn.style.display = 'block';
-        } else {
-            clearBtn.style.display = 'none';
-        }
-        renderSuggestions(this.value);
-    });
-
-    // Focus event
-    searchInput.addEventListener('focus', function() {
-        renderSuggestions(this.value);
-    });
-
-    // Clear button event
-    clearBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        clearSelection();
-    });
-
-    // Close dropdown on outside click
-    document.addEventListener('click', function(e) {
-        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.style.display = 'none';
-
-            // Jika input berisi teks tapi belum memilih dari dropdown (id kosong), reset atau berikan peringatan
-            if (hiddenIdInput.value === '' && searchInput.value.trim() !== '') {
-                searchInput.setCustomValidity('Pilih kegiatan dari daftar hasil pencarian.');
-            }
-        }
-    });
-
-    // Validasi form submit: Pengguna WAJIB memilih kegiatan yang valid dari autocomplete
-    if (submitForm) {
-        submitForm.addEventListener('submit', function(e) {
-            if (!hiddenIdInput.value || parseInt(hiddenIdInput.value) <= 0) {
-                e.preventDefault();
-                searchInput.focus();
-                searchInput.setCustomValidity('Silakan ketik dan pilih kegiatan yang valid dari hasil autocomplete.');
-                searchInput.reportValidity();
-                renderSuggestions(searchInput.value);
-                return false;
-            }
-            searchInput.setCustomValidity('');
-        });
-    }
-
-    // Reset autocomplete state saat modal ditutup atau dibuka
-    window.resetSubmitActivityAutocomplete = function() {
-        clearSelection();
-    };
 });
+</script>
 </script>
 
 <?php

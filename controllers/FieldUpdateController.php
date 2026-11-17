@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../helpers/AuthHelper.php';
 require_once __DIR__ . '/../helpers/ImageHelper.php';
+require_once __DIR__ . '/../helpers/FileHelper.php';
 require_once __DIR__ . '/../models/FieldUpdate.php';
 require_once __DIR__ . '/../models/Activity.php';
 require_once __DIR__ . '/../models/Indicator.php';
@@ -161,7 +162,9 @@ class FieldUpdateController {
         $actionType = $_POST['action_type'] ?? 'submit_verification';
         $status = ($actionType === 'save_draft') ? 'Draft' : 'Diajukan';
 
-        $evidenceFileName = $this->handleEvidenceUpload();
+        $evidenceFileName = $this->handleMultipleEvidenceUpload();
+
+        $redirectTo = trim($_POST['redirect_to'] ?? '');
 
         if ($activityId > 0 && !empty($description)) {
             $updateModel = new FieldUpdate();
@@ -202,7 +205,18 @@ class FieldUpdateController {
             AuthHelper::setFlash('error', 'Nama kegiatan dan deskripsi laporan wajib diisi.');
         }
 
-        header('Location: ' . BASE_URL . '/field-updates');
+        if (!empty($redirectTo)) {
+            // Hilangkan prefix BASE_URL jika sudah ada agar tidak ganda saat redirect
+            if (!empty(BASE_URL) && strpos($redirectTo, BASE_URL) === 0) {
+                $redirectTo = substr($redirectTo, strlen(BASE_URL));
+            }
+            if (strpos($redirectTo, '/') !== 0) {
+                $redirectTo = '/' . $redirectTo;
+            }
+            header('Location: ' . BASE_URL . $redirectTo);
+        } else {
+            header('Location: ' . BASE_URL . '/field-updates');
+        }
         exit;
     }
 
@@ -309,7 +323,19 @@ class FieldUpdateController {
             $newStatus = 'Diajukan';
         }
 
-        $evidenceFileName = $this->handleEvidenceUpload();
+        // Kept existing files
+        $keptExisting = isset($_POST['existing_files']) && is_array($_POST['existing_files'])
+            ? array_map('trim', $_POST['existing_files'])
+            : [];
+        
+        // Hapus file yang tidak lagi dipertahankan
+        $prevFiles = FileHelper::parseEvidenceFiles($existing['evidence_file']);
+        $removedFiles = array_diff($prevFiles, $keptExisting);
+        FileHelper::deleteFiles($removedFiles);
+
+        $evidenceFileName = $this->handleMultipleEvidenceUpload($keptExisting);
+
+        $redirectTo = trim($_POST['redirect_to'] ?? '');
 
         $success = $updateModel->updateFull(
             $updateId,
@@ -332,7 +358,18 @@ class FieldUpdateController {
             AuthHelper::setFlash('error', 'Gagal memperbarui data laporan lapangan.');
         }
 
-        header('Location: ' . BASE_URL . '/field-updates');
+        if (!empty($redirectTo)) {
+            // Hilangkan prefix BASE_URL jika sudah ada agar tidak ganda saat redirect
+            if (!empty(BASE_URL) && strpos($redirectTo, BASE_URL) === 0) {
+                $redirectTo = substr($redirectTo, strlen(BASE_URL));
+            }
+            if (strpos($redirectTo, '/') !== 0) {
+                $redirectTo = '/' . $redirectTo;
+            }
+            header('Location: ' . BASE_URL . $redirectTo);
+        } else {
+            header('Location: ' . BASE_URL . '/field-updates');
+        }
         exit;
     }
 
@@ -367,12 +404,10 @@ class FieldUpdateController {
         try {
             $deleted = $updateModel->delete($updateId);
             if ($deleted) {
-                // Delete evidence file if exists
+                // Delete all evidence files if exists
                 if (!empty($existing['evidence_file'])) {
-                    $filePath = __DIR__ . '/../public/uploads/' . $existing['evidence_file'];
-                    if (file_exists($filePath)) {
-                        @unlink($filePath);
-                    }
+                    $files = FileHelper::parseEvidenceFiles($existing['evidence_file']);
+                    FileHelper::deleteFiles($files);
                 }
                 AuthHelper::setFlash('success', 'Laporan lapangan #' . $updateId . ' berhasil dihapus.');
             } else {
@@ -467,40 +502,86 @@ class FieldUpdateController {
         exit;
     }
 
-    private function handleEvidenceUpload(): ?string {
+    private function handleMultipleEvidenceUpload(array $existingFiles = []): ?string {
         $uploadDir = __DIR__ . '/../public/uploads/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
 
-        // Prioritas 1: Gambar bukti (dikompres otomatis)
-        if (isset($_FILES['evidence_image']) && $_FILES['evidence_image']['error'] === UPLOAD_ERR_OK) {
-            $ext = pathinfo($_FILES['evidence_image']['name'], PATHINFO_EXTENSION);
-            $fileName = 'img_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+        $uploadedFiles = $existingFiles;
+
+        // 1. Multiple images: evidence_images[]
+        if (isset($_FILES['evidence_images']) && is_array($_FILES['evidence_images']['name'])) {
+            $count = count($_FILES['evidence_images']['name']);
+            for ($i = 0; $i < $count; $i++) {
+                if (isset($_FILES['evidence_images']['error'][$i]) && $_FILES['evidence_images']['error'][$i] === UPLOAD_ERR_OK && !empty($_FILES['evidence_images']['tmp_name'][$i])) {
+                    $ext = strtolower(pathinfo($_FILES['evidence_images']['name'][$i], PATHINFO_EXTENSION));
+                    $safeExt = in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true) ? $ext : 'jpg';
+                    $fileName = 'img_' . time() . '_' . rand(1000, 9999) . '_' . ($i + 1) . '.' . $safeExt;
+                    if (ImageHelper::compressAndSave($_FILES['evidence_images']['tmp_name'][$i], $uploadDir . $fileName)) {
+                        $uploadedFiles[] = $fileName;
+                    }
+                }
+            }
+        }
+
+        // 2. Multiple documents: evidence_docs[]
+        if (isset($_FILES['evidence_docs']) && is_array($_FILES['evidence_docs']['name'])) {
+            $count = count($_FILES['evidence_docs']['name']);
+            for ($i = 0; $i < $count; $i++) {
+                if (isset($_FILES['evidence_docs']['error'][$i]) && $_FILES['evidence_docs']['error'][$i] === UPLOAD_ERR_OK && !empty($_FILES['evidence_docs']['tmp_name'][$i])) {
+                    $ext = strtolower(pathinfo($_FILES['evidence_docs']['name'][$i], PATHINFO_EXTENSION));
+                    $allowedDocExts = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'zip', 'rar', '7z', 'ppt', 'pptx', 'txt'];
+                    $safeExt = in_array($ext, $allowedDocExts, true) ? $ext : 'pdf';
+                    $fileName = 'doc_' . time() . '_' . rand(1000, 9999) . '_' . ($i + 1) . '.' . $safeExt;
+                    if (move_uploaded_file($_FILES['evidence_docs']['tmp_name'][$i], $uploadDir . $fileName)) {
+                        $uploadedFiles[] = $fileName;
+                    }
+                }
+            }
+        }
+
+        // 3. Fallback: single evidence_image
+        if (isset($_FILES['evidence_image']) && !is_array($_FILES['evidence_image']['name']) && $_FILES['evidence_image']['error'] === UPLOAD_ERR_OK) {
+            $ext = strtolower(pathinfo($_FILES['evidence_image']['name'], PATHINFO_EXTENSION));
+            $safeExt = in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true) ? $ext : 'jpg';
+            $fileName = 'img_' . time() . '_' . rand(1000, 9999) . '.' . $safeExt;
             if (ImageHelper::compressAndSave($_FILES['evidence_image']['tmp_name'], $uploadDir . $fileName)) {
-                return $fileName;
+                $uploadedFiles[] = $fileName;
             }
         }
 
-        // Prioritas 2: Dokumen pendukung
-        if (isset($_FILES['evidence_doc']) && $_FILES['evidence_doc']['error'] === UPLOAD_ERR_OK) {
-            $ext = pathinfo($_FILES['evidence_doc']['name'], PATHINFO_EXTENSION);
-            $fileName = 'doc_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+        // 4. Fallback: single evidence_doc
+        if (isset($_FILES['evidence_doc']) && !is_array($_FILES['evidence_doc']['name']) && $_FILES['evidence_doc']['error'] === UPLOAD_ERR_OK) {
+            $ext = strtolower(pathinfo($_FILES['evidence_doc']['name'], PATHINFO_EXTENSION));
+            $allowedDocExts = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'zip', 'rar', '7z', 'ppt', 'pptx', 'txt'];
+            $safeExt = in_array($ext, $allowedDocExts, true) ? $ext : 'pdf';
+            $fileName = 'doc_' . time() . '_' . rand(1000, 9999) . '.' . $safeExt;
             if (move_uploaded_file($_FILES['evidence_doc']['tmp_name'], $uploadDir . $fileName)) {
-                return $fileName;
+                $uploadedFiles[] = $fileName;
             }
         }
 
-        // Backward compatibility jika form lain mengirim 'evidence_file'
-        if (isset($_FILES['evidence_file']) && $_FILES['evidence_file']['error'] === UPLOAD_ERR_OK) {
-            $ext = pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION);
+        // 5. Fallback: single evidence_file
+        if (isset($_FILES['evidence_file']) && !is_array($_FILES['evidence_file']['name']) && $_FILES['evidence_file']['error'] === UPLOAD_ERR_OK) {
+            $ext = strtolower(pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION));
             $fileName = 'evidence_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
             if (ImageHelper::compressAndSave($_FILES['evidence_file']['tmp_name'], $uploadDir . $fileName)) {
-                return $fileName;
+                $uploadedFiles[] = $fileName;
             }
         }
 
-        return null;
+        $uploadedFiles = array_values(array_unique(array_filter($uploadedFiles)));
+
+        if (empty($uploadedFiles)) {
+            return null;
+        }
+
+        return json_encode($uploadedFiles);
+    }
+
+    private function handleEvidenceUpload(): ?string {
+        return $this->handleMultipleEvidenceUpload();
     }
 }
 

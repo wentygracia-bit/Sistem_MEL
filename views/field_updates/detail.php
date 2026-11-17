@@ -80,14 +80,95 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
             </div>
 
-            <?php if (!empty($update['evidence_file'])): ?>
-                <div style="margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--border-color);">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;">Berkas Bukti / Dokumentasi:</div>
-                    <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($update['evidence_file']) ?>" target="_blank" class="btn btn-secondary btn-sm">
-                        <i class="fa-solid fa-file-arrow-down"></i> Unduh File Bukti (<?= htmlspecialchars($update['evidence_file']) ?>)
-                    </a>
+            <!-- Daftar Berkas Bukti & Dokumen Pendukung (Bisa Lebih Dari Satu) -->
+            <?php
+            $evCategorized = FileHelper::categorizeFiles($update['evidence_file']);
+            ?>
+            <div id="evidence-section" style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="font-size: 0.95rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-paperclip" style="color: var(--primary-dark);"></i> Daftar Berkas Bukti & Dokumen Pendukung
+                        <span class="badge badge-info" style="font-size: 0.72rem; padding: 2px 8px;">
+                            <?= $evCategorized['total'] ?> Berkas
+                        </span>
+                    </div>
+                    <span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.72rem; border: 1px solid #e2e8f0;">
+                        <i class="fa-regular fa-circle-question"></i> Opsional
+                    </span>
                 </div>
-            <?php endif; ?>
+
+                <?php if ($evCategorized['total'] === 0): ?>
+                    <div style="padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); color: var(--text-muted); font-size: 0.85rem; font-style: italic;">
+                        <i class="fa-solid fa-circle-info" style="color: #94a3b8; margin-right: 6px;"></i> Tidak ada berkas gambar bukti atau dokumen pendukung yang dilampirkan pada laporan ini.
+                    </div>
+                <?php else: ?>
+                    <!-- Galeri Gambar Bukti -->
+                    <?php if (!empty($evCategorized['images'])): ?>
+                        <div style="margin-bottom: 16px;">
+                            <div style="font-size: 0.82rem; font-weight: 700; color: #7c3aed; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-images"></i> Galeri Foto / Gambar Bukti (<?= count($evCategorized['images']) ?>)
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
+                                <?php foreach ($evCategorized['images'] as $img): ?>
+                                    <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--shadow-sm);">
+                                        <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" target="_blank" title="Klik untuk membuka / memperbesar foto" style="display: block; width: 100%; height: 110px; background: #f1f5f9; position: relative;">
+                                            <img src="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" alt="Bukti Lapangan" style="width: 100%; height: 100%; object-fit: cover;">
+                                            <div style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.6); color: #ffffff; font-size: 0.68rem; padding: 2px 6px; border-radius: 4px;">
+                                                <i class="fa-solid fa-magnifying-glass-plus"></i>
+                                            </div>
+                                        </a>
+                                        <div style="padding: 8px; font-size: 0.75rem;">
+                                            <div style="font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($img) ?>">
+                                                <?= htmlspecialchars($img) ?>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; color: var(--text-muted); font-size: 0.7rem;">
+                                                <span><?= FileHelper::getFileSizeFormatted($img) ?></span>
+                                                <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" download="<?= htmlspecialchars($img) ?>" style="color: #2e4a16; font-weight: 600;" title="Unduh foto">
+                                                    <i class="fa-solid fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Daftar Dokumen Pendukung -->
+                    <?php if (!empty($evCategorized['docs'])): ?>
+                        <div>
+                            <div style="font-size: 0.82rem; font-weight: 700; color: #2563eb; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-file-lines"></i> Dokumen Pendukung (<?= count($evCategorized['docs']) ?>)
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <?php foreach ($evCategorized['docs'] as $doc): ?>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm);">
+                                        <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                            <i class="<?= FileHelper::getIcon($doc) ?>" style="font-size: 1.3rem; color: <?= FileHelper::getColor($doc) ?>; flex-shrink: 0;"></i>
+                                            <div style="min-width: 0;">
+                                                <div style="font-weight: 600; font-size: 0.85rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($doc) ?>">
+                                                    <?= htmlspecialchars($doc) ?>
+                                                </div>
+                                                <div style="font-size: 0.72rem; color: var(--text-muted);">
+                                                    Ukuran: <?= FileHelper::getFileSizeFormatted($doc) ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; gap: 6px; flex-shrink: 0; margin-left: 10px;">
+                                            <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($doc) ?>" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;" title="Buka berkas">
+                                                <i class="fa-solid fa-eye"></i> Buka
+                                            </a>
+                                            <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($doc) ?>" download="<?= htmlspecialchars($doc) ?>" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;" title="Unduh berkas">
+                                                <i class="fa-solid fa-download"></i> Unduh
+                                            </a>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
 
         <!-- Card 2: Riwayat Evaluasi Laporan Ini -->
@@ -250,14 +331,95 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
             </div>
 
-            <?php if (!empty($update['evidence_file'])): ?>
-                <div style="margin-top: 16px;">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;">Berkas Bukti / Dokumentasi:</div>
-                    <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($update['evidence_file']) ?>" target="_blank" class="btn btn-secondary btn-sm">
-                        <i class="fa-solid fa-file-arrow-down"></i> Unduh File Bukti (<?= htmlspecialchars($update['evidence_file']) ?>)
-                    </a>
+            <!-- Daftar Berkas Bukti & Dokumen Pendukung (Bisa Lebih Dari Satu) -->
+            <?php
+            $evCategorizedNonDir = FileHelper::categorizeFiles($update['evidence_file']);
+            ?>
+            <div id="evidence-section" style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="font-size: 0.95rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-paperclip" style="color: var(--primary-dark);"></i> Daftar Berkas Bukti & Dokumen Pendukung
+                        <span class="badge badge-info" style="font-size: 0.72rem; padding: 2px 8px;">
+                            <?= $evCategorizedNonDir['total'] ?> Berkas
+                        </span>
+                    </div>
+                    <span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.72rem; border: 1px solid #e2e8f0;">
+                        <i class="fa-regular fa-circle-question"></i> Opsional
+                    </span>
                 </div>
-            <?php endif; ?>
+
+                <?php if ($evCategorizedNonDir['total'] === 0): ?>
+                    <div style="padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); color: var(--text-muted); font-size: 0.85rem; font-style: italic;">
+                        <i class="fa-solid fa-circle-info" style="color: #94a3b8; margin-right: 6px;"></i> Tidak ada berkas gambar bukti atau dokumen pendukung yang dilampirkan pada laporan ini.
+                    </div>
+                <?php else: ?>
+                    <!-- Galeri Gambar Bukti -->
+                    <?php if (!empty($evCategorizedNonDir['images'])): ?>
+                        <div style="margin-bottom: 16px;">
+                            <div style="font-size: 0.82rem; font-weight: 700; color: #7c3aed; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-images"></i> Galeri Foto / Gambar Bukti (<?= count($evCategorizedNonDir['images']) ?>)
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;">
+                                <?php foreach ($evCategorizedNonDir['images'] as $img): ?>
+                                    <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--shadow-sm);">
+                                        <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" target="_blank" title="Klik untuk membuka / memperbesar foto" style="display: block; width: 100%; height: 100px; background: #f1f5f9; position: relative;">
+                                            <img src="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" alt="Bukti Lapangan" style="width: 100%; height: 100%; object-fit: cover;">
+                                            <div style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.6); color: #ffffff; font-size: 0.68rem; padding: 2px 6px; border-radius: 4px;">
+                                                <i class="fa-solid fa-magnifying-glass-plus"></i>
+                                            </div>
+                                        </a>
+                                        <div style="padding: 8px; font-size: 0.75rem;">
+                                            <div style="font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($img) ?>">
+                                                <?= htmlspecialchars($img) ?>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; color: var(--text-muted); font-size: 0.7rem;">
+                                                <span><?= FileHelper::getFileSizeFormatted($img) ?></span>
+                                                <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" download="<?= htmlspecialchars($img) ?>" style="color: #2e4a16; font-weight: 600;" title="Unduh foto">
+                                                    <i class="fa-solid fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Daftar Dokumen Pendukung -->
+                    <?php if (!empty($evCategorizedNonDir['docs'])): ?>
+                        <div>
+                            <div style="font-size: 0.82rem; font-weight: 700; color: #2563eb; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-file-lines"></i> Dokumen Pendukung (<?= count($evCategorizedNonDir['docs']) ?>)
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <?php foreach ($evCategorizedNonDir['docs'] as $doc): ?>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm);">
+                                        <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                            <i class="<?= FileHelper::getIcon($doc) ?>" style="font-size: 1.3rem; color: <?= FileHelper::getColor($doc) ?>; flex-shrink: 0;"></i>
+                                            <div style="min-width: 0;">
+                                                <div style="font-weight: 600; font-size: 0.85rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?= htmlspecialchars($doc) ?>">
+                                                    <?= htmlspecialchars($doc) ?>
+                                                </div>
+                                                <div style="font-size: 0.72rem; color: var(--text-muted);">
+                                                    Ukuran: <?= FileHelper::getFileSizeFormatted($doc) ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; gap: 6px; flex-shrink: 0; margin-left: 10px;">
+                                            <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($doc) ?>" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;" title="Buka berkas">
+                                                <i class="fa-solid fa-eye"></i> Buka
+                                            </a>
+                                            <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($doc) ?>" download="<?= htmlspecialchars($doc) ?>" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;" title="Unduh berkas">
+                                                <i class="fa-solid fa-download"></i> Unduh
+                                            </a>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
 
         <!-- Evaluation Section & Loop -->

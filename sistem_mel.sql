@@ -146,7 +146,7 @@ CREATE TABLE `field_updates` (
   `description` text DEFAULT NULL,
   `realization_value` decimal(15,2) DEFAULT NULL,
   `progress_percentage` decimal(5,2) DEFAULT NULL,
-  `evidence_file` varchar(255) DEFAULT NULL,
+  `evidence_file` text DEFAULT NULL,
   `director_notes` text DEFAULT NULL,
   `director_notes_updated_at` datetime DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL

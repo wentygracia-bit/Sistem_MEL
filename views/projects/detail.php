@@ -189,6 +189,11 @@ $indModel = new Indicator();
             </form>
 
             <span class="badge badge-info"><?= count($activities) ?> Kegiatan</span>
+            <?php if ((int)$currentUser['role_id'] === 1): ?>
+                <button type="button" onclick="toggleModal('modalSubmitReport')" class="btn btn-primary btn-sm" style="height: 38px;">
+                    <i class="fa-solid fa-plus"></i> Input Laporan Baru
+                </button>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -278,9 +283,16 @@ $indModel = new Indicator();
                             <i class="fa-solid fa-file-lines"></i> Riwayat Laporan
                         </a>
                         <?php if ((int)$currentUser['role_id'] === 1): // Khusus Staf Lapangan ?>
-                            <a href="<?= BASE_URL ?>/field-updates" class="btn btn-primary btn-sm" title="Input Laporan untuk Kegiatan Ini">
+                            <button type="button" class="btn btn-primary btn-sm" onclick='openSubmitReportModalForActivity(<?= json_encode([
+                                "activity_id" => (int)$act["activity_id"],
+                                "activity_name" => $act["activity_name"],
+                                "project_name" => $project["project_name"],
+                                "project_code" => $project["project_code"],
+                                "total_target" => (float)($act["total_target"] ?? 0),
+                                "unit" => $act["unit"] ?? "Satuan"
+                            ], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)' title="Input Laporan Baru untuk Kegiatan Ini">
                                 <i class="fa-solid fa-plus"></i> Input Laporan
-                            </a>
+                            </button>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -766,6 +778,18 @@ function openEditIndicatorModal(ind, activityId) {
     toggleModal('modalEditIndicator');
 }
 </script>
+
+<?php if ((int)$currentUser['role_id'] === 1): ?>
+    <?php
+    $modalActivities = array_map(function($a) use ($project) {
+        $a['project_name'] = $project['project_name'];
+        $a['project_code'] = $project['project_code'];
+        return $a;
+    }, $activities);
+    $activities = $modalActivities;
+    include __DIR__ . '/../field_updates/_modal_submit.php';
+    ?>
+<?php endif; ?>
 
 <?php
 require_once __DIR__ . '/../layouts/footer.php';

@@ -295,17 +295,80 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                 <input type="number" step="any" min="0" max="100" name="progress_percentage" id="edit_progress_percentage" class="form-control" placeholder="0 - 100">
             </div>
 
-            <div class="modal-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label"><i class="fa-solid fa-image"></i> Ganti Gambar <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
-                    <input type="file" name="evidence_image" accept="image/*" class="form-control">
+            <!-- BAGIAN BUKTI & DOKUMEN PENDUKUNG SAAT EDIT -->
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="font-size: 0.9rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-paperclip" style="color: #0284c7;"></i> Kelola Gambar Bukti & Dokumen Pendukung
+                    </div>
+                    <span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.72rem; border: 1px solid #e2e8f0;">
+                        <i class="fa-regular fa-circle-question"></i> Opsional
+                    </span>
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label"><i class="fa-solid fa-file-lines"></i> Ganti Dokumen <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opsional)</span></label>
-                    <input type="file" name="evidence_doc" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" class="form-control">
+
+                <!-- List Berkas yang Sedang Terlampir Sebelumnya -->
+                <div id="edit_existing_files_section" style="margin-bottom: 14px;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
+                        Berkas yang Sedang Terlampir:
+                    </div>
+                    <div id="edit_existing_files_list" style="display: flex; flex-direction: column; gap: 6px;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Tidak ada berkas terlampir.</span>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.78rem; color: #64748b; margin-bottom: 10px;">
+                    Tambah berkas baru (bisa pilih lebih dari satu berkas):
+                </div>
+
+                <!-- Grid 2 Kolom untuk Upload Tambahan -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <!-- Area Upload Gambar Tambahan -->
+                    <div style="border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 12px; background: #fafafa; text-align: center;">
+                        <div style="font-size: 0.82rem; font-weight: 600; color: #334155; margin-bottom: 2px;">
+                            <i class="fa-solid fa-images" style="color: #7c3aed;"></i> Tambah Gambar
+                        </div>
+                        <div style="font-size: 0.72rem; color: #64748b; margin-bottom: 8px;">
+                            Pilih >1 foto (JPG, PNG, WEBP)
+                        </div>
+                        <input type="file" name="evidence_images[]" id="edit_evidence_images" accept="image/jpeg,image/png,image/webp,image/jpg" multiple style="display: none;" onchange="handleEvidenceSelect(this, 'edit', 'images')">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('edit_evidence_images').click()" style="width: 100%; font-size: 0.78rem; padding: 6px 10px; background: #ffffff;">
+                            <i class="fa-solid fa-plus" style="color: #7c3aed;"></i> Pilih Gambar...
+                        </button>
+                    </div>
+
+                    <!-- Area Upload Dokumen Tambahan -->
+                    <div style="border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 12px; background: #fafafa; text-align: center;">
+                        <div style="font-size: 0.82rem; font-weight: 600; color: #334155; margin-bottom: 2px;">
+                            <i class="fa-solid fa-file-lines" style="color: #2563eb;"></i> Tambah Dokumen
+                        </div>
+                        <div style="font-size: 0.72rem; color: #64748b; margin-bottom: 8px;">
+                            Pilih >1 berkas (PDF, DOC, XLS, ZIP)
+                        </div>
+                        <input type="file" name="evidence_docs[]" id="edit_evidence_docs" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.zip,.rar,.7z,.ppt,.pptx,.txt" multiple style="display: none;" onchange="handleEvidenceSelect(this, 'edit', 'docs')">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('edit_evidence_docs').click()" style="width: 100%; font-size: 0.78rem; padding: 6px 10px; background: #ffffff;">
+                            <i class="fa-solid fa-plus" style="color: #2563eb;"></i> Pilih Dokumen...
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Preview List Gambar Tambahan -->
+                <div id="edit_images_preview_container" style="display: none; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e2e8f0;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fa-solid fa-images" style="color: #7c3aed; margin-right: 4px;"></i> List Gambar Baru (<span id="edit_images_count">0</span>):</span>
+                        <button type="button" onclick="clearEvidenceSelection('edit', 'images')" style="background: none; border: none; font-size: 0.72rem; color: #dc2626; cursor: pointer; text-decoration: underline;">Hapus Semua</button>
+                    </div>
+                    <div id="edit_images_preview_grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px;"></div>
+                </div>
+
+                <!-- Live Preview List Dokumen Tambahan -->
+                <div id="edit_docs_preview_container" style="display: none; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e2e8f0;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fa-solid fa-file-lines" style="color: #2563eb; margin-right: 4px;"></i> List Dokumen Baru (<span id="edit_docs_count">0</span>):</span>
+                        <button type="button" onclick="clearEvidenceSelection('edit', 'docs')" style="background: none; border: none; font-size: 0.72rem; color: #dc2626; cursor: pointer; text-decoration: underline;">Hapus Semua</button>
+                    </div>
+                    <div id="edit_docs_preview_list" style="display: flex; flex-direction: column; gap: 6px;"></div>
                 </div>
             </div>
-            <small id="edit_evidence_info" style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: -8px; margin-bottom: 14px;"></small>
 
             <div class="form-group">
                 <label class="form-label">Deskripsi & Narasi Lapangan *</label>
@@ -356,6 +419,178 @@ function toggleModal(modalId) {
     modal.style.display = isOpening ? 'flex' : 'none';
 }
 
+window.evidenceHolders = window.evidenceHolders || {
+    edit: {
+        imagesDT: new DataTransfer(),
+        docsDT: new DataTransfer()
+    }
+};
+
+function formatFileSizeJS(bytes) {
+    if (bytes >= 1048576) {
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    } else if (bytes >= 1024) {
+        return Math.round(bytes / 1024) + ' KB';
+    }
+    return bytes + ' B';
+}
+
+function getFileIconClassJS(filename) {
+    const ext = (filename.split('.').pop() || '').toLowerCase();
+    switch (ext) {
+        case 'pdf': return { icon: 'fa-solid fa-file-pdf', color: '#ef4444' };
+        case 'doc':
+        case 'docx': return { icon: 'fa-solid fa-file-word', color: '#2563eb' };
+        case 'xls':
+        case 'xlsx':
+        case 'csv': return { icon: 'fa-solid fa-file-excel', color: '#16a34a' };
+        case 'ppt':
+        case 'pptx': return { icon: 'fa-solid fa-file-powerpoint', color: '#ea580c' };
+        case 'zip':
+        case 'rar':
+        case '7z': return { icon: 'fa-solid fa-file-zipper', color: '#d97706' };
+        case 'txt': return { icon: 'fa-solid fa-file-lines', color: '#64748b' };
+        default: return { icon: 'fa-solid fa-file', color: '#64748b' };
+    }
+}
+
+function handleEvidenceSelect(inputEl, prefix, type) {
+    if (!window.evidenceHolders[prefix]) {
+        window.evidenceHolders[prefix] = { imagesDT: new DataTransfer(), docsDT: new DataTransfer() };
+    }
+    const dt = (type === 'images') ? window.evidenceHolders[prefix].imagesDT : window.evidenceHolders[prefix].docsDT;
+    const newFiles = inputEl.files;
+
+    for (let i = 0; i < newFiles.length; i++) {
+        let exists = false;
+        for (let j = 0; j < dt.items.length; j++) {
+            const f = dt.files[j];
+            if (f.name === newFiles[i].name && f.size === newFiles[i].size) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            dt.items.add(newFiles[i]);
+        }
+    }
+
+    inputEl.files = dt.files;
+    renderEvidencePreview(prefix, type);
+}
+
+function removeEvidenceFile(prefix, type, index) {
+    const dt = (type === 'images') ? window.evidenceHolders[prefix].imagesDT : window.evidenceHolders[prefix].docsDT;
+    const inputEl = document.getElementById(prefix + '_evidence_' + type);
+    const newDT = new DataTransfer();
+
+    for (let i = 0; i < dt.files.length; i++) {
+        if (i !== index) {
+            newDT.items.add(dt.files[i]);
+        }
+    }
+
+    if (type === 'images') {
+        window.evidenceHolders[prefix].imagesDT = newDT;
+    } else {
+        window.evidenceHolders[prefix].docsDT = newDT;
+    }
+
+    if (inputEl) {
+        inputEl.files = newDT.files;
+    }
+
+    renderEvidencePreview(prefix, type);
+}
+
+function clearEvidenceSelection(prefix, type) {
+    if (!window.evidenceHolders[prefix]) {
+        window.evidenceHolders[prefix] = { imagesDT: new DataTransfer(), docsDT: new DataTransfer() };
+    }
+    if (type === 'images') {
+        window.evidenceHolders[prefix].imagesDT = new DataTransfer();
+    } else {
+        window.evidenceHolders[prefix].docsDT = new DataTransfer();
+    }
+    const inputEl = document.getElementById(prefix + '_evidence_' + type);
+    if (inputEl) {
+        inputEl.value = '';
+    }
+    renderEvidencePreview(prefix, type);
+}
+
+function renderEvidencePreview(prefix, type) {
+    if (!window.evidenceHolders[prefix]) return;
+    const dt = (type === 'images') ? window.evidenceHolders[prefix].imagesDT : window.evidenceHolders[prefix].docsDT;
+    const container = document.getElementById(prefix + '_' + type + '_preview_container');
+    const countEl = document.getElementById(prefix + '_' + type + '_count');
+
+    if (!container) return;
+
+    if (dt.files.length === 0) {
+        container.style.display = 'none';
+        if (countEl) countEl.textContent = '0';
+        return;
+    }
+
+    container.style.display = 'block';
+    if (countEl) countEl.textContent = dt.files.length;
+
+    if (type === 'images') {
+        const grid = document.getElementById(prefix + '_images_preview_grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        for (let i = 0; i < dt.files.length; i++) {
+            const file = dt.files[i];
+            const thumbUrl = URL.createObjectURL(file);
+            const card = document.createElement('div');
+            card.style.cssText = 'background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; position: relative; font-size: 0.72rem; box-shadow: var(--shadow-sm);';
+            card.innerHTML = `
+                <div style="width: 100%; height: 75px; border-radius: 4px; overflow: hidden; background: #f1f5f9; margin-bottom: 4px;">
+                    <img src="${thumbUrl}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${file.name}">
+                    ${file.name}
+                </div>
+                <div style="color: #64748b; font-size: 0.68rem; margin-top: 2px;">
+                    ${formatFileSizeJS(file.size)}
+                </div>
+                <button type="button" onclick="removeEvidenceFile('${prefix}', 'images', ${i})" style="position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%; background: #ef4444; color: #ffffff; border: 2px solid #ffffff; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Hapus gambar ini">&times;</button>
+            `;
+            grid.appendChild(card);
+        }
+    } else {
+        const list = document.getElementById(prefix + '_docs_preview_list');
+        if (!list) return;
+        list.innerHTML = '';
+
+        for (let i = 0; i < dt.files.length; i++) {
+            const file = dt.files[i];
+            const iconInfo = getFileIconClassJS(file.name);
+            const item = document.createElement('div');
+            item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.8rem;';
+            item.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                    <i class="${iconInfo.icon}" style="font-size: 1.1rem; color: ${iconInfo.color}; flex-shrink: 0;"></i>
+                    <div style="min-width: 0;">
+                        <div style="font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.8rem;" title="${file.name}">
+                            ${file.name}
+                        </div>
+                        <div style="font-size: 0.7rem; color: #64748b;">
+                            ${formatFileSizeJS(file.size)}
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="removeEvidenceFile('${prefix}', 'docs', ${i})" style="background: none; border: none; color: #ef4444; font-size: 0.85rem; cursor: pointer; padding: 4px 6px; margin-left: 8px;" title="Hapus dokumen ini">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+            list.appendChild(item);
+        }
+    }
+}
+
 function openEditModal(data) {
     document.getElementById('edit_update_id').value = data.update_id || '';
     if (document.getElementById('edit_activity_id')) {
@@ -366,12 +601,57 @@ function openEditModal(data) {
     document.getElementById('edit_progress_percentage').value = data.progress_percentage || '';
     document.getElementById('edit_description').value = data.description || '';
     
-    const infoEl = document.getElementById('edit_evidence_info');
-    if (data.evidence_file) {
-        infoEl.textContent = 'File saat ini: ' + data.evidence_file;
-    } else {
-        infoEl.textContent = 'Belum ada bukti yang diunggah.';
+    // Render existing files
+    const existingListEl = document.getElementById('edit_existing_files_list');
+    if (existingListEl) {
+        existingListEl.innerHTML = '';
+        let existingFiles = [];
+        if (data.evidence_file) {
+            try {
+                if (typeof data.evidence_file === 'string' && data.evidence_file.trim().startsWith('[')) {
+                    existingFiles = JSON.parse(data.evidence_file);
+                } else if (typeof data.evidence_file === 'string') {
+                    existingFiles = [data.evidence_file];
+                } else if (Array.isArray(data.evidence_file)) {
+                    existingFiles = data.evidence_file;
+                }
+            } catch(e) {
+                existingFiles = [data.evidence_file];
+            }
+        }
+
+        if (!existingFiles || existingFiles.length === 0) {
+            existingListEl.innerHTML = '<span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Tidak ada berkas terlampir sebelumnya.</span>';
+        } else {
+            existingFiles.forEach(function(fn) {
+                if (!fn) return;
+                const iconInfo = getFileIconClassJS(fn);
+                const item = document.createElement('div');
+                item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.8rem;';
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                        <input type="hidden" name="existing_files[]" value="${fn}">
+                        <i class="${iconInfo.icon}" style="font-size: 1rem; color: ${iconInfo.color}; flex-shrink: 0;"></i>
+                        <span style="font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.8rem;" title="${fn}">
+                            ${fn}
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <a href="<?= BASE_URL ?>/public/uploads/${encodeURIComponent(fn)}" target="_blank" style="font-size: 0.75rem; color: #0284c7; text-decoration: none;" title="Buka berkas">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                        <button type="button" onclick="this.closest('div[style]').remove(); if(document.querySelectorAll('#edit_existing_files_list > div').length===0){document.getElementById('edit_existing_files_list').innerHTML='<span style=\\'font-size: 0.75rem; color: var(--text-muted); font-style: italic;\\'>Semua berkas lama dihapus.</span>';}" style="background: none; border: none; color: #ef4444; font-size: 0.85rem; cursor: pointer; padding: 2px 4px;" title="Hapus berkas ini">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+                existingListEl.appendChild(item);
+            });
+        }
     }
+
+    clearEvidenceSelection('edit', 'images');
+    clearEvidenceSelection('edit', 'docs');
 
     toggleModal('modalEditReport');
 }

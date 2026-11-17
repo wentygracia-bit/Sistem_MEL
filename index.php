@@ -5,6 +5,7 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/Database.php';
 require_once __DIR__ . '/helpers/AuthHelper.php';
 require_once __DIR__ . '/helpers/ImageHelper.php';
+require_once __DIR__ . '/helpers/FileHelper.php';
 
 // Controllers
 require_once __DIR__ . '/controllers/AuthController.php';
@@ -21,11 +22,12 @@ require_once __DIR__ . '/controllers/UserController.php';
 $requestUri = $_SERVER['REQUEST_URI'];
 $basePath = BASE_URL;
 
-if (strpos($requestUri, $basePath) === 0) {
-    $path = substr($requestUri, strlen($basePath));
-} else {
-    $path = $requestUri;
+if (!empty($basePath)) {
+    while (strpos($requestUri, $basePath) === 0) {
+        $requestUri = substr($requestUri, strlen($basePath));
+    }
 }
+$path = $requestUri;
 
 $path = strtok($path, '?');
 $path = rtrim($path, '/');

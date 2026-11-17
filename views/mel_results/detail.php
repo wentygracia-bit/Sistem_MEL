@@ -69,11 +69,21 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
         </div>
 
-        <?php if (!empty($result['evidence_file'])): ?>
-            <div>
-                <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($result['evidence_file']) ?>" target="_blank" class="btn btn-secondary btn-sm">
-                    <i class="fa-solid fa-paperclip"></i> Lihat Bukti Terlampir Lapangan
-                </a>
+        <?php 
+        $evCatMel = FileHelper::categorizeFiles($result['evidence_file']);
+        if ($evCatMel['total'] > 0): 
+        ?>
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+                <div style="font-size: 0.8rem; font-weight: 700; color: #1e293b; margin-bottom: 8px;">
+                    <i class="fa-solid fa-paperclip" style="color: var(--primary-dark);"></i> Berkas Bukti & Dokumen Terlampir (<?= $evCatMel['total'] ?>):
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <?php foreach ($evCatMel['all'] as $ef): ?>
+                        <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($ef) ?>" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;">
+                            <i class="<?= FileHelper::getIcon($ef) ?>" style="color: <?= FileHelper::getColor($ef) ?>;"></i> <?= htmlspecialchars($ef) ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
             </div>
         <?php endif; ?>
     </div>
