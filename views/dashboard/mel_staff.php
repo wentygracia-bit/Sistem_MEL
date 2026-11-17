@@ -51,31 +51,31 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
         </div>
     </a>
 
-    <!-- Card 3: Perbaikan Aktif -->
-    <a href="<?= BASE_URL ?>/evaluations?tab=perbaikan" style="text-decoration: none; color: inherit;">
-        <div class="stat-card" style="border-left: 6px solid <?= ($activeCorrectionsCount ?? 0) > 0 ? '#dc2626' : '#d97706' ?>; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
-            <div class="stat-icon" style="background-color: <?= ($activeCorrectionsCount ?? 0) > 0 ? '#fef2f2' : '#fffbeb' ?>; color: <?= ($activeCorrectionsCount ?? 0) > 0 ? '#dc2626' : '#d97706' ?>;">
-                <i class="fa-solid fa-rotate-left"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="<?= ($activeCorrectionsCount ?? 0) > 0 ? 'color: #dc2626;' : '' ?>">
-                    <?= number_format($activeCorrectionsCount ?? 0, 0, ',', '.') ?>
-                </div>
-                <div class="stat-label" style="font-weight: 600; color: #1e293b;">Perbaikan Aktif</div>
-                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Menunggu Tindak Lanjut</div>
-            </div>
-        </div>
-    </a>
-
-    <!-- Card 4: Hasil MEL -->
-    <a href="<?= BASE_URL ?>/mel-results" style="text-decoration: none; color: inherit;">
+    <!-- Card 3: Dokumen Disahkan -->
+    <a href="<?= BASE_URL ?>/mel-results?status=Disetujui" style="text-decoration: none; color: inherit;">
         <div class="stat-card" style="border-left: 6px solid #16a34a; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
             <div class="stat-icon" style="background-color: #f0fdf4; color: #16a34a;">
                 <i class="fa-solid fa-stamp"></i>
             </div>
             <div>
+                <div class="stat-value" style="color: #15803d;">
+                    <?= number_format($approvedMelCount ?? 0, 0, ',', '.') ?>
+                </div>
+                <div class="stat-label" style="font-weight: 600; color: #1e293b;">Disahkan Direktur</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Hasil MEL Disetujui</div>
+            </div>
+        </div>
+    </a>
+
+    <!-- Card 4: Total Hasil MEL -->
+    <a href="<?= BASE_URL ?>/mel-results" style="text-decoration: none; color: inherit;">
+        <div class="stat-card" style="border-left: 6px solid #ca8a04; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
+            <div class="stat-icon" style="background-color: #fefce8; color: #ca8a04;">
+                <i class="fa-solid fa-file-signature"></i>
+            </div>
+            <div>
                 <div class="stat-value"><?= number_format($totalMelResultsCount ?? 0, 0, ',', '.') ?></div>
-                <div class="stat-label" style="font-weight: 600; color: #1e293b;">Hasil MEL</div>
+                <div class="stat-label" style="font-weight: 600; color: #1e293b;">Total Berkas MEL</div>
                 <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Dokumen MEL Disusun</div>
             </div>
         </div>
@@ -273,7 +273,7 @@ $currentUser = $currentUser ?? AuthHelper::getUser();
                             $iconColor = '#7c3aed';
                             $iconBg = '#f5f3ff';
                             $iconClass = 'fa-scale-balanced';
-                            $actionUrl = BASE_URL . '/evaluations';
+                            $actionUrl = BASE_URL . '/mel-results';
                         } elseif ($act['act_type'] === 'hasil_mel') {
                             $iconColor = '#16a34a';
                             $iconBg = '#f0fdf4';

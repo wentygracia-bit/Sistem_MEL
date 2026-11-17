@@ -117,7 +117,7 @@ class DashboardController {
         if ((int)$user['role_id'] === 2) {
             $activeProjectsCount = $projectModel->countActiveProjects();
             $totalReportsCount = $updateModel->countAll();
-            $activeCorrectionsCount = $correctionModel->countActiveGlobal();
+            $approvedMelCount = $melResultModel->countByStatus('Disetujui');
             $totalMelResultsCount = $melResultModel->countAll();
 
             // 1. Laporan Lapangan Terbaru yang relevan untuk diperiksa Staf MEL

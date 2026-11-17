@@ -85,10 +85,6 @@ $activeMenu = $activeMenu ?? 'dashboard';
                         <i class="fa-solid fa-clipboard-check"></i>
                         <span class="nav-text">Laporan Lapangan</span>
                     </a>
-                    <a href="<?= BASE_URL ?>/evaluations" class="nav-link <?= in_array($activeMenu, ['evaluations', 'corrections']) ? 'active' : '' ?>" title="Evaluasi & Perbaikan">
-                        <i class="fa-solid fa-scale-balanced"></i>
-                        <span class="nav-text">Evaluasi & Perbaikan</span>
-                    </a>
                     <a href="<?= BASE_URL ?>/mel-results" class="nav-link <?= $activeMenu === 'mel-results' ? 'active' : '' ?>" title="Hasil MEL">
                         <i class="fa-solid fa-stamp"></i>
                         <span class="nav-text">Hasil MEL</span>
