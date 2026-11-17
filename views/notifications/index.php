@@ -62,7 +62,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <?php
                 // Tentukan target URL spesifik berdasarkan kategori dan konteks notifikasi
                 $redirectUrl = '';
-                if ($n['notification_type'] === 'Pengesahan MEL') {
+                if ($n['notification_type'] === 'Pengesahan MEL' || $n['notification_type'] === 'Revisi Hasil MEL Diajukan Ulang') {
                     if (!empty($n['mel_result_id'])) {
                         $redirectUrl = '/mel-results/detail?id=' . $n['mel_result_id'];
                     } else {
@@ -131,7 +131,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                     <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i>
                                 <?php elseif ($n['notification_type'] === 'DirectorNote'): ?>
                                     <i class="fa-solid fa-crown" style="color: #9333ea;"></i>
-                                <?php elseif ($n['notification_type'] === 'Pengesahan MEL'): ?>
+                                <?php elseif ($n['notification_type'] === 'Pengesahan MEL' || $n['notification_type'] === 'Revisi Hasil MEL Diajukan Ulang'): ?>
                                     <i class="fa-solid fa-stamp" style="color: #1e3a8a;"></i>
                                 <?php else: ?>
                                     <i class="fa-solid fa-bell" style="color: #15803d;"></i>
@@ -153,7 +153,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                     </span>
                                 <?php endif; ?>
 
-                                <span class="badge <?= $n['notification_type'] === 'Reminder' ? 'badge-warning' : ($n['notification_type'] === 'Permintaan Perbaikan' ? 'badge-danger' : ($n['notification_type'] === 'DirectorNote' ? 'badge-info' : ($n['notification_type'] === 'Pengesahan MEL' ? 'badge-primary' : 'badge-info'))) ?>">
+                                <span class="badge <?= $n['notification_type'] === 'Reminder' ? 'badge-warning' : ($n['notification_type'] === 'Permintaan Perbaikan' ? 'badge-danger' : ($n['notification_type'] === 'DirectorNote' ? 'badge-info' : (in_array($n['notification_type'], ['Pengesahan MEL', 'Revisi Hasil MEL Diajukan Ulang']) ? 'badge-primary' : 'badge-info'))) ?>">
                                     <?= $n['notification_type'] === 'DirectorNote' ? 'Catatan Direktur' : htmlspecialchars($n['notification_type']) ?>
                                 </span>
 

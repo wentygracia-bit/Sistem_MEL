@@ -56,7 +56,7 @@ class NotificationController {
                 // Jika parameter redirect kosong, tentukan tujuan berdasarkan tipe notifikasi dan aktor
                 if (empty($redirect)) {
                     $db = Database::getConnection();
-                    if ($notif['notification_type'] === 'Pengesahan MEL') {
+                    if ($notif['notification_type'] === 'Pengesahan MEL' || $notif['notification_type'] === 'Revisi Hasil MEL Diajukan Ulang') {
                         $stmt = $db->prepare("
                             SELECT mel_result_id FROM mel_results 
                             WHERE activity_id = ? 
