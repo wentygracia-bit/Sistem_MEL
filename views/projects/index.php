@@ -10,44 +10,38 @@ require_once __DIR__ . '/../layouts/header.php';
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Daftar seluruh kegiatan di bawah proyek tempat Anda ditugaskan, lengkap dengan target, capaian terverifikasi, dan tenggat waktu.</p>
         </div>
 
-        <!-- Filter & Pencarian Kegiatan & Tombol Input Laporan -->
-        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-            <form action="<?= BASE_URL ?>/projects" method="GET" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <div style="position: relative;">
-                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem;"></i>
-                    <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" placeholder="Cari kegiatan/lokasi..." class="form-control" style="padding-left: 32px; width: 200px; height: 38px;">
-                </div>
+        <!-- Filter & Pencarian Kegiatan -->
+        <form action="<?= BASE_URL ?>/projects" method="GET" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div style="position: relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem;"></i>
+                <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" placeholder="Cari kegiatan/lokasi..." class="form-control" style="padding-left: 32px; width: 220px; height: 38px;">
+            </div>
 
-                <select name="status" class="form-control" style="width: 130px; height: 38px;" onchange="this.form.submit()">
-                    <option value="">Semua Status</option>
-                    <option value="Berjalan" <?= ($_GET['status'] ?? '') === 'Berjalan' ? 'selected' : '' ?>>Berjalan</option>
-                    <option value="Selesai" <?= ($_GET['status'] ?? '') === 'Selesai' ? 'selected' : '' ?>>Selesai</option>
-                    <option value="Perencanaan" <?= ($_GET['status'] ?? '') === 'Perencanaan' ? 'selected' : '' ?>>Perencanaan</option>
-                </select>
+            <select name="status" class="form-control" style="width: 130px; height: 38px;" onchange="this.form.submit()">
+                <option value="">Semua Status</option>
+                <option value="Berjalan" <?= ($_GET['status'] ?? '') === 'Berjalan' ? 'selected' : '' ?>>Berjalan</option>
+                <option value="Selesai" <?= ($_GET['status'] ?? '') === 'Selesai' ? 'selected' : '' ?>>Selesai</option>
+                <option value="Perencanaan" <?= ($_GET['status'] ?? '') === 'Perencanaan' ? 'selected' : '' ?>>Perencanaan</option>
+            </select>
 
-                <select name="project_id" class="form-control" style="width: 160px; height: 38px;" onchange="this.form.submit()">
-                    <option value="">Semua Proyek</option>
-                    <?php foreach ($projects as $pr): ?>
-                        <option value="<?= $pr['project_id'] ?>" <?= (isset($_GET['project_id']) && (int)$_GET['project_id'] === (int)$pr['project_id']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($pr['project_name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+            <select name="project_id" class="form-control" style="width: 160px; height: 38px;" onchange="this.form.submit()">
+                <option value="">Semua Proyek</option>
+                <?php foreach ($projects as $pr): ?>
+                    <option value="<?= $pr['project_id'] ?>" <?= (isset($_GET['project_id']) && (int)$_GET['project_id'] === (int)$pr['project_id']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($pr['project_name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
 
-                <button type="submit" class="btn btn-secondary btn-sm" style="height: 38px;">
-                    <i class="fa-solid fa-filter"></i> Filter
-                </button>
-                <?php if (!empty($_GET['search']) || !empty($_GET['status']) || !empty($_GET['project_id'])): ?>
-                    <a href="<?= BASE_URL ?>/projects" class="btn btn-secondary btn-sm" style="height: 38px; display: inline-flex; align-items: center;" title="Reset Filter">
-                        <i class="fa-solid fa-xmark"></i>
-                    </a>
-                <?php endif; ?>
-            </form>
-
-            <button type="button" onclick="toggleModal('modalSubmitReport')" class="btn btn-primary btn-sm" style="height: 38px;">
-                <i class="fa-solid fa-plus"></i> Input Laporan Baru
+            <button type="submit" class="btn btn-secondary btn-sm" style="height: 38px;">
+                <i class="fa-solid fa-filter"></i> Filter
             </button>
-        </div>
+            <?php if (!empty($_GET['search']) || !empty($_GET['status']) || !empty($_GET['project_id'])): ?>
+                <a href="<?= BASE_URL ?>/projects" class="btn btn-secondary btn-sm" style="height: 38px; display: inline-flex; align-items: center;" title="Reset Filter">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+            <?php endif; ?>
+        </form>
     </div>
 
     <div class="table-responsive">
@@ -131,16 +125,6 @@ require_once __DIR__ . '/../layouts/header.php';
                             </td>
                             <td>
                                 <div style="display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: nowrap;">
-                                    <button type="button" class="btn btn-primary btn-sm" onclick='openSubmitReportModalForActivity(<?= json_encode([
-                                        "activity_id" => (int)$act["activity_id"],
-                                        "activity_name" => $act["activity_name"],
-                                        "project_name" => $act["project_name"],
-                                        "project_code" => $act["project_code"],
-                                        "total_target" => (float)($act["total_target"] ?? 0),
-                                        "unit" => $act["unit"] ?? "Satuan"
-                                    ], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)' title="Input Laporan Baru untuk Kegiatan Ini">
-                                        <i class="fa-solid fa-plus"></i> Input Laporan
-                                    </button>
                                     <a href="<?= BASE_URL ?>/projects/detail?id=<?= $act['project_id'] ?>#act-<?= $act['activity_id'] ?>" class="btn btn-secondary btn-sm" title="Detail Kegiatan">
                                         <i class="fa-solid fa-circle-info"></i> Detail
                                     </a>
@@ -263,20 +247,16 @@ require_once __DIR__ . '/../layouts/header.php';
                             </td>
                             <td>
                                 <div style="display: flex; gap: 6px; align-items: center;">
-                                    <?php if ((int)$currentUser['role_id'] === 4): // Khusus Direktur: Memantau rincian kegiatan ?>
-                                        <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat rincian kegiatan proyek ini">
-                                            <i class="fa-solid fa-circle-info"></i> Detail
-                                        </a>
-                                    <?php elseif ((int)$currentUser['role_id'] === 2): // Khusus Staf MEL ?>
+                                    <?php if ((int)$currentUser['role_id'] === 2): // Khusus Staf MEL: Kelola & Hapus Proyek ?>
                                         <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm" title="Kelola Proyek & Kegiatan">
                                             <i class="fa-solid fa-arrow-right"></i> Kelola
                                         </a>
                                         <button type="button" class="btn btn-secondary btn-sm" title="Hapus Proyek" onclick="openDeleteModal(<?= $p['project_id'] ?>, '<?= htmlspecialchars(addslashes($p['project_name'])) ?>')" style="color: #dc2626;">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
-                                    <?php else: ?>
-                                        <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm">
-                                            <i class="fa-solid fa-arrow-right"></i> Kelola
+                                    <?php else: // Staf Lapangan, Direktur, Project Leader: Hanya Lihat Detail ?>
+                                        <a href="<?= BASE_URL ?>/projects/detail?id=<?= $p['project_id'] ?>" class="btn btn-secondary btn-sm" title="Lihat rincian kegiatan proyek ini">
+                                            <i class="fa-solid fa-circle-info"></i> Detail
                                         </a>
                                     <?php endif; ?>
                                 </div>
@@ -288,13 +268,6 @@ require_once __DIR__ . '/../layouts/header.php';
         </table>
     </div>
 </div>
-
-<?php if ($currentUser['role_id'] == 1): ?>
-    <?php
-    $activities = $fieldActivities;
-    include __DIR__ . '/../field_updates/_modal_submit.php';
-    ?>
-<?php endif; ?>
 
 <?php if ((int)$currentUser['role_id'] === 2): // Modal Hapus Proyek Khusus Staf MEL ?>
 <!-- Modal Konfirmasi Hapus Proyek -->
