@@ -932,11 +932,10 @@ $publicProjects = $publicProjects ?? [];
         <div>
             <h2>Tentang Sistem Monitoring, Evaluation & Learning</h2>
             <p>
-                Sistem MEL membantu proses pemantauan kegiatan, penilaian
-                ketercapaian indikator, dan penyusunan hasil evaluasi program.
-                Portal publik ini menjadi sarana untuk melihat informasi
-                program serta hasil evaluasi yang telah disahkan dan
-                disiapkan untuk dipublikasikan.
+                Monitoring, Evaluation and Learning (MEL) System merupakan mekanisme organisasi untuk memahami, mengukur, dan memperkuat perubahan yang dihasilkan melalui seluruh program, proyek, dan kemitraan YNKI.
+            </p>
+            <p style="margin-top: 10px;">
+                Bagi YNKI, MEL bukan sekadar sistem pelaporan kepada donor atau alat pengukuran kinerja proyek. MEL merupakan mesin pembelajaran organisasi yang memungkinkan YNKI memahami bagaimana perubahan terjadi, mengapa perubahan terjadi, dan bagaimana perubahan tersebut dapat diperkuat, direplikasi, atau disesuaikan.
             </p>
         </div>
     </section>
